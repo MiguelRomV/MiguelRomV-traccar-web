@@ -1,12 +1,7 @@
 import { Divider, List } from '@mui/material';
-import StarIcon from '@mui/icons-material/Star';
-import TimelineIcon from '@mui/icons-material/Timeline';
-import PauseCircleFilledIcon from '@mui/icons-material/PauseCircleFilled';
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PlaceIcon from '@mui/icons-material/Place';
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import RouteIcon from '@mui/icons-material/Route';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
@@ -49,12 +44,6 @@ const ReportsMenu = () => {
     <>
       <List>
         <MenuItem
-          title={t('reportCombined')}
-          link={buildLink('/reports/combined')}
-          icon={<StarIcon />}
-          selected={location.pathname === '/reports/combined'}
-        />
-        <MenuItem
           title={t('reportEvents')}
           link={buildLink('/reports/events')}
           icon={<NotificationsActiveIcon />}
@@ -72,31 +61,7 @@ const ReportsMenu = () => {
           icon={<PlayCircleFilledIcon />}
           selected={location.pathname === '/reports/trips'}
         />
-        <MenuItem
-          title={t('reportStops')}
-          link={buildLink('/reports/stops')}
-          icon={<PauseCircleFilledIcon />}
-          selected={location.pathname === '/reports/stops'}
-        />
-        <MenuItem
-          title={t('reportSummary')}
-          link={buildLink('/reports/summary')}
-          icon={<FormatListBulletedIcon />}
-          selected={location.pathname === '/reports/summary'}
-        />
-        <MenuItem
-          title={t('reportChart')}
-          link={buildLink('/reports/chart')}
-          icon={<TrendingUpIcon />}
-          selected={location.pathname === '/reports/chart'}
-        />
         <MenuItem title={t('reportReplay')} link={buildLink('/replay')} icon={<RouteIcon />} />
-        <MenuItem
-          title={t('reportPositions')}
-          link={buildLink('/reports/route')}
-          icon={<TimelineIcon />}
-          selected={location.pathname === '/reports/route'}
-        />
       </List>
       <Divider />
       <List>

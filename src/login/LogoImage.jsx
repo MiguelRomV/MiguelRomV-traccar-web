@@ -1,7 +1,8 @@
 import { useTheme, useMediaQuery } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
-import Logo from '../resources/images/logo.svg?react';
+import LogoFallback from '../resources/images/logo.svg?react';
+import LogoVigilateh from '../resources/images/logo-vigilateh.png';
 
 const useStyles = makeStyles()((theme) => ({
   image: {
@@ -29,7 +30,10 @@ const LogoImage = ({ color }) => {
     }
     return <img className={classes.image} src={logo} alt="" />;
   }
-  return <Logo className={classes.image} style={{ color }} />;
+  if (LogoVigilateh) {
+    return <img className={classes.image} src={LogoVigilateh} alt="VigilaTeh" />;
+  }
+  return <LogoFallback className={classes.image} style={{ color }} />;
 };
 
 export default LogoImage;
