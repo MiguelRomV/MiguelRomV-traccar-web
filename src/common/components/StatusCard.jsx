@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -50,6 +50,7 @@ import { useCatch, useCatchCallback } from '../../reactHelper';
 import { useAttributePreference } from '../util/preferences';
 import { speedFromKnots, speedUnitString } from '../util/converter';
 import fetchOrThrow from '../util/fetchOrThrow';
+import { isJammerActive } from '../util/jammer';
 
 const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   root: {
@@ -263,9 +264,12 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const [messages, setMessages] = useState([]);
   const [toast, setToast] = useState(null);
   const events = useSelector((state) => state.events.items);
+  const jammerEvents = useRef(new Set());
 
   const speedKmh = speedFromKnots(position?.speed || 0, 'kmh');
   const status = useMemo(() => {
+    if (isJammerActive(position))
+      return { label: t('sharedJammerDetected'), className: classes.statusOffline };
     const lastUpdate = Date.parse(device?.lastUpdate);
     const stale = device?.status !== 'online' || !lastUpdate || Date.now() - lastUpdate > 300000;
     if (stale) return { label: t('positionStateNoSignal'), className: classes.statusOffline };
@@ -278,6 +282,20 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
     }
     return { label: t('positionStateOff'), className: classes.statusStopped };
   }, [classes, device, position, speedKmh, t]);
+
+  useEffect(() => {
+    events
+      .filter(
+        (event) =>
+          event.deviceId === Number(deviceId) && isJammerActive({ attributes: event.attributes }),
+      )
+      .forEach((event) => {
+        if (!jammerEvents.current.has(event.id)) {
+          jammerEvents.current.add(event.id);
+          setToast({ severity: 'error', message: t('sharedJammerDetected') });
+        }
+      });
+  }, [deviceId, events, t]);
 
   const has = (key, property = false) =>
     property ? position?.[key] != null : position?.attributes?.[key] != null;

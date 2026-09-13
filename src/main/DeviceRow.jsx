@@ -11,6 +11,7 @@ import { useTranslation } from '../common/components/LocalizationProvider';
 import { mapIconKey, mapIcons } from '../map/core/preloadImages';
 import { useAdministrator } from '../common/util/permissions';
 import { useAttributePreference } from '../common/util/preferences';
+import { isJammerActive } from '../common/util/jammer';
 
 const categoryColors = {
   car: '#E53935',
@@ -85,6 +86,7 @@ const DeviceRow = ({ devices, index, device, style }) => {
   const moving = (position?.speed || 0) > 0;
   const category = mapIconKey(item.category);
   const color = categoryColors[category] || '#8A8F98';
+  const jammerActive = isJammerActive(position);
 
   const select = () => dispatch(devicesActions.selectId(item.id));
 
@@ -119,6 +121,13 @@ const DeviceRow = ({ devices, index, device, style }) => {
           </Typography>
         </div>
         <div className={classes.telemetry}>
+          {jammerActive && (
+            <Tooltip title={t('sharedJammerDetected')}>
+              <span role="img" aria-label={t('sharedJammerDetected')}>
+                🚫📡
+              </span>
+            </Tooltip>
+          )}
           {position?.attributes?.alarm && (
             <Tooltip title={formatAlarm(position.attributes.alarm, t)}>
               <WarningAmberOutlinedIcon className={classes.alarm} />
