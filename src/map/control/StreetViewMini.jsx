@@ -3,6 +3,7 @@ import { IconButton, Paper, Typography } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { makeStyles } from 'tss-react/mui';
+import { useTranslation } from '../../common/components/LocalizationProvider';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -35,12 +36,27 @@ const useStyles = makeStyles()((theme) => ({
     height: 200,
     border: 0,
   },
+  content: {
+    position: 'relative',
+    minHeight: 200,
+  },
+  loading: {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    zIndex: 1,
+  },
 }));
 
 const StreetViewMini = ({ position }) => {
   const { classes } = useStyles();
+  const t = useTranslation();
   const [expanded, setExpanded] = useState(true);
   const [debouncedPosition, setDebouncedPosition] = useState(position);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedPosition(position), 2000);
@@ -61,6 +77,10 @@ const StreetViewMini = ({ position }) => {
     return `https://www.google.com/maps?q=${latitude},${longitude}&t=k&z=18&output=embed`;
   }, [debouncedPosition]);
 
+  useEffect(() => {
+    setLoading(true);
+  }, [source]);
+
   if (!source) {
     return null;
   }
@@ -80,14 +100,19 @@ const StreetViewMini = ({ position }) => {
         </IconButton>
       </div>
       {expanded && (
-        <iframe
-          className={classes.frame}
-          title="Street View"
-          src={source}
-          loading="lazy"
-          allowFullScreen
-          referrerPolicy="strict-origin-when-cross-origin"
-        />
+        <div className={classes.content}>
+          {loading && <Typography className={classes.loading}>{t('streetViewLoading')}</Typography>}
+          <iframe
+            className={classes.frame}
+            title="Street View"
+            src={source}
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            onLoad={() => setLoading(false)}
+            onError={() => setLoading(false)}
+          />
+        </div>
       )}
     </Paper>
   );

@@ -419,6 +419,7 @@
   "mapGoogleSatellite": "Google Satélite",
   "mapGoogleTraffic": "Google Traffic",
   "mapGoogleTrafficUnavailable": "Requiere Google Maps JS API habilitada",
+  "streetViewLoading": "Cargando Street View...",
   "mapGoogleKey": "Google API Key",
   "mapOpenTopoMap": "OpenTopoMap",
   "mapBingKey": "Bing Maps Key",
