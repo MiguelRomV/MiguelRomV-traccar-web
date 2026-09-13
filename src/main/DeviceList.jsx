@@ -1,35 +1,58 @@
-import { useEffect, useReducer } from 'react';
-import { useDispatch } from 'react-redux';
+import { useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { IconButton, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { makeStyles } from 'tss-react/mui';
-import { List } from 'react-window';
 import { devicesActions } from '../store';
 import { useAsyncTask } from '../reactHelper';
+import { useTranslation } from '../common/components/LocalizationProvider';
+import { useDeviceReadonly } from '../common/util/permissions';
 import DeviceRow from './DeviceRow';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const useStyles = makeStyles()((theme) => ({
-  list: {
-    height: '100%',
-    direction: theme.direction,
+  root: { height: '100%', minWidth: 0, display: 'flex', flexDirection: 'column' },
+  scroll: { flex: 1, minHeight: 0, overflowY: 'auto' },
+  groupHeader: {
+    width: '100%',
+    minHeight: 38,
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(0.75, 1.25),
+    border: 0,
+    color: theme.palette.text.secondary,
+    backgroundColor: '#F5F6F8',
+    cursor: 'pointer',
+    textAlign: 'left',
   },
-  listInner: {
-    position: 'relative',
-    margin: theme.spacing(1.5, 0),
+  groupName: { flex: 1, fontSize: 12, fontWeight: 600 },
+  footer: {
+    minHeight: 52,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    borderTop: `1px solid ${theme.palette.divider}`,
+    backgroundColor: theme.palette.background.paper,
   },
+  add: { color: theme.palette.common.white, backgroundColor: theme.palette.primary.main },
+  empty: { padding: theme.spacing(4, 2), color: theme.palette.text.secondary, textAlign: 'center' },
 }));
 
 const DeviceList = ({ devices }) => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
-
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
-
-  useEffect(() => {
-    const interval = setInterval(forceUpdate, 60000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
+  const navigate = useNavigate();
+  const t = useTranslation();
+  const deviceReadonly = useDeviceReadonly();
+  const groups = useSelector((state) => state.groups.items);
+  const selectedDeviceId = useSelector((state) => state.devices.selectedId);
+  const [collapsed, setCollapsed] = useState({});
 
   useAsyncTask(
     async ({ signal }) => {
@@ -39,15 +62,73 @@ const DeviceList = ({ devices }) => {
     [dispatch],
   );
 
+  const grouped = useMemo(() => {
+    const result = new Map();
+    devices.forEach((device) => {
+      const groupId = device.groupId || 0;
+      if (!result.has(groupId)) result.set(groupId, []);
+      result.get(groupId).push(device);
+    });
+    return [...result.entries()].sort(([firstId], [secondId]) => {
+      if (firstId === 0) return -1;
+      if (secondId === 0) return 1;
+      return (groups[firstId]?.name || '').localeCompare(groups[secondId]?.name || '');
+    });
+  }, [devices, groups]);
+
   return (
-    <List
-      className={classes.list}
-      rowComponent={DeviceRow}
-      rowCount={devices.length}
-      rowHeight={72}
-      rowProps={{ devices }}
-      overscanCount={5}
-    />
+    <div className={classes.root}>
+      <div className={classes.scroll}>
+        {grouped.length ? (
+          grouped.map(([groupId, groupDevices]) => {
+            const isCollapsed = collapsed[groupId];
+            const name = groupId ? groups[groupId]?.name || t('deviceNoGroup') : t('deviceNoGroup');
+            return (
+              <section key={groupId}>
+                <button
+                  type="button"
+                  className={classes.groupHeader}
+                  onClick={() =>
+                    setCollapsed((current) => ({ ...current, [groupId]: !isCollapsed }))
+                  }
+                >
+                  {isCollapsed ? (
+                    <ChevronRightIcon fontSize="small" />
+                  ) : (
+                    <ExpandMoreIcon fontSize="small" />
+                  )}
+                  <Typography component="span" className={classes.groupName}>
+                    {name} ({groupDevices.length})
+                  </Typography>
+                </button>
+                {!isCollapsed &&
+                  groupDevices.map((device) => <DeviceRow key={device.id} device={device} />)}
+              </section>
+            );
+          })
+        ) : (
+          <div className={classes.empty}>{t('sharedNoData')}</div>
+        )}
+      </div>
+      <div className={classes.footer}>
+        <IconButton
+          className={classes.add}
+          onClick={() => navigate('/settings/device')}
+          disabled={deviceReadonly}
+        >
+          <AddIcon />
+        </IconButton>
+        <IconButton
+          onClick={() => selectedDeviceId && navigate(`/settings/device/${selectedDeviceId}/share`)}
+          disabled={!selectedDeviceId}
+        >
+          <ShareOutlinedIcon />
+        </IconButton>
+        <IconButton onClick={() => navigate('/settings/preferences')}>
+          <SettingsOutlinedIcon />
+        </IconButton>
+      </div>
+    </div>
   );
 };
 

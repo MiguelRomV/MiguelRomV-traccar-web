@@ -87,6 +87,7 @@ const MainPage = () => {
     statuses: [],
     groups: [],
     geofences: [],
+    motion: '',
   });
   const [filterSort, setFilterSort] = usePersistedState('filterSort', '');
   const [filterMap, setFilterMap] = usePersistedState('filterMap', false);

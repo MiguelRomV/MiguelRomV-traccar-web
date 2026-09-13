@@ -248,6 +248,7 @@
     "deviceCommandSender": "Canal de comandos",
     "deviceFollow": "Seguir",
     "deviceTotalDistance": "Distancia total",
+    "deviceNoGroup": "Sin grupo",
     "deviceStatus": "Estado",
     "deviceStatusOnline": "En línea",
     "deviceStatusOffline": "Fuera de línea",

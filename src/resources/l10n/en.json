@@ -248,6 +248,7 @@
     "deviceCommandSender": "Command Channel",
     "deviceFollow": "Follow",
     "deviceTotalDistance": "Total Distance",
+    "deviceNoGroup": "No group",
     "deviceStatus": "Status",
     "deviceStatusOnline": "Online",
     "deviceStatusOffline": "Offline",

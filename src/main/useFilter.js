@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
+import { speedFromKnots } from '../common/util/converter';
 
 export default (
   keyword,
@@ -27,6 +28,22 @@ export default (
 
     const filtered = Object.values(devices)
       .filter((device) => !filter.statuses.length || filter.statuses.includes(device.status))
+      .filter((device) => {
+        if (!filter.motion) {
+          return true;
+        }
+        const position = positions[device.id];
+        const updated = Date.parse(device.lastUpdate);
+        let motion;
+        if (device.status !== 'online' || !updated || Date.now() - updated > 300000) {
+          motion = 'noSignal';
+        } else if (speedFromKnots(position?.speed || 0, 'kmh') > 5) {
+          motion = 'moving';
+        } else {
+          motion = position?.attributes?.ignition ? 'idle' : 'stopped';
+        }
+        return motion === filter.motion;
+      })
       .filter(
         (device) =>
           !filter.groups.length || deviceGroups(device).some((id) => filter.groups.includes(id)),
