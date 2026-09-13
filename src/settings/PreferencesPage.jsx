@@ -127,6 +127,8 @@ const PreferencesPage = () => {
                         'locationIqStreets',
                         'locationIqDark',
                         'openFreeMap',
+                        'esriSatellite',
+                        'esriStreets',
                       ]
                     }
                     onChange={(e, child) => {
