@@ -77,6 +77,30 @@ export default () => {
         available: true,
       },
       {
+        id: 'esriSatellite',
+        title: t('mapEsriSatellite'),
+        style: styleCustom({
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          ],
+          maxZoom: 19,
+          attribution: '© Esri',
+        }),
+        available: true,
+      },
+      {
+        id: 'esriStreets',
+        title: t('mapEsriStreets'),
+        style: styleCustom({
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+          ],
+          maxZoom: 19,
+          attribution: '© Esri',
+        }),
+        available: true,
+      },
+      {
         id: 'openTopoMap',
         title: t('mapOpenTopoMap'),
         style: styleCustom({

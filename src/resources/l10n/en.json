@@ -394,6 +394,8 @@
     "mapCustomLabel": "Custom Map",
     "mapCarto": "Carto Basemaps",
     "mapOsm": "OpenStreetMap",
+    "mapEsriSatellite": "Esri Satellite",
+    "mapEsriStreets": "Esri Streets",
     "mapGoogleRoad": "Google Road",
     "mapGoogleHybrid": "Google Hybrid",
     "mapGoogleSatellite": "Google Satellite",
