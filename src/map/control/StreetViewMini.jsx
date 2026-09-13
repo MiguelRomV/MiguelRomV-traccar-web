@@ -8,7 +8,7 @@ const useStyles = makeStyles()((theme) => ({
   root: {
     position: 'fixed',
     right: theme.spacing(2),
-    bottom: theme.spacing(2),
+    bottom: 322,
     zIndex: 3,
     width: 280,
     overflow: 'hidden',
