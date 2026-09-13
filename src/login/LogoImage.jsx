@@ -7,11 +7,15 @@ import LogoVigilateh from '../resources/images/logo-vigilateh.png';
 const useStyles = makeStyles()((theme) => ({
   image: {
     alignSelf: 'center',
-    maxWidth: '240px',
-    maxHeight: '120px',
+    maxWidth: '200px',
+    maxHeight: '260px',
     width: 'auto',
     height: 'auto',
     margin: theme.spacing(2),
+    [theme.breakpoints.down('lg')]: {
+      maxWidth: '160px',
+      maxHeight: '200px',
+    },
   },
 }));
 
