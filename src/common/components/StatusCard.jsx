@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,6 +12,8 @@ import {
   Tabs,
   Tooltip,
   Typography,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close';
@@ -160,6 +162,25 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     justifyContent: 'center',
     color: theme.palette.text.secondary,
   },
+  messages: {
+    gridColumn: '1 / -1',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.75),
+  },
+  message: {
+    display: 'flex',
+    gap: theme.spacing(1),
+    alignItems: 'center',
+    padding: theme.spacing(1),
+    backgroundColor: '#F5F6F8',
+    borderRadius: 6,
+  },
+  messageTime: { minWidth: 135, color: '#8A8F98', fontSize: 11 },
+  messageDetail: { flex: 1, fontSize: 13 },
+  messageStatus: { fontSize: 12, fontWeight: 600 },
+  messageExecuted: { color: '#10B981' },
+  messageFailed: { color: theme.palette.error.main },
 }));
 
 const Metric = ({ icon: Icon, label, children, className }) => {
@@ -238,6 +259,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const [removing, setRemoving] = useState(false);
   const [savedId, setSavedId] = useState(0);
   const [command, setCommand] = useState({});
+  const [commandState, setCommandState] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [toast, setToast] = useState(null);
+  const events = useSelector((state) => state.events.items);
 
   const speedKmh = speedFromKnots(position?.speed || 0, 'kmh');
   const status = useMemo(() => {
@@ -334,20 +359,114 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
     navigate(`/settings/geofence/${item.id}`);
   }, [navigate, position, t]);
 
+  const commandLabel = useCallback(
+    (payload) => {
+      if (payload.type === 'engineStop') return t('commandEngineStop');
+      if (payload.type === 'engineResume') return t('commandEngineResume');
+      return payload.description || payload.type || t('commandTitle');
+    },
+    [t],
+  );
+
+  const updateMessage = useCallback((id, updates) => {
+    setMessages((current) =>
+      current.map((message) => (message.id === id ? { ...message, ...updates } : message)),
+    );
+  }, []);
+
+  const sendCommand = useCallback(
+    async (payload, id, retries = 0) => {
+      await fetchOrThrow('/api/commands/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, deviceId: Number(deviceId) }),
+      });
+      setCommandState((current) =>
+        current?.id === id ? { ...current, retries, status: 'sent' } : current,
+      );
+      updateMessage(id, { retries, status: 'sent' });
+    },
+    [deviceId, updateMessage],
+  );
+
+  const completeCommand = useCallback(
+    (id, status) => {
+      setCommandState((current) => (current?.id === id ? { ...current, status } : current));
+      updateMessage(id, { status });
+      setToast({
+        severity: status === 'executed' ? 'success' : 'error',
+        message: t(status === 'executed' ? 'commandExecuted' : 'commandFailed'),
+      });
+    },
+    [t, updateMessage],
+  );
+
   const handleSend = useCatch(async () => {
     let payload = command;
     if (savedId) {
       const response = await fetchOrThrow(`/api/commands/${savedId}`);
       payload = await response.json();
     }
-    await fetchOrThrow('/api/commands/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, deviceId: Number(deviceId) }),
+    const id = `${Date.now()}-${deviceId}`;
+    const sentAt = Date.now();
+    const expectedIgnition =
+      payload.type === 'engineStop' ? false : payload.type === 'engineResume' ? true : null;
+    setCommandState({
+      id,
+      payload,
+      sentAt,
+      retries: 0,
+      status: 'sending',
+      expectedIgnition,
+      initialIgnition: position?.attributes?.ignition,
     });
+    setMessages((current) =>
+      [
+        { id, label: commandLabel(payload), timestamp: sentAt, status: 'sending', retries: 0 },
+        ...current,
+      ].slice(0, 20),
+    );
+    setToast({ severity: 'info', message: t('commandSending') });
+    try {
+      await sendCommand(payload, id);
+      setToast({ severity: 'success', message: t('commandSent') });
+    } catch (error) {
+      completeCommand(id, 'failed');
+      throw error;
+    }
     setSavedId(0);
     setCommand({});
   });
+
+  useEffect(() => {
+    if (!commandState || !['sending', 'sent'].includes(commandState.status)) return undefined;
+    const eventAcknowledged = events.some(
+      (event) =>
+        event.deviceId === Number(deviceId) &&
+        event.type === 'commandResult' &&
+        Date.parse(event.eventTime) >= commandState.sentAt,
+    );
+    const attributeAcknowledged =
+      commandState.expectedIgnition != null &&
+      commandState.initialIgnition !== commandState.expectedIgnition &&
+      position?.attributes?.ignition === commandState.expectedIgnition;
+    if (eventAcknowledged || attributeAcknowledged) {
+      completeCommand(commandState.id, 'executed');
+      return undefined;
+    }
+    const timeout = setTimeout(async () => {
+      if (commandState.retries >= 5) {
+        completeCommand(commandState.id, 'failed');
+        return;
+      }
+      try {
+        await sendCommand(commandState.payload, commandState.id, commandState.retries + 1);
+      } catch {
+        if (commandState.retries >= 4) completeCommand(commandState.id, 'failed');
+      }
+    }, 15000);
+    return () => clearTimeout(timeout);
+  }, [commandState, completeCommand, deviceId, events, position, sendCommand]);
 
   if (!device) return null;
 
@@ -445,7 +564,32 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                   </>
                 )}
                 {tab === 1 && <div className={classes.empty}>{t('sharedNoData')}</div>}
-                {tab === 2 && <div className={classes.empty}>{t('sharedComingSoon')}</div>}
+                {tab === 2 && (
+                  <div className={messages.length ? classes.messages : classes.empty}>
+                    {messages.length
+                      ? messages.map((message) => (
+                          <div className={classes.message} key={message.id}>
+                            <span className={classes.messageTime}>
+                              {new Date(message.timestamp).toLocaleString()}
+                            </span>
+                            <span className={classes.messageDetail}>
+                              {message.label}
+                              {message.retries
+                                ? ` · ${t('commandRetry')} ${message.retries}/5`
+                                : ''}
+                            </span>
+                            <span
+                              className={`${classes.messageStatus} ${message.status === 'executed' ? classes.messageExecuted : message.status === 'failed' ? classes.messageFailed : ''}`}
+                            >
+                              {t(
+                                `commandStatus${message.status.charAt(0).toUpperCase()}${message.status.slice(1)}`,
+                              )}
+                            </span>
+                          </div>
+                        ))
+                      : t('sharedNoData')}
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -494,6 +638,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
         </Menu>
       )}
       <RemoveDialog open={removing} endpoint="devices" itemId={deviceId} onResult={handleRemove} />
+      <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)}>
+        <Alert severity={toast?.severity || 'info'} onClose={() => setToast(null)}>
+          {toast?.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
