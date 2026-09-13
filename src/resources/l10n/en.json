@@ -83,6 +83,8 @@
   "sharedPreferences": "Preferences",
   "sharedPrint": "Print",
   "sharedJammerDetected": "Jamming detected",
+  "sharedTraffic": "Traffic",
+  "mapTomTomTrafficUnavailable": "Missing VITE_TOMTOM_API_KEY",
   "mapGeofenceDetails": "Save geofence",
   "mapGeofenceColor": "Color",
   "mapGeofenceNoGroup": "No group",
