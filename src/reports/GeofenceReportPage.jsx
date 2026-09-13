@@ -16,6 +16,7 @@ import TableShimmer from '../common/components/TableShimmer';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import SelectField from '../common/components/SelectField';
 import exportExcel from '../common/util/exportExcel';
+import exportPDF from '../common/util/exportPDF';
 import { deviceEquality } from '../common/util/deviceEquality';
 
 const columnsArray = [
@@ -64,7 +65,7 @@ const GeofenceReportPage = () => {
     [geofenceIds],
   );
 
-  const onExport = useCatch(async () => {
+  const onExport = useCatch(async ({ format }) => {
     const sheets = new Map();
     items.forEach((item) => {
       const deviceName = devices[item.deviceId].name;
@@ -78,7 +79,11 @@ const GeofenceReportPage = () => {
       });
       sheets.get(deviceName).push(row);
     });
-    await exportExcel(t('sharedGeofences'), 'geofences.xlsx', sheets, theme);
+    if (format === 'pdf') {
+      await exportPDF(t('sharedGeofences'), 'geofences.pdf', sheets);
+    } else {
+      await exportExcel(t('sharedGeofences'), 'geofences.xlsx', sheets, theme);
+    }
   });
 
   const formatValue = (item, key) => {
@@ -103,7 +108,7 @@ const GeofenceReportPage = () => {
           onExport={onExport}
           deviceType="multiple"
           loading={loading}
-          formats={['xlsx']}
+          formats={['xlsx', 'pdf']}
         >
           <div className={classes.filterItem}>
             <SelectField

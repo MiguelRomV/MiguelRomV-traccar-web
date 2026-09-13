@@ -33,6 +33,7 @@ import TableShimmer from '../common/components/TableShimmer';
 import scheduleReport from './common/scheduleReport';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import exportExcel from '../common/util/exportExcel';
+import exportPDF from '../common/util/exportPDF';
 import { deviceEquality } from '../common/util/deviceEquality';
 
 const columnsArray = [
@@ -90,7 +91,7 @@ const SummaryReportPage = () => {
     [daily],
   );
 
-  const onExport = useCatch(async () => {
+  const onExport = useCatch(async ({ format }) => {
     const rows = [];
     const deviceHeader = t('sharedDevice');
     items.forEach((item) => {
@@ -107,7 +108,11 @@ const SummaryReportPage = () => {
     const titleKey = daily ? 'reportDaily' : 'reportSummary';
     const title = t(titleKey);
     const sheets = new Map([[title, rows]]);
-    await exportExcel(title, 'summary.xlsx', sheets, theme);
+    if (format === 'pdf') {
+      await exportPDF(title, 'summary.pdf', sheets);
+    } else {
+      await exportExcel(title, 'summary.xlsx', sheets, theme);
+    }
   });
 
   const onSchedule = useCatch(async (deviceIds, groupIds, report) => {
@@ -151,7 +156,7 @@ const SummaryReportPage = () => {
           onSchedule={onSchedule}
           deviceType="multiple"
           loading={loading}
-          formats={['xlsx']}
+          formats={['xlsx', 'pdf']}
         >
           <div className={classes.filterItem}>
             <FormControl fullWidth>

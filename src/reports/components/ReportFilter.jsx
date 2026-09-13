@@ -147,6 +147,7 @@ const ReportFilter = ({ children, onShow, onExport, onSchedule, deviceType, load
   const onSelected = (type) => {
     switch (type) {
       case 'xlsx':
+      case 'pdf':
       case 'csv':
       case 'gpx':
       case 'kml':

@@ -22,6 +22,8 @@
     "file-saver": "^2.0.5",
     "gcoord": "^1.0.7",
     "hls.js": "^1.7.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "maplibre-gl": "^6.5.0",
     "maplibre-google-maps": "^1.1.0",
     "pmtiles": "^4.5.0",

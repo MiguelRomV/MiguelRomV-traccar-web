@@ -33,6 +33,7 @@ import scheduleReport from './common/scheduleReport';
 import MapScale from '../map/MapScale';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 import exportExcel from '../common/util/exportExcel';
+import exportPDF from '../common/util/exportPDF';
 import { deviceEquality } from '../common/util/deviceEquality';
 
 const columnsArray = [
@@ -83,7 +84,7 @@ const StopReportPage = () => {
     }
   }, []);
 
-  const onExport = useCatch(async () => {
+  const onExport = useCatch(async ({ format }) => {
     const sheets = new Map();
     items.forEach((item) => {
       const deviceName = devices[item.deviceId].name;
@@ -101,7 +102,11 @@ const StopReportPage = () => {
       });
       sheets.get(deviceName).push(row);
     });
-    await exportExcel(t('reportStops'), 'stops.xlsx', sheets, theme);
+    if (format === 'pdf') {
+      await exportPDF(t('reportStops'), 'stops.pdf', sheets);
+    } else {
+      await exportExcel(t('reportStops'), 'stops.xlsx', sheets, theme);
+    }
   });
 
   const onSchedule = useCatch(async (deviceIds, groupIds, report) => {
@@ -170,7 +175,7 @@ const StopReportPage = () => {
               onSchedule={onSchedule}
               deviceType="multiple"
               loading={loading}
-              formats={['xlsx']}
+              formats={['xlsx', 'pdf']}
             >
               <ColumnSelect columns={columns} setColumns={setColumns} columnsArray={columnsArray} />
             </ReportFilter>
