@@ -63,7 +63,7 @@ const MapActionToolbar = ({
     },
     {
       title: t(
-        trafficAvailable ? "mapGoogleTraffic" : "mapGoogleTrafficUnavailable",
+        trafficAvailable ? "sharedTraffic" : "mapTomTomTrafficUnavailable",
       ),
       Icon: TrafficOutlinedIcon,
       action: () => setTrafficVisible((value) => !value),

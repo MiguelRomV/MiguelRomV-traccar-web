@@ -41,9 +41,9 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const [geofenceActive, setGeofenceActive] = useState(false);
   const [trafficVisible, setTrafficVisible] = useState(false);
   const trafficAvailable = useMapOverlays().some(
-    (overlay) => overlay.id === "googleTraffic" && overlay.available,
+    (overlay) => overlay.id === "tomTomFlow" && overlay.available,
   );
-  const forcedOverlayIds = trafficVisible ? ["googleTraffic"] : [];
+  const forcedOverlayIds = trafficVisible ? ["tomTomFlow"] : [];
 
   const onMarkerClick = useCallback(
     (_, deviceId) => {
@@ -55,7 +55,10 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   return (
     <>
       <MapView>
-        <MapOverlay forcedIds={forcedOverlayIds} />
+        <MapOverlay
+          forcedIds={forcedOverlayIds}
+          onOverlayAuthError={() => setTrafficVisible(false)}
+        />
         <MapGeofence />
         <GeofenceDrawer
           active={geofenceActive}

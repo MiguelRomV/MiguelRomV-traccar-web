@@ -31,7 +31,8 @@ export default () => {
     useAttributePreference("googleKey") ||
     import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const openWeatherKey = useAttributePreference("openWeatherKey");
-  const tomTomKey = useAttributePreference("tomTomKey");
+  const tomTomKey =
+    useAttributePreference("tomTomKey") || import.meta.env.VITE_TOMTOM_API_KEY;
   const hereKey = useAttributePreference("hereKey");
   const customMapOverlay = useSelector(
     (state) => state.session.server.overlayUrl,
@@ -121,7 +122,7 @@ export default () => {
         title: t("mapTomTomFlow"),
         source: sourceCustom(
           [
-            `https://api.tomtom.com/traffic/map/4/tile/flow/absolute/{z}/{x}/{y}.png?key=${tomTomKey}`,
+            `https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png?key=${tomTomKey}`,
           ],
           22,
         ),
