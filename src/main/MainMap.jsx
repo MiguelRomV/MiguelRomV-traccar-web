@@ -51,6 +51,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
           onMarkerClick={onMarkerClick}
           selectedPosition={selectedPosition}
           showStatus
+          titleField="speed"
           disabled={rulerActive}
         />
         <MapDefaultCamera filteredPositions={filteredPositions} />

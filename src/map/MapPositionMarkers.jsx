@@ -2,10 +2,11 @@ import { useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { map } from './core/MapView';
 import MapMarkers from './MapMarkers';
-import { formatTime, getStatusColor } from '../common/util/formatter';
+import { formatSpeed, formatTime, getStatusColor } from '../common/util/formatter';
 import { mapIconKey } from './core/preloadImages';
 import { useAttributePreference } from '../common/util/preferences';
 import { fromMapCoordinates } from './core/mapUtil';
+import { useTranslation } from '../common/components/LocalizationProvider';
 
 const MapPositionMarkers = ({
   positions,
@@ -16,11 +17,13 @@ const MapPositionMarkers = ({
   titleField,
   disabled,
 }) => {
+  const t = useTranslation();
   const devices = useSelector((state) => state.devices.items);
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
 
   const mapCluster = useAttributePreference('mapCluster', true);
   const directionType = useAttributePreference('mapDirection', 'selected');
+  const speedUnit = useAttributePreference('speedUnit', 'kmh');
 
   const onMapClickCallback = useCallback(
     (event) => {
@@ -54,7 +57,11 @@ const MapPositionMarkers = ({
     const color = showStatus
       ? position.attributes.color || getStatusColor(device.status)
       : 'neutral';
-    const titles = { name: device.name, fixTime: formatTime(position.fixTime, 'seconds') };
+    const titles = {
+      name: device.name,
+      fixTime: formatTime(position.fixTime, 'seconds'),
+      speed: position.speed > 0 ? formatSpeed(position.speed, speedUnit, t) : device.name,
+    };
     return {
       id: position.id,
       deviceId: position.deviceId,

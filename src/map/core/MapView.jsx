@@ -101,7 +101,7 @@ const MapView = ({ children }) => {
     const attribution = new maplibregl.AttributionControl({ compact: true });
     const navigation = new maplibregl.NavigationControl();
     map.addControl(attribution, theme.direction === 'rtl' ? 'bottom-left' : 'bottom-right');
-    map.addControl(navigation, theme.direction === 'rtl' ? 'top-left' : 'top-right');
+    map.addControl(navigation, theme.direction === 'rtl' ? 'top-right' : 'top-left');
     return () => {
       map.removeControl(navigation);
       map.removeControl(attribution);

@@ -16,7 +16,7 @@ const MapLiveRoutes = ({ deviceIds }) => {
 
   const history = useSelector((state) => state.session.history);
 
-  const mapLineWidth = useAttributePreference('mapLineWidth', 2);
+  const mapLineWidth = useAttributePreference('mapLineWidth', 4);
   const mapLineOpacity = useAttributePreference('mapLineOpacity', 1);
 
   const visibleIds = deviceIds
