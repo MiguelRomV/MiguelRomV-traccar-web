@@ -15,6 +15,20 @@ export default defineConfig(() => ({
   build: {
     outDir: 'build',
     chunkSizeWarningLimit: 1100,
+    rolldownOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('recharts')) return 'vendor-charts';
+          if (id.includes('jspdf')) return 'vendor-pdf';
+          if (id.includes('maplibre-gl') || id.includes('mapbox-gl')) return 'vendor-maps';
+          if (id.includes('@mui') || id.includes('@emotion') || id.includes('tss-react'))
+            return 'vendor-mui';
+          if (id.includes('react') || id.includes('redux')) return 'vendor-react';
+          return undefined;
+        },
+      },
+    },
   },
   plugins: [
     svgr(),

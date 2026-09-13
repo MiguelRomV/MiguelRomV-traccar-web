@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { lazy, Suspense, useCallback, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,9 +18,10 @@ import MapGeocoder from '../map/control/MapGeocoder';
 import MapScale from '../map/MapScale';
 import MapRuler from '../map/control/MapRuler';
 import MapNotification from '../map/control/MapNotification';
-import StreetViewMini from '../map/control/StreetViewMini';
 import MapActionToolbar from '../map/control/MapActionToolbar';
 import useFeatures from '../common/util/useFeatures';
+
+const StreetViewMini = lazy(() => import('../map/control/StreetViewMini'));
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const theme = useTheme();
@@ -73,7 +74,11 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
       <MapScale />
       <MapCurrentLocation />
       <MapGeocoder />
-      <StreetViewMini position={selectedPosition} />
+      {selectedPosition && (
+        <Suspense fallback={null}>
+          <StreetViewMini position={selectedPosition} />
+        </Suspense>
+      )}
       <MapActionToolbar
         routesVisible={routesVisible}
         setRoutesVisible={setRoutesVisible}
