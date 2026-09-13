@@ -1,14 +1,18 @@
-import { useEffect } from 'react';
-import * as maplibregl from 'maplibre-gl';
-import { map } from './core/MapView';
-import { toMapCoordinates } from './core/mapUtil';
+import { useEffect } from "react";
+import * as maplibregl from "maplibre-gl";
+import { map } from "./core/MapView";
+import { toMapCoordinates } from "./core/mapUtil";
 
 const MapCamera = ({ latitude, longitude, positions, coordinates }) => {
   useEffect(() => {
     if (coordinates || positions) {
       const coords = coordinates
-        ? coordinates.map(([longitude, latitude]) => toMapCoordinates(longitude, latitude))
-        : positions.map((item) => toMapCoordinates(item.longitude, item.latitude));
+        ? coordinates.map(([longitude, latitude]) =>
+            toMapCoordinates(longitude, latitude),
+          )
+        : positions.map((item) =>
+            toMapCoordinates(item.longitude, item.latitude),
+          );
       if (coords.length) {
         const bounds = coords.reduce(
           (bounds, item) => bounds.extend(item),

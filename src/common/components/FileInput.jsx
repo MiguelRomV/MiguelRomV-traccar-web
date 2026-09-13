@@ -1,8 +1,8 @@
-import { useRef } from 'react';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import CloseIcon from '@mui/icons-material/Close';
+import { useRef } from "react";
+import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import CloseIcon from "@mui/icons-material/Close";
 
 const FileInput = ({ placeholder, value, onChange, slotProps }) => {
   const inputRef = useRef(null);
@@ -11,7 +11,7 @@ const FileInput = ({ placeholder, value, onChange, slotProps }) => {
 
   const handleChange = (event) => {
     onChange?.(event.target.files?.[0] || null);
-    event.target.value = '';
+    event.target.value = "";
   };
 
   const handleClear = (event) => {
@@ -24,18 +24,18 @@ const FileInput = ({ placeholder, value, onChange, slotProps }) => {
       <input
         ref={inputRef}
         type="file"
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
         onChange={handleChange}
         {...slotProps?.htmlInput}
       />
       <TextField
-        value={value?.name ?? ''}
+        value={value?.name ?? ""}
         placeholder={placeholder}
         onClick={openPicker}
         slotProps={{
           input: {
             readOnly: true,
-            sx: { cursor: 'pointer' },
+            sx: { cursor: "pointer" },
             endAdornment: value && (
               <InputAdornment position="end">
                 <IconButton size="small" edge="end" onClick={handleClear}>
@@ -44,7 +44,7 @@ const FileInput = ({ placeholder, value, onChange, slotProps }) => {
               </InputAdornment>
             ),
           },
-          htmlInput: { sx: { cursor: 'pointer' } },
+          htmlInput: { sx: { cursor: "pointer" } },
         }}
       />
     </>

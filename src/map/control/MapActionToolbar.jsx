@@ -1,29 +1,34 @@
-import { IconButton, Paper, Tooltip } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { useNavigate } from 'react-router-dom';
-import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
-import FullscreenOutlinedIcon from '@mui/icons-material/FullscreenOutlined';
-import PolylineOutlinedIcon from '@mui/icons-material/PolylineOutlined';
-import RouteOutlinedIcon from '@mui/icons-material/RouteOutlined';
-import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
-import TrafficOutlinedIcon from '@mui/icons-material/TrafficOutlined';
-import { useTranslation } from '../../common/components/LocalizationProvider';
+import { IconButton, Paper, Tooltip } from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import { useNavigate } from "react-router-dom";
+import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
+import FullscreenOutlinedIcon from "@mui/icons-material/FullscreenOutlined";
+import PolylineOutlinedIcon from "@mui/icons-material/PolylineOutlined";
+import RouteOutlinedIcon from "@mui/icons-material/RouteOutlined";
+import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
+import TrafficOutlinedIcon from "@mui/icons-material/TrafficOutlined";
+import { useTranslation } from "../../common/components/LocalizationProvider";
 
 const useStyles = makeStyles()((theme) => ({
   root: {
-    position: 'fixed',
+    position: "fixed",
     top: theme.spacing(11),
     right: theme.spacing(1.25),
     zIndex: 2,
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
   },
-  button: { borderRadius: 0, color: '#4B5563' },
-  active: { color: theme.palette.primary.main, backgroundColor: '#E6F0FA' },
+  button: { borderRadius: 0, color: "#4B5563" },
+  active: { color: theme.palette.primary.main, backgroundColor: "#E6F0FA" },
 }));
 
-const MapActionToolbar = ({ routesVisible, setRoutesVisible, labelsVisible, setLabelsVisible }) => {
+const MapActionToolbar = ({
+  routesVisible,
+  setRoutesVisible,
+  labelsVisible,
+  setLabelsVisible,
+}) => {
   const { classes } = useStyles();
   const t = useTranslation();
   const navigate = useNavigate();
@@ -36,26 +41,34 @@ const MapActionToolbar = ({ routesVisible, setRoutesVisible, labelsVisible, setL
   };
 
   const items = [
-    { title: t('sharedPrint'), Icon: PrintOutlinedIcon, action: () => window.print() },
-    { title: t('mapFullscreen'), Icon: FullscreenOutlinedIcon, action: fullscreen },
     {
-      title: t('sharedGeofence'),
-      Icon: PolylineOutlinedIcon,
-      action: () => navigate('/settings/geofence'),
+      title: t("sharedPrint"),
+      Icon: PrintOutlinedIcon,
+      action: () => window.print(),
     },
     {
-      title: t('mapGoogleTrafficUnavailable'),
+      title: t("mapFullscreen"),
+      Icon: FullscreenOutlinedIcon,
+      action: fullscreen,
+    },
+    {
+      title: t("sharedGeofence"),
+      Icon: PolylineOutlinedIcon,
+      action: () => navigate("/settings/geofence"),
+    },
+    {
+      title: t("mapGoogleTrafficUnavailable"),
       Icon: TrafficOutlinedIcon,
       disabled: true,
     },
     {
-      title: t('mapLiveRoutes'),
+      title: t("mapLiveRoutes"),
       Icon: RouteOutlinedIcon,
       action: () => setRoutesVisible((value) => !value),
       active: routesVisible,
     },
     {
-      title: t('mapDeviceLabels'),
+      title: t("mapDeviceLabels"),
       Icon: LabelOutlinedIcon,
       action: () => setLabelsVisible((value) => !value),
       active: labelsVisible,
@@ -67,7 +80,7 @@ const MapActionToolbar = ({ routesVisible, setRoutesVisible, labelsVisible, setL
       {items.map(({ title, Icon, action, active, disabled }, index) => (
         <Tooltip key={title} title={title} placement="left">
           <IconButton
-            className={`${classes.button} ${index > 2 && active ? classes.active : ''}`}
+            className={`${classes.button} ${index > 2 && active ? classes.active : ""}`}
             onClick={action}
             disabled={disabled}
           >

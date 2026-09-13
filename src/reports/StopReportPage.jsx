@@ -1,49 +1,59 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { useTheme } from '@mui/material/styles';
-import { IconButton, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import GpsFixedIcon from '@mui/icons-material/GpsFixed';
-import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useTheme } from "@mui/material/styles";
+import {
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import GpsFixedIcon from "@mui/icons-material/GpsFixed";
+import LocationSearchingIcon from "@mui/icons-material/LocationSearching";
 import {
   formatAddress,
   formatDistance,
   formatVolume,
   formatTime,
   formatNumericHours,
-} from '../common/util/formatter';
-import ReportFilter from './components/ReportFilter';
-import { useAttributePreference, usePreference } from '../common/util/preferences';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import PageLayout from '../common/components/PageLayout';
-import ReportsMenu from './components/ReportsMenu';
-import ColumnSelect from './components/ColumnSelect';
-import ResizeHandle from './components/ResizeHandle';
-import usePersistedState from '../common/util/usePersistedState';
-import { useCatch, useCatchCallback } from '../reactHelper';
-import useReportStyles from './common/useReportStyles';
-import MapMarkers from '../map/MapMarkers';
-import MapView from '../map/core/MapView';
-import MapCamera from '../map/MapCamera';
-import AddressValue from '../common/components/AddressValue';
-import TableShimmer from '../common/components/TableShimmer';
-import MapGeofence from '../map/MapGeofence';
-import { mapIconKey } from '../map/core/preloadImages';
-import scheduleReport from './common/scheduleReport';
-import MapScale from '../map/MapScale';
-import fetchOrThrow from '../common/util/fetchOrThrow';
-import exportExcel from '../common/util/exportExcel';
-import exportPDF from '../common/util/exportPDF';
-import { deviceEquality } from '../common/util/deviceEquality';
+} from "../common/util/formatter";
+import ReportFilter from "./components/ReportFilter";
+import {
+  useAttributePreference,
+  usePreference,
+} from "../common/util/preferences";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import PageLayout from "../common/components/PageLayout";
+import ReportsMenu from "./components/ReportsMenu";
+import ColumnSelect from "./components/ColumnSelect";
+import ResizeHandle from "./components/ResizeHandle";
+import usePersistedState from "../common/util/usePersistedState";
+import { useCatch, useCatchCallback } from "../reactHelper";
+import useReportStyles from "./common/useReportStyles";
+import MapMarkers from "../map/MapMarkers";
+import MapView from "../map/core/MapView";
+import MapCamera from "../map/MapCamera";
+import AddressValue from "../common/components/AddressValue";
+import TableShimmer from "../common/components/TableShimmer";
+import MapGeofence from "../map/MapGeofence";
+import { mapIconKey } from "../map/core/preloadImages";
+import scheduleReport from "./common/scheduleReport";
+import MapScale from "../map/MapScale";
+import fetchOrThrow from "../common/util/fetchOrThrow";
+import exportExcel from "../common/util/exportExcel";
+import exportPDF from "../common/util/exportPDF";
+import { deviceEquality } from "../common/util/deviceEquality";
 
 const columnsArray = [
-  ['startTime', 'reportStartTime'],
-  ['startOdometer', 'positionOdometer'],
-  ['address', 'positionAddress'],
-  ['endTime', 'reportEndTime'],
-  ['duration', 'reportDuration'],
-  ['engineHours', 'reportEngineHours'],
-  ['spentFuel', 'reportSpentFuel'],
+  ["startTime", "reportStartTime"],
+  ["startOdometer", "positionOdometer"],
+  ["address", "positionAddress"],
+  ["endTime", "reportEndTime"],
+  ["duration", "reportDuration"],
+  ["engineHours", "reportEngineHours"],
+  ["spentFuel", "reportSpentFuel"],
 ];
 const columnsMap = new Map(columnsArray);
 
@@ -53,17 +63,20 @@ const StopReportPage = () => {
   const t = useTranslation();
   const theme = useTheme();
 
-  const devices = useSelector((state) => state.devices.items, deviceEquality(['id', 'name']));
+  const devices = useSelector(
+    (state) => state.devices.items,
+    deviceEquality(["id", "name"]),
+  );
 
-  const distanceUnit = useAttributePreference('distanceUnit');
-  const volumeUnit = useAttributePreference('volumeUnit');
-  const coordinateFormat = usePreference('coordinateFormat');
+  const distanceUnit = useAttributePreference("distanceUnit");
+  const volumeUnit = useAttributePreference("volumeUnit");
+  const coordinateFormat = usePreference("coordinateFormat");
 
-  const [columns, setColumns] = usePersistedState('stopColumns', [
-    'startTime',
-    'endTime',
-    'startOdometer',
-    'address',
+  const [columns, setColumns] = usePersistedState("stopColumns", [
+    "startTime",
+    "endTime",
+    "startOdometer",
+    "address",
   ]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -71,13 +84,16 @@ const StopReportPage = () => {
 
   const onShow = useCatchCallback(async ({ deviceIds, groupIds, from, to }) => {
     const query = new URLSearchParams({ from, to });
-    deviceIds.forEach((deviceId) => query.append('deviceId', deviceId));
-    groupIds.forEach((groupId) => query.append('groupId', groupId));
+    deviceIds.forEach((deviceId) => query.append("deviceId", deviceId));
+    groupIds.forEach((groupId) => query.append("groupId", groupId));
     setLoading(true);
     try {
-      const response = await fetchOrThrow(`/api/reports/stops?${query.toString()}`, {
-        headers: { Accept: 'application/json' },
-      });
+      const response = await fetchOrThrow(
+        `/api/reports/stops?${query.toString()}`,
+        {
+          headers: { Accept: "application/json" },
+        },
+      );
       setItems(await response.json());
     } finally {
       setLoading(false);
@@ -94,7 +110,7 @@ const StopReportPage = () => {
       const row = {};
       columns.forEach((key) => {
         const header = t(columnsMap.get(key));
-        if (key === 'address') {
+        if (key === "address") {
           row[header] = formatAddress(item, coordinateFormat);
         } else {
           row[header] = formatValue(item, key);
@@ -102,36 +118,36 @@ const StopReportPage = () => {
       });
       sheets.get(deviceName).push(row);
     });
-    if (format === 'pdf') {
-      await exportPDF(t('reportStops'), 'stops.pdf', sheets);
+    if (format === "pdf") {
+      await exportPDF(t("reportStops"), "stops.pdf", sheets);
     } else {
-      await exportExcel(t('reportStops'), 'stops.xlsx', sheets, theme);
+      await exportExcel(t("reportStops"), "stops.xlsx", sheets, theme);
     }
   });
 
   const onSchedule = useCatch(async (deviceIds, groupIds, report) => {
-    report.type = 'stops';
+    report.type = "stops";
     await scheduleReport(deviceIds, groupIds, report);
-    navigate('/reports/scheduled');
+    navigate("/reports/scheduled");
   });
 
   const formatValue = (item, key) => {
     const value = item[key];
     switch (key) {
-      case 'deviceId':
+      case "deviceId":
         return devices[value].name;
-      case 'startTime':
-      case 'endTime':
-        return formatTime(value, 'minutes');
-      case 'startOdometer':
+      case "startTime":
+      case "endTime":
+        return formatTime(value, "minutes");
+      case "startOdometer":
         return formatDistance(value, distanceUnit, t);
-      case 'duration':
+      case "duration":
         return formatNumericHours(value, t);
-      case 'engineHours':
+      case "engineHours":
         return value > 0 ? formatNumericHours(value, t) : null;
-      case 'spentFuel':
+      case "spentFuel":
         return value > 0 ? formatVolume(value, volumeUnit, t) : null;
-      case 'address':
+      case "address":
         return (
           <AddressValue
             latitude={item.latitude}
@@ -148,11 +164,14 @@ const StopReportPage = () => {
     latitude: selectedItem.latitude,
     longitude: selectedItem.longitude,
     image: `${mapIconKey(devices[selectedItem.deviceId]?.category)}-neutral`,
-    title: formatTime(selectedItem.startTime, 'seconds'),
+    title: formatTime(selectedItem.startTime, "seconds"),
   };
 
   return (
-    <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportStops']}>
+    <PageLayout
+      menu={<ReportsMenu />}
+      breadcrumbs={["reportTitle", "reportStops"]}
+    >
       <div className={classes.container}>
         {selectedItem && (
           <>
@@ -162,7 +181,10 @@ const StopReportPage = () => {
                 <MapMarkers markers={[selectedMarker]} showTitles />
               </MapView>
               <MapScale />
-              <MapCamera latitude={selectedItem.latitude} longitude={selectedItem.longitude} />
+              <MapCamera
+                latitude={selectedItem.latitude}
+                longitude={selectedItem.longitude}
+              />
             </div>
             <ResizeHandle />
           </>
@@ -175,16 +197,20 @@ const StopReportPage = () => {
               onSchedule={onSchedule}
               deviceType="multiple"
               loading={loading}
-              formats={['xlsx', 'pdf']}
+              formats={["xlsx", "pdf"]}
             >
-              <ColumnSelect columns={columns} setColumns={setColumns} columnsArray={columnsArray} />
+              <ColumnSelect
+                columns={columns}
+                setColumns={setColumns}
+                columnsArray={columnsArray}
+              />
             </ReportFilter>
           </div>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell className={classes.columnAction} />
-                <TableCell>{t('sharedDevice')}</TableCell>
+                <TableCell>{t("sharedDevice")}</TableCell>
                 {columns.map((key) => (
                   <TableCell key={key}>{t(columnsMap.get(key))}</TableCell>
                 ))}
@@ -196,11 +222,17 @@ const StopReportPage = () => {
                   <TableRow key={item.positionId}>
                     <TableCell className={classes.columnAction} padding="none">
                       {selectedItem === item ? (
-                        <IconButton size="small" onClick={() => setSelectedItem(null)}>
+                        <IconButton
+                          size="small"
+                          onClick={() => setSelectedItem(null)}
+                        >
                           <GpsFixedIcon fontSize="small" />
                         </IconButton>
                       ) : (
-                        <IconButton size="small" onClick={() => setSelectedItem(item)}>
+                        <IconButton
+                          size="small"
+                          onClick={() => setSelectedItem(item)}
+                        >
                           <LocationSearchingIcon fontSize="small" />
                         </IconButton>
                       )}

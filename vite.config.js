@@ -1,30 +1,36 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
-import svgr from 'vite-plugin-svgr';
-import { VitePWA } from 'vite-plugin-pwa';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import svgr from "vite-plugin-svgr";
+import { VitePWA } from "vite-plugin-pwa";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default defineConfig(() => ({
   server: {
     port: 3001,
     proxy: {
-      '/api/socket': 'ws://localhost:8082',
-      '/api': 'http://localhost:8082',
+      "/api/socket": "ws://localhost:8082",
+      "/api": "http://localhost:8082",
     },
   },
   build: {
-    outDir: 'build',
+    outDir: "build",
     chunkSizeWarningLimit: 1100,
     rolldownOptions: {
       output: {
         manualChunks(id) {
-          if (!id.includes('node_modules')) return undefined;
-          if (id.includes('recharts')) return 'vendor-charts';
-          if (id.includes('jspdf')) return 'vendor-pdf';
-          if (id.includes('maplibre-gl') || id.includes('mapbox-gl')) return 'vendor-maps';
-          if (id.includes('@mui') || id.includes('@emotion') || id.includes('tss-react'))
-            return 'vendor-mui';
-          if (id.includes('react') || id.includes('redux')) return 'vendor-react';
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("recharts")) return "vendor-charts";
+          if (id.includes("jspdf")) return "vendor-pdf";
+          if (id.includes("maplibre-gl") || id.includes("mapbox-gl"))
+            return "vendor-maps";
+          if (
+            id.includes("@mui") ||
+            id.includes("@emotion") ||
+            id.includes("tss-react")
+          )
+            return "vendor-mui";
+          if (id.includes("react") || id.includes("redux"))
+            return "vendor-react";
           return undefined;
         },
       },
@@ -34,38 +40,41 @@ export default defineConfig(() => ({
     svgr(),
     react(),
     VitePWA({
-      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
+      includeAssets: ["favicon.ico", "apple-touch-icon-180x180.png"],
       workbox: {
         navigateFallbackDenylist: [/^\/api/],
-        globPatterns: ['**/*.{js,css,html,woff,woff2,mp3}'],
+        globPatterns: ["**/*.{js,css,html,woff,woff2,mp3}"],
       },
       manifest: {
-        short_name: '${title}',
-        name: '${description}',
-        theme_color: '${colorPrimary}',
+        short_name: "${title}",
+        name: "${description}",
+        theme_color: "${colorPrimary}",
         icons: [
           {
-            src: 'pwa-64x64.png',
-            sizes: '64x64',
-            type: 'image/png',
+            src: "pwa-64x64.png",
+            sizes: "64x64",
+            type: "image/png",
           },
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
+            src: "pwa-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
           },
           {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable',
+            src: "pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable",
           },
         ],
       },
     }),
     viteStaticCopy({
       targets: [
-        { src: 'node_modules/@mapbox/mapbox-gl-rtl-text/dist/mapbox-gl-rtl-text.js', dest: '' },
+        {
+          src: "node_modules/@mapbox/mapbox-gl-rtl-text/dist/mapbox-gl-rtl-text.js",
+          dest: "",
+        },
       ],
     }),
   ],

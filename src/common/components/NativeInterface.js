@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
-import dayjs from 'dayjs';
-import { useDispatch, useSelector } from 'react-redux';
-import { useAsyncTask } from '../../reactHelper';
-import { sessionActions } from '../../store';
-import fetchOrThrow from '../util/fetchOrThrow';
+import { useEffect, useState } from "react";
+import dayjs from "dayjs";
+import { useDispatch, useSelector } from "react-redux";
+import { useAsyncTask } from "../../reactHelper";
+import { sessionActions } from "../../store";
+import fetchOrThrow from "../util/fetchOrThrow";
 
 export const nativeEnvironment =
-  window.appInterface || (window.webkit && window.webkit.messageHandlers.appInterface);
+  window.appInterface ||
+  (window.webkit && window.webkit.messageHandlers.appInterface);
 
 export const nativePostMessage = (message) => {
   if (window.webkit && window.webkit.messageHandlers.appInterface) {
@@ -18,18 +19,18 @@ export const nativePostMessage = (message) => {
 
 export const generateLoginToken = async () => {
   if (nativeEnvironment) {
-    let token = '';
+    let token = "";
     try {
-      const expiration = dayjs().add(6, 'months').toISOString();
-      const response = await fetch('/api/session/token', {
-        method: 'POST',
+      const expiration = dayjs().add(6, "months").toISOString();
+      const response = await fetch("/api/session/token", {
+        method: "POST",
         body: new URLSearchParams(`expiration=${expiration}`),
       });
       if (response.ok) {
         token = await response.text();
       }
     } catch {
-      token = '';
+      token = "";
     }
     nativePostMessage(`login|${token}`);
   }
@@ -65,21 +66,23 @@ const NativeInterface = () => {
   useAsyncTask(
     async ({ signal }) => {
       if (user && notificationToken) {
-        window.localStorage.setItem('notificationToken', notificationToken);
+        window.localStorage.setItem("notificationToken", notificationToken);
 
-        const tokens = user.attributes.notificationTokens?.split(',') || [];
+        const tokens = user.attributes.notificationTokens?.split(",") || [];
         if (!tokens.includes(notificationToken)) {
           const updatedUser = {
             ...user,
             attributes: {
               ...user.attributes,
-              notificationTokens: [...tokens.slice(-2), notificationToken].join(','),
+              notificationTokens: [...tokens.slice(-2), notificationToken].join(
+                ",",
+              ),
             },
           };
 
           const response = await fetchOrThrow(`/api/users/${user.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updatedUser),
             signal,
           });

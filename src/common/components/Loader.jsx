@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 const Loader = () => {
   useEffect(() => {
-    const loader = document.querySelector('.loader');
-    loader.style.display = '';
-    return () => (loader.style.display = 'none');
+    const loader = document.querySelector(".loader");
+    loader.style.display = "";
+    return () => (loader.style.display = "none");
   }, []);
   return null;
 };

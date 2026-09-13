@@ -1,5 +1,5 @@
-import React from 'react';
-import { Alert } from '@mui/material';
+import React from "react";
+import { Alert } from "@mui/material";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -18,7 +18,7 @@ class ErrorBoundary extends React.Component {
     if (error) {
       return (
         <Alert severity="error">
-          <code style={{ whiteSpace: 'pre' }}>{error.stack}</code>
+          <code style={{ whiteSpace: "pre" }}>{error.stack}</code>
         </Alert>
       );
     }

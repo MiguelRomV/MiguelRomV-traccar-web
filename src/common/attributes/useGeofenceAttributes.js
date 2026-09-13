@@ -1,41 +1,41 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 export default (t) =>
   useMemo(
     () => ({
       color: {
-        name: t('attributeColor'),
-        type: 'string',
+        name: t("attributeColor"),
+        type: "string",
       },
       mapLineWidth: {
-        name: t('attributeMapLineWidth'),
-        type: 'number',
+        name: t("attributeMapLineWidth"),
+        type: "number",
       },
       mapLineOpacity: {
-        name: t('attributeMapLineOpacity'),
-        type: 'number',
+        name: t("attributeMapLineOpacity"),
+        type: "number",
       },
       speedLimit: {
-        name: t('attributeSpeedLimit'),
-        type: 'number',
-        dataType: 'speed',
+        name: t("attributeSpeedLimit"),
+        type: "number",
+        dataType: "speed",
       },
       polylineDistance: {
-        name: t('attributePolylineDistance'),
-        type: 'number',
-        dataType: 'distance',
+        name: t("attributePolylineDistance"),
+        type: "number",
+        dataType: "distance",
       },
       hide: {
-        name: t('sharedFilterMap'),
-        type: 'boolean',
+        name: t("sharedFilterMap"),
+        type: "boolean",
       },
       floor: {
-        name: t('attributeGeofenceFloor'),
-        type: 'number',
+        name: t("attributeGeofenceFloor"),
+        type: "number",
       },
       ceiling: {
-        name: t('attributeGeofenceCeiling'),
-        type: 'number',
+        name: t("attributeGeofenceCeiling"),
+        type: "number",
       },
     }),
     [t],

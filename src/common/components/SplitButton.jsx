@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
-import { Button, ButtonGroup, Menu, MenuItem, Typography } from '@mui/material';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { useRef, useState } from "react";
+import { Button, ButtonGroup, Menu, MenuItem, Typography } from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 const SplitButton = ({
   fullWidth,
@@ -17,13 +17,22 @@ const SplitButton = ({
 
   return (
     <>
-      <ButtonGroup fullWidth={fullWidth} variant={variant} color={color} ref={anchorRef}>
+      <ButtonGroup
+        fullWidth={fullWidth}
+        variant={variant}
+        color={color}
+        ref={anchorRef}
+      >
         <Button disabled={disabled} onClick={() => onClick(selected)}>
           <Typography variant="button" noWrap>
             {options[selected]}
           </Typography>
         </Button>
-        <Button fullWidth={false} size="small" onClick={() => setMenuAnchorEl(anchorRef.current)}>
+        <Button
+          fullWidth={false}
+          size="small"
+          onClick={() => setMenuAnchorEl(anchorRef.current)}
+        >
           <ArrowDropDownIcon />
         </Button>
       </ButtonGroup>
@@ -32,8 +41,8 @@ const SplitButton = ({
         anchorEl={menuAnchorEl}
         onClose={() => setMenuAnchorEl(null)}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: "bottom",
+          horizontal: "right",
         }}
       >
         {Object.entries(options).map(([key, value]) => (

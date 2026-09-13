@@ -1,19 +1,19 @@
-import { useParams } from 'react-router-dom';
+import { useParams } from "react-router-dom";
 import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
   Typography,
   Container,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import LinkField from '../common/components/LinkField';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import SettingsMenu from './components/SettingsMenu';
-import { formatNotificationTitle } from '../common/util/formatter';
-import PageLayout from '../common/components/PageLayout';
-import useFeatures from '../common/util/useFeatures';
-import useSettingsStyles from './common/useSettingsStyles';
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import LinkField from "../common/components/LinkField";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import SettingsMenu from "./components/SettingsMenu";
+import { formatNotificationTitle } from "../common/util/formatter";
+import PageLayout from "../common/components/PageLayout";
+import useFeatures from "../common/util/useFeatures";
+import useSettingsStyles from "./common/useSettingsStyles";
 
 const GroupConnectionsPage = () => {
   const { classes } = useSettingsStyles();
@@ -26,12 +26,14 @@ const GroupConnectionsPage = () => {
   return (
     <PageLayout
       menu={<SettingsMenu />}
-      breadcrumbs={['settingsTitle', 'groupDialog', 'sharedConnections']}
+      breadcrumbs={["settingsTitle", "groupDialog", "sharedConnections"]}
     >
       <Container maxWidth="xs" className={classes.container}>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">{t('sharedConnections')}</Typography>
+            <Typography variant="subtitle1">
+              {t("sharedConnections")}
+            </Typography>
           </AccordionSummary>
           <AccordionDetails className={classes.details}>
             <LinkField
@@ -40,7 +42,7 @@ const GroupConnectionsPage = () => {
               baseId={id}
               keyBase="groupId"
               keyLink="geofenceId"
-              label={t('sharedGeofences')}
+              label={t("sharedGeofences")}
             />
             <LinkField
               endpointAll="/api/notifications"
@@ -49,7 +51,7 @@ const GroupConnectionsPage = () => {
               keyBase="groupId"
               keyLink="notificationId"
               titleGetter={(it) => formatNotificationTitle(t, it)}
-              label={t('sharedNotifications')}
+              label={t("sharedNotifications")}
             />
             {!features.disableDrivers && (
               <LinkField
@@ -59,7 +61,7 @@ const GroupConnectionsPage = () => {
                 keyBase="groupId"
                 keyLink="driverId"
                 titleGetter={(it) => `${it.name} (${it.uniqueId})`}
-                label={t('sharedDrivers')}
+                label={t("sharedDrivers")}
               />
             )}
             {!features.disableComputedAttributes && (
@@ -70,7 +72,7 @@ const GroupConnectionsPage = () => {
                 keyBase="groupId"
                 keyLink="attributeId"
                 titleGetter={(it) => it.description}
-                label={t('sharedComputedAttributes')}
+                label={t("sharedComputedAttributes")}
               />
             )}
             {!features.disableSavedCommands && (
@@ -81,7 +83,7 @@ const GroupConnectionsPage = () => {
                 keyBase="groupId"
                 keyLink="commandId"
                 titleGetter={(it) => it.description}
-                label={t('sharedSavedCommands')}
+                label={t("sharedSavedCommands")}
               />
             )}
             {!features.disableMaintenance && (
@@ -91,7 +93,7 @@ const GroupConnectionsPage = () => {
                 baseId={id}
                 keyBase="groupId"
                 keyLink="maintenanceId"
-                label={t('sharedMaintenance')}
+                label={t("sharedMaintenance")}
               />
             )}
           </AccordionDetails>

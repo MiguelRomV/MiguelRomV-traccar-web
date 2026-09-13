@@ -1,10 +1,10 @@
-import { makeStyles } from 'tss-react/mui';
-import { ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { makeStyles } from "tss-react/mui";
+import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles()(() => ({
   menuItemText: {
-    whiteSpace: 'nowrap',
+    whiteSpace: "nowrap",
   },
 }));
 

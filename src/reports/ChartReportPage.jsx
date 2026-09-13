@@ -1,6 +1,12 @@
-import dayjs from 'dayjs';
-import { useState } from 'react';
-import { FormControl, InputLabel, Select, MenuItem, useTheme } from '@mui/material';
+import dayjs from "dayjs";
+import { useState } from "react";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  useTheme,
+} from "@mui/material";
 import {
   Brush,
   CartesianGrid,
@@ -10,24 +16,24 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts';
-import ReportFilter from './components/ReportFilter';
-import { formatTime } from '../common/util/formatter';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import PageLayout from '../common/components/PageLayout';
-import ReportsMenu from './components/ReportsMenu';
-import usePositionAttributes from '../common/attributes/usePositionAttributes';
-import { useCatchCallback } from '../reactHelper';
-import { useAttributePreference } from '../common/util/preferences';
+} from "recharts";
+import ReportFilter from "./components/ReportFilter";
+import { formatTime } from "../common/util/formatter";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import PageLayout from "../common/components/PageLayout";
+import ReportsMenu from "./components/ReportsMenu";
+import usePositionAttributes from "../common/attributes/usePositionAttributes";
+import { useCatchCallback } from "../reactHelper";
+import { useAttributePreference } from "../common/util/preferences";
 import {
   altitudeFromMeters,
   distanceFromMeters,
   speedFromKnots,
   speedToKnots,
   volumeFromLiters,
-} from '../common/util/converter';
-import useReportStyles from './common/useReportStyles';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+} from "../common/util/converter";
+import useReportStyles from "./common/useReportStyles";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const ChartReportPage = () => {
   const { classes } = useReportStyles();
@@ -36,15 +42,15 @@ const ChartReportPage = () => {
 
   const positionAttributes = usePositionAttributes(t);
 
-  const distanceUnit = useAttributePreference('distanceUnit');
-  const altitudeUnit = useAttributePreference('altitudeUnit');
-  const speedUnit = useAttributePreference('speedUnit');
-  const volumeUnit = useAttributePreference('volumeUnit');
+  const distanceUnit = useAttributePreference("distanceUnit");
+  const altitudeUnit = useAttributePreference("altitudeUnit");
+  const speedUnit = useAttributePreference("speedUnit");
+  const volumeUnit = useAttributePreference("volumeUnit");
 
   const [items, setItems] = useState([]);
-  const [types, setTypes] = useState(['speed']);
-  const [selectedTypes, setSelectedTypes] = useState(['speed']);
-  const [timeType, setTimeType] = useState('fixTime');
+  const [types, setTypes] = useState(["speed"]);
+  const [selectedTypes, setSelectedTypes] = useState(["speed"]);
+  const [timeType, setTimeType] = useState("fixTime");
 
   const values = items.map((it) =>
     selectedTypes.map((type) => it[type]).filter((value) => value != null),
@@ -56,10 +62,13 @@ const ChartReportPage = () => {
   const onShow = useCatchCallback(
     async ({ deviceIds, from, to }) => {
       const query = new URLSearchParams({ from, to });
-      deviceIds.forEach((deviceId) => query.append('deviceId', deviceId));
-      const response = await fetchOrThrow(`/api/reports/route?${query.toString()}`, {
-        headers: { Accept: 'application/json' },
-      });
+      deviceIds.forEach((deviceId) => query.append("deviceId", deviceId));
+      const response = await fetchOrThrow(
+        `/api/reports/route?${query.toString()}`,
+        {
+          headers: { Accept: "application/json" },
+        },
+      );
       const positions = await response.json();
       const keySet = new Set();
       const keyList = [];
@@ -70,32 +79,43 @@ const ChartReportPage = () => {
         formatted.deviceTime = dayjs(position.deviceTime).valueOf();
         formatted.serverTime = dayjs(position.serverTime).valueOf();
         Object.keys(data)
-          .filter((key) => !['id', 'deviceId'].includes(key))
+          .filter((key) => !["id", "deviceId"].includes(key))
           .forEach((key) => {
             const value = data[key];
-            if (typeof value === 'number') {
+            if (typeof value === "number") {
               keySet.add(key);
               const definition = positionAttributes[key] || {};
               switch (definition.dataType) {
-                case 'speed':
-                  if (key == 'obdSpeed') {
-                    formatted[key] = speedFromKnots(speedToKnots(value, 'kmh'), speedUnit).toFixed(
+                case "speed":
+                  if (key == "obdSpeed") {
+                    formatted[key] = speedFromKnots(
+                      speedToKnots(value, "kmh"),
+                      speedUnit,
+                    ).toFixed(2);
+                  } else {
+                    formatted[key] = speedFromKnots(value, speedUnit).toFixed(
                       2,
                     );
-                  } else {
-                    formatted[key] = speedFromKnots(value, speedUnit).toFixed(2);
                   }
                   break;
-                case 'altitude':
-                  formatted[key] = altitudeFromMeters(value, altitudeUnit).toFixed(2);
+                case "altitude":
+                  formatted[key] = altitudeFromMeters(
+                    value,
+                    altitudeUnit,
+                  ).toFixed(2);
                   break;
-                case 'distance':
-                  formatted[key] = distanceFromMeters(value, distanceUnit).toFixed(2);
+                case "distance":
+                  formatted[key] = distanceFromMeters(
+                    value,
+                    distanceUnit,
+                  ).toFixed(2);
                   break;
-                case 'volume':
-                  formatted[key] = volumeFromLiters(value, volumeUnit).toFixed(2);
+                case "volume":
+                  formatted[key] = volumeFromLiters(value, volumeUnit).toFixed(
+                    2,
+                  );
                   break;
-                case 'hours':
+                case "hours":
                   formatted[key] = (value / 1000).toFixed(2);
                   break;
                 default:
@@ -129,13 +149,21 @@ const ChartReportPage = () => {
   ];
 
   return (
-    <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportChart']}>
-      <ReportFilter onShow={onShow} onExport={() => {}} deviceType="single" formats={[]}>
+    <PageLayout
+      menu={<ReportsMenu />}
+      breadcrumbs={["reportTitle", "reportChart"]}
+    >
+      <ReportFilter
+        onShow={onShow}
+        onExport={() => {}}
+        deviceType="single"
+        formats={[]}
+      >
         <div className={classes.filterItem}>
           <FormControl fullWidth>
-            <InputLabel>{t('reportChartType')}</InputLabel>
+            <InputLabel>{t("reportChartType")}</InputLabel>
             <Select
-              label={t('reportChartType')}
+              label={t("reportChartType")}
               value={selectedTypes}
               onChange={(e) => setSelectedTypes(e.target.value)}
               multiple
@@ -151,16 +179,16 @@ const ChartReportPage = () => {
         </div>
         <div className={classes.filterItem}>
           <FormControl fullWidth>
-            <InputLabel>{t('reportTimeType')}</InputLabel>
+            <InputLabel>{t("reportTimeType")}</InputLabel>
             <Select
-              label={t('reportTimeType')}
+              label={t("reportTimeType")}
               value={timeType}
               onChange={(e) => setTimeType(e.target.value)}
               disabled={!items.length}
             >
-              <MenuItem value="fixTime">{t('positionFixTime')}</MenuItem>
-              <MenuItem value="deviceTime">{t('positionDeviceTime')}</MenuItem>
-              <MenuItem value="serverTime">{t('positionServerTime')}</MenuItem>
+              <MenuItem value="fixTime">{t("positionFixTime")}</MenuItem>
+              <MenuItem value="deviceTime">{t("positionDeviceTime")}</MenuItem>
+              <MenuItem value="serverTime">{t("positionServerTime")}</MenuItem>
             </Select>
           </FormControl>
         </div>
@@ -181,8 +209,8 @@ const ChartReportPage = () => {
                 stroke={theme.palette.text.primary}
                 dataKey={timeType}
                 type="number"
-                tickFormatter={(value) => formatTime(value, 'time')}
-                domain={['dataMin', 'dataMax']}
+                tickFormatter={(value) => formatTime(value, "time")}
+                domain={["dataMin", "dataMax"]}
                 scale="time"
               />
               <YAxis
@@ -191,20 +219,26 @@ const ChartReportPage = () => {
                 tickFormatter={(value) => parseFloat(value.toFixed(2))}
                 domain={[minValue - valueRange / 5, maxValue + valueRange / 5]}
               />
-              <CartesianGrid stroke={theme.palette.divider} strokeDasharray="3 3" />
+              <CartesianGrid
+                stroke={theme.palette.divider}
+                strokeDasharray="3 3"
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: theme.palette.background.default,
                   color: theme.palette.text.primary,
                 }}
-                formatter={(value, key) => [value, positionAttributes[key]?.name || key]}
-                labelFormatter={(value) => formatTime(value, 'seconds')}
+                formatter={(value, key) => [
+                  value,
+                  positionAttributes[key]?.name || key,
+                ]}
+                labelFormatter={(value) => formatTime(value, "seconds")}
               />
               <Brush
                 dataKey={timeType}
                 height={30}
                 stroke={theme.palette.primary.main}
-                tickFormatter={() => ''}
+                tickFormatter={() => ""}
               />
               {selectedTypes.map((type, index) => (
                 <Line

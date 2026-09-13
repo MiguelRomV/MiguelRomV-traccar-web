@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Table,
   TableRow,
@@ -9,18 +9,18 @@ import {
   TableBody,
   IconButton,
   Tooltip,
-} from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlined';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import PageLayout from '../common/components/PageLayout';
-import ReportsMenu from './components/ReportsMenu';
-import { sessionActions } from '../store';
+} from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlined";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutlined";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import PageLayout from "../common/components/PageLayout";
+import ReportsMenu from "./components/ReportsMenu";
+import { sessionActions } from "../store";
 
 const useStyles = makeStyles()((theme) => ({
   columnAction: {
-    width: '1%',
+    width: "1%",
     paddingLeft: theme.spacing(1),
   },
 }));
@@ -44,14 +44,17 @@ const LogsPage = () => {
   };
 
   return (
-    <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'sharedLogs']}>
+    <PageLayout
+      menu={<ReportsMenu />}
+      breadcrumbs={["reportTitle", "sharedLogs"]}
+    >
       <Table>
         <TableHead>
           <TableRow>
             <TableCell className={classes.columnAction} />
-            <TableCell>{t('deviceIdentifier')}</TableCell>
-            <TableCell>{t('positionProtocol')}</TableCell>
-            <TableCell>{t('commandData')}</TableCell>
+            <TableCell>{t("deviceIdentifier")}</TableCell>
+            <TableCell>{t("positionProtocol")}</TableCell>
+            <TableCell>{t("commandData")}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -63,7 +66,7 @@ const LogsPage = () => {
                     <CheckCircleOutlineIcon fontSize="small" />
                   </IconButton>
                 ) : (
-                  <Tooltip title={t('loginRegister')}>
+                  <Tooltip title={t("loginRegister")}>
                     <IconButton
                       color="error"
                       size="small"

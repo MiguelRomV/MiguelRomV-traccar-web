@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import dayjs from 'dayjs';
-import { speedFromKnots } from '../common/util/converter';
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import dayjs from "dayjs";
+import { speedFromKnots } from "../common/util/converter";
 
 export default (
   keyword,
@@ -27,7 +27,10 @@ export default (
     };
 
     const filtered = Object.values(devices)
-      .filter((device) => !filter.statuses.length || filter.statuses.includes(device.status))
+      .filter(
+        (device) =>
+          !filter.statuses.length || filter.statuses.includes(device.status),
+      )
       .filter((device) => {
         if (!filter.motion) {
           return true;
@@ -35,38 +38,55 @@ export default (
         const position = positions[device.id];
         const updated = Date.parse(device.lastUpdate);
         let motion;
-        if (device.status !== 'online' || !updated || Date.now() - updated > 300000) {
-          motion = 'noSignal';
-        } else if (speedFromKnots(position?.speed || 0, 'kmh') > 5) {
-          motion = 'moving';
+        if (
+          device.status !== "online" ||
+          !updated ||
+          Date.now() - updated > 300000
+        ) {
+          motion = "noSignal";
+        } else if (speedFromKnots(position?.speed || 0, "kmh") > 5) {
+          motion = "moving";
         } else {
-          motion = position?.attributes?.ignition ? 'idle' : 'stopped';
+          motion = position?.attributes?.ignition ? "idle" : "stopped";
         }
         return motion === filter.motion;
       })
       .filter(
         (device) =>
-          !filter.groups.length || deviceGroups(device).some((id) => filter.groups.includes(id)),
+          !filter.groups.length ||
+          deviceGroups(device).some((id) => filter.groups.includes(id)),
       )
       .filter(
         (device) =>
           !filter.geofences.length ||
-          (positions[device.id]?.geofenceIds || []).some((id) => filter.geofences.includes(id)),
+          (positions[device.id]?.geofenceIds || []).some((id) =>
+            filter.geofences.includes(id),
+          ),
       )
       .filter((device) => {
         const lowerCaseKeyword = keyword.toLowerCase();
-        return [device.name, device.uniqueId, device.phone, device.model, device.contact].some(
-          (s) => s && s.toLowerCase().includes(lowerCaseKeyword),
-        );
+        return [
+          device.name,
+          device.uniqueId,
+          device.phone,
+          device.model,
+          device.contact,
+        ].some((s) => s && s.toLowerCase().includes(lowerCaseKeyword));
       });
     switch (filterSort) {
-      case 'name':
-        filtered.sort((device1, device2) => device1.name.localeCompare(device2.name));
+      case "name":
+        filtered.sort((device1, device2) =>
+          device1.name.localeCompare(device2.name),
+        );
         break;
-      case 'lastUpdate':
+      case "lastUpdate":
         filtered.sort((device1, device2) => {
-          const time1 = device1.lastUpdate ? dayjs(device1.lastUpdate).valueOf() : 0;
-          const time2 = device2.lastUpdate ? dayjs(device2.lastUpdate).valueOf() : 0;
+          const time1 = device1.lastUpdate
+            ? dayjs(device1.lastUpdate).valueOf()
+            : 0;
+          const time2 = device2.lastUpdate
+            ? dayjs(device2.lastUpdate).valueOf()
+            : 0;
           return time2 - time1;
         });
         break;

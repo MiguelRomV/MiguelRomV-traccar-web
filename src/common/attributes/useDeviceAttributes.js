@@ -1,36 +1,36 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 export default (t) =>
   useMemo(
     () => ({
-      'command.sender': {
-        name: t('deviceCommandSender'),
-        type: 'string',
+      "command.sender": {
+        name: t("deviceCommandSender"),
+        type: "string",
       },
-      'web.reportColor': {
-        name: t('attributeWebReportColor'),
-        type: 'string',
-        dataType: 'color',
+      "web.reportColor": {
+        name: t("attributeWebReportColor"),
+        type: "string",
+        dataType: "color",
       },
       devicePassword: {
-        name: t('attributeDevicePassword'),
-        type: 'string',
+        name: t("attributeDevicePassword"),
+        type: "string",
       },
       deviceImage: {
-        name: t('attributeDeviceImage'),
-        type: 'string',
+        name: t("attributeDeviceImage"),
+        type: "string",
       },
-      'processing.copyAttributes': {
-        name: t('attributeProcessingCopyAttributes'),
-        type: 'string',
+      "processing.copyAttributes": {
+        name: t("attributeProcessingCopyAttributes"),
+        type: "string",
       },
-      'decoder.timezone': {
-        name: t('sharedTimezone'),
-        type: 'string',
+      "decoder.timezone": {
+        name: t("sharedTimezone"),
+        type: "string",
       },
-      'forward.url': {
-        name: t('attributeForwardUrl'),
-        type: 'string',
+      "forward.url": {
+        name: t("attributeForwardUrl"),
+        type: "string",
       },
     }),
     [t],

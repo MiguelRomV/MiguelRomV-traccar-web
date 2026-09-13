@@ -1,11 +1,11 @@
-import { parse, stringify } from 'wellknown';
-import turfCircle from '@turf/circle';
-import gcoord from 'gcoord';
-import { map } from './MapView';
+import { parse, stringify } from "wellknown";
+import turfCircle from "@turf/circle";
+import gcoord from "gcoord";
+import { map } from "./MapView";
 
 const coordinateSystem = (id) => {
   switch (id) {
-    case 'gcj02':
+    case "gcj02":
       return gcoord.GCJ02;
     default:
       return gcoord.WGS84;
@@ -14,12 +14,20 @@ const coordinateSystem = (id) => {
 
 export const toMapCoordinates = (longitude, latitude) =>
   map.coordinateSystem
-    ? gcoord.transform([longitude, latitude], gcoord.WGS84, coordinateSystem(map.coordinateSystem))
+    ? gcoord.transform(
+        [longitude, latitude],
+        gcoord.WGS84,
+        coordinateSystem(map.coordinateSystem),
+      )
     : [longitude, latitude];
 
 export const fromMapCoordinates = (longitude, latitude) =>
   map.coordinateSystem
-    ? gcoord.transform([longitude, latitude], coordinateSystem(map.coordinateSystem), gcoord.WGS84)
+    ? gcoord.transform(
+        [longitude, latitude],
+        coordinateSystem(map.coordinateSystem),
+        gcoord.WGS84,
+      )
     : [longitude, latitude];
 
 const transformGeometry = (geometry, from, to) =>
@@ -33,19 +41,19 @@ export const loadImage = (url) =>
   });
 
 const canvasTintImage = (image, color) => {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = image.width * devicePixelRatio;
   canvas.height = image.height * devicePixelRatio;
   canvas.style.width = `${image.width}px`;
   canvas.style.height = `${image.height}px`;
 
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
 
   context.save();
   context.fillStyle = color;
   context.globalAlpha = 1;
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.globalCompositeOperation = 'destination-atop';
+  context.globalCompositeOperation = "destination-atop";
   context.globalAlpha = 1;
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
   context.restore();
@@ -54,13 +62,13 @@ const canvasTintImage = (image, color) => {
 };
 
 export const prepareIcon = (background, icon, color) => {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = background.width * devicePixelRatio;
   canvas.height = background.height * devicePixelRatio;
   canvas.style.width = `${background.width}px`;
   canvas.style.height = `${background.height}px`;
 
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
   context.drawImage(background, 0, 0, canvas.width, canvas.height);
 
   if (icon) {
@@ -84,7 +92,11 @@ export const reverseCoordinates = (it) => {
     return it;
   }
   if (Array.isArray(it)) {
-    if (it.length === 2 && typeof it[0] === 'number' && typeof it[1] === 'number') {
+    if (
+      it.length === 2 &&
+      typeof it[0] === "number" &&
+      typeof it[1] === "number"
+    ) {
       return [it[1], it[0]];
     }
     return it.map((it) => reverseCoordinates(it));
@@ -97,12 +109,12 @@ export const reverseCoordinates = (it) => {
 
 export const geofenceToFeature = (theme, item) => {
   let geometry;
-  if (item.area.indexOf('CIRCLE') > -1) {
+  if (item.area.indexOf("CIRCLE") > -1) {
     const coordinates = item.area
-      .replace(/CIRCLE|\(|\)|,/g, ' ')
+      .replace(/CIRCLE|\(|\)|,/g, " ")
       .trim()
       .split(/ +/);
-    const options = { steps: 32, units: 'meters' };
+    const options = { steps: 32, units: "meters" };
     const polygon = turfCircle(
       toMapCoordinates(Number(coordinates[1]), Number(coordinates[0])),
       Number(coordinates[2]),
@@ -112,12 +124,16 @@ export const geofenceToFeature = (theme, item) => {
   } else {
     geometry = reverseCoordinates(parse(item.area));
     if (map.coordinateSystem) {
-      geometry = transformGeometry(geometry, gcoord.WGS84, coordinateSystem(map.coordinateSystem));
+      geometry = transformGeometry(
+        geometry,
+        gcoord.WGS84,
+        coordinateSystem(map.coordinateSystem),
+      );
     }
   }
   return {
     id: item.id,
-    type: 'Feature',
+    type: "Feature",
     geometry,
     properties: {
       name: item.name,
@@ -130,18 +146,22 @@ export const geofenceToFeature = (theme, item) => {
 
 export const geometryToArea = (geometry) => {
   const normalized = map.coordinateSystem
-    ? transformGeometry(geometry, coordinateSystem(map.coordinateSystem), gcoord.WGS84)
+    ? transformGeometry(
+        geometry,
+        coordinateSystem(map.coordinateSystem),
+        gcoord.WGS84,
+      )
     : geometry;
   return stringify(reverseCoordinates(normalized));
 };
 
 export const findFonts = (map) => {
   const { glyphs } = map.getStyle();
-  if (glyphs.startsWith('https://tiles.openfreemap.org')) {
-    return ['Noto Sans Regular'];
+  if (glyphs.startsWith("https://tiles.openfreemap.org")) {
+    return ["Noto Sans Regular"];
   }
-  if (glyphs.startsWith('https://api.os.uk')) {
-    return ['Source Sans Pro Regular'];
+  if (glyphs.startsWith("https://api.os.uk")) {
+    return ["Source Sans Pro Regular"];
   }
-  return ['Open Sans Regular', 'Arial Unicode MS Regular'];
+  return ["Open Sans Regular", "Arial Unicode MS Regular"];
 };

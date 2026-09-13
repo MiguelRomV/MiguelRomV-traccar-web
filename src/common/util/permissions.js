@@ -1,4 +1,4 @@
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
 
 export const useAdministrator = () =>
   useSelector((state) => {
@@ -20,7 +20,13 @@ export const useDeviceReadonly = () =>
     const userReadonly = state.session.user.readonly;
     const serverDeviceReadonly = state.session.server.deviceReadonly;
     const userDeviceReadonly = state.session.user.deviceReadonly;
-    return !admin && (serverReadonly || userReadonly || serverDeviceReadonly || userDeviceReadonly);
+    return (
+      !admin &&
+      (serverReadonly ||
+        userReadonly ||
+        serverDeviceReadonly ||
+        userDeviceReadonly)
+    );
   });
 
 export const useRestriction = (key) =>

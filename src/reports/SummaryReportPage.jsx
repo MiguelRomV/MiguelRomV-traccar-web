@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   FormControl,
   InputLabel,
@@ -11,42 +11,42 @@ import {
   TableRow,
   TableBody,
   TableCell,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import {
   formatDistance,
   formatSpeed,
   formatVolume,
   formatTime,
   formatNumericHours,
-} from '../common/util/formatter';
-import ReportFilter, { updateReportParams } from './components/ReportFilter';
-import { useAttributePreference } from '../common/util/preferences';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import PageLayout from '../common/components/PageLayout';
-import ReportsMenu from './components/ReportsMenu';
-import usePersistedState from '../common/util/usePersistedState';
-import ColumnSelect from './components/ColumnSelect';
-import { useCatch, useCatchCallback } from '../reactHelper';
-import useReportStyles from './common/useReportStyles';
-import TableShimmer from '../common/components/TableShimmer';
-import scheduleReport from './common/scheduleReport';
-import fetchOrThrow from '../common/util/fetchOrThrow';
-import exportExcel from '../common/util/exportExcel';
-import exportPDF from '../common/util/exportPDF';
-import { deviceEquality } from '../common/util/deviceEquality';
+} from "../common/util/formatter";
+import ReportFilter, { updateReportParams } from "./components/ReportFilter";
+import { useAttributePreference } from "../common/util/preferences";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import PageLayout from "../common/components/PageLayout";
+import ReportsMenu from "./components/ReportsMenu";
+import usePersistedState from "../common/util/usePersistedState";
+import ColumnSelect from "./components/ColumnSelect";
+import { useCatch, useCatchCallback } from "../reactHelper";
+import useReportStyles from "./common/useReportStyles";
+import TableShimmer from "../common/components/TableShimmer";
+import scheduleReport from "./common/scheduleReport";
+import fetchOrThrow from "../common/util/fetchOrThrow";
+import exportExcel from "../common/util/exportExcel";
+import exportPDF from "../common/util/exportPDF";
+import { deviceEquality } from "../common/util/deviceEquality";
 
 const columnsArray = [
-  ['startTime', 'reportStartDate'],
-  ['distance', 'sharedDistance'],
-  ['startOdometer', 'reportStartOdometer'],
-  ['endOdometer', 'reportEndOdometer'],
-  ['averageSpeed', 'reportAverageSpeed'],
-  ['maxSpeed', 'reportMaximumSpeed'],
-  ['engineHours', 'reportEngineHours'],
-  ['startHours', 'reportStartEngineHours'],
-  ['endHours', 'reportEndEngineHours'],
-  ['spentFuel', 'reportSpentFuel'],
+  ["startTime", "reportStartDate"],
+  ["distance", "sharedDistance"],
+  ["startOdometer", "reportStartOdometer"],
+  ["endOdometer", "reportEndOdometer"],
+  ["averageSpeed", "reportAverageSpeed"],
+  ["maxSpeed", "reportMaximumSpeed"],
+  ["engineHours", "reportEngineHours"],
+  ["startHours", "reportStartEngineHours"],
+  ["endHours", "reportEndEngineHours"],
+  ["spentFuel", "reportSpentFuel"],
 ];
 const columnsMap = new Map(columnsArray);
 
@@ -58,31 +58,37 @@ const SummaryReportPage = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const devices = useSelector((state) => state.devices.items, deviceEquality(['id', 'name']));
+  const devices = useSelector(
+    (state) => state.devices.items,
+    deviceEquality(["id", "name"]),
+  );
 
-  const distanceUnit = useAttributePreference('distanceUnit');
-  const speedUnit = useAttributePreference('speedUnit');
-  const volumeUnit = useAttributePreference('volumeUnit');
+  const distanceUnit = useAttributePreference("distanceUnit");
+  const speedUnit = useAttributePreference("speedUnit");
+  const volumeUnit = useAttributePreference("volumeUnit");
 
-  const [columns, setColumns] = usePersistedState('summaryColumns', [
-    'startTime',
-    'distance',
-    'averageSpeed',
+  const [columns, setColumns] = usePersistedState("summaryColumns", [
+    "startTime",
+    "distance",
+    "averageSpeed",
   ]);
-  const daily = searchParams.get('daily') === 'true';
+  const daily = searchParams.get("daily") === "true";
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const onShow = useCatchCallback(
     async ({ deviceIds, groupIds, from, to }) => {
       const query = new URLSearchParams({ from, to, daily });
-      deviceIds.forEach((deviceId) => query.append('deviceId', deviceId));
-      groupIds.forEach((groupId) => query.append('groupId', groupId));
+      deviceIds.forEach((deviceId) => query.append("deviceId", deviceId));
+      groupIds.forEach((groupId) => query.append("groupId", groupId));
       setLoading(true);
       try {
-        const response = await fetchOrThrow(`/api/reports/summary?${query.toString()}`, {
-          headers: { Accept: 'application/json' },
-        });
+        const response = await fetchOrThrow(
+          `/api/reports/summary?${query.toString()}`,
+          {
+            headers: { Accept: "application/json" },
+          },
+        );
         setItems(await response.json());
       } finally {
         setLoading(false);
@@ -93,7 +99,7 @@ const SummaryReportPage = () => {
 
   const onExport = useCatch(async ({ format }) => {
     const rows = [];
-    const deviceHeader = t('sharedDevice');
+    const deviceHeader = t("sharedDevice");
     items.forEach((item) => {
       const row = { [deviceHeader]: devices[item.deviceId].name };
       columns.forEach((key) => {
@@ -105,42 +111,42 @@ const SummaryReportPage = () => {
     if (rows.length === 0) {
       return;
     }
-    const titleKey = daily ? 'reportDaily' : 'reportSummary';
+    const titleKey = daily ? "reportDaily" : "reportSummary";
     const title = t(titleKey);
     const sheets = new Map([[title, rows]]);
-    if (format === 'pdf') {
-      await exportPDF(title, 'summary.pdf', sheets);
+    if (format === "pdf") {
+      await exportPDF(title, "summary.pdf", sheets);
     } else {
-      await exportExcel(title, 'summary.xlsx', sheets, theme);
+      await exportExcel(title, "summary.xlsx", sheets, theme);
     }
   });
 
   const onSchedule = useCatch(async (deviceIds, groupIds, report) => {
-    report.type = 'summary';
+    report.type = "summary";
     report.attributes.daily = daily;
     await scheduleReport(deviceIds, groupIds, report);
-    navigate('/reports/scheduled');
+    navigate("/reports/scheduled");
   });
 
   const formatValue = (item, key) => {
     const value = item[key];
     switch (key) {
-      case 'deviceId':
+      case "deviceId":
         return devices[value].name;
-      case 'startTime':
-        return formatTime(value, 'date');
-      case 'startOdometer':
-      case 'endOdometer':
-      case 'distance':
+      case "startTime":
+        return formatTime(value, "date");
+      case "startOdometer":
+      case "endOdometer":
+      case "distance":
         return formatDistance(value, distanceUnit, t);
-      case 'averageSpeed':
-      case 'maxSpeed':
+      case "averageSpeed":
+      case "maxSpeed":
         return value > 0 ? formatSpeed(value, speedUnit, t) : null;
-      case 'engineHours':
-      case 'startHours':
-      case 'endHours':
+      case "engineHours":
+      case "startHours":
+      case "endHours":
         return value > 0 ? formatNumericHours(value, t) : null;
-      case 'spentFuel':
+      case "spentFuel":
         return value > 0 ? formatVolume(value, volumeUnit, t) : null;
       default:
         return value;
@@ -148,7 +154,10 @@ const SummaryReportPage = () => {
   };
 
   return (
-    <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportSummary']}>
+    <PageLayout
+      menu={<ReportsMenu />}
+      breadcrumbs={["reportTitle", "reportSummary"]}
+    >
       <div className={classes.header}>
         <ReportFilter
           onShow={onShow}
@@ -156,32 +165,36 @@ const SummaryReportPage = () => {
           onSchedule={onSchedule}
           deviceType="multiple"
           loading={loading}
-          formats={['xlsx', 'pdf']}
+          formats={["xlsx", "pdf"]}
         >
           <div className={classes.filterItem}>
             <FormControl fullWidth>
-              <InputLabel>{t('sharedType')}</InputLabel>
+              <InputLabel>{t("sharedType")}</InputLabel>
               <Select
-                label={t('sharedType')}
+                label={t("sharedType")}
                 value={daily}
                 onChange={(e) =>
-                  updateReportParams(searchParams, setSearchParams, 'daily', [
+                  updateReportParams(searchParams, setSearchParams, "daily", [
                     String(e.target.value),
                   ])
                 }
               >
-                <MenuItem value={false}>{t('reportSummary')}</MenuItem>
-                <MenuItem value>{t('reportDaily')}</MenuItem>
+                <MenuItem value={false}>{t("reportSummary")}</MenuItem>
+                <MenuItem value>{t("reportDaily")}</MenuItem>
               </Select>
             </FormControl>
           </div>
-          <ColumnSelect columns={columns} setColumns={setColumns} columnsArray={columnsArray} />
+          <ColumnSelect
+            columns={columns}
+            setColumns={setColumns}
+            columnsArray={columnsArray}
+          />
         </ReportFilter>
       </div>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>{t('sharedDevice')}</TableCell>
+            <TableCell>{t("sharedDevice")}</TableCell>
             {columns.map((key) => (
               <TableCell key={key}>{t(columnsMap.get(key))}</TableCell>
             ))}

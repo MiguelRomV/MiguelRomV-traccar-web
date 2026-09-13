@@ -1,19 +1,26 @@
-import { useCallback, useRef } from 'react';
-import { useTheme } from '@mui/material/styles';
-import { useMediaQuery } from '@mui/material';
-import { map } from './core/MapView';
-import useMapLayer from './core/useMapLayer';
-import { useAttributePreference } from '../common/util/preferences';
-import { useCatchCallback } from '../reactHelper';
-import { findFonts, toMapCoordinates } from './core/mapUtil';
+import { useCallback, useRef } from "react";
+import { useTheme } from "@mui/material/styles";
+import { useMediaQuery } from "@mui/material";
+import { map } from "./core/MapView";
+import useMapLayer from "./core/useMapLayer";
+import { useAttributePreference } from "../common/util/preferences";
+import { useCatchCallback } from "../reactHelper";
+import { findFonts, toMapCoordinates } from "./core/mapUtil";
 
-const onMouseEnter = () => (map.getCanvas().style.cursor = 'pointer');
-const onMouseLeave = () => (map.getCanvas().style.cursor = '');
+const onMouseEnter = () => (map.getCanvas().style.cursor = "pointer");
+const onMouseLeave = () => (map.getCanvas().style.cursor = "");
 
-const MapMarkers = ({ markers, showTitles, cluster, direction, onClick, disabled }) => {
+const MapMarkers = ({
+  markers,
+  showTitles,
+  cluster,
+  direction,
+  onClick,
+  disabled,
+}) => {
   const theme = useTheme();
-  const desktop = useMediaQuery(theme.breakpoints.up('md'));
-  const iconScale = useAttributePreference('iconScale', desktop ? 0.75 : 1);
+  const desktop = useMediaQuery(theme.breakpoints.up("md"));
+  const iconScale = useAttributePreference("iconScale", desktop ? 0.75 : 1);
 
   const disabledRef = useRef(disabled);
   disabledRef.current = disabled;
@@ -39,82 +46,111 @@ const MapMarkers = ({ markers, showTitles, cluster, direction, onClick, disabled
 
   const layers = [
     {
-      type: 'symbol',
-      filter: ['!has', 'point_count'],
+      type: "symbol",
+      filter: ["!has", "point_count"],
       layout: showTitles
         ? {
-            'icon-image': '{image}',
-            'icon-size': iconScale,
-            'icon-allow-overlap': true,
-            'text-field': '{title}',
-            'text-allow-overlap': true,
-            'text-anchor': 'bottom',
-            'text-offset': [0, -2 * iconScale],
-            'text-font': findFonts(map),
-            'text-size': 12,
-            'symbol-sort-key': ['get', 'id'],
+            "icon-image": "{image}",
+            "icon-size": iconScale,
+            "icon-allow-overlap": true,
+            "text-field": "{title}",
+            "text-allow-overlap": true,
+            "text-anchor": "bottom",
+            "text-offset": [0, -2 * iconScale],
+            "text-font": findFonts(map),
+            "text-size": 12,
+            "symbol-sort-key": ["get", "id"],
           }
         : {
-            'icon-image': '{image}',
-            'icon-size': iconScale,
-            'icon-allow-overlap': true,
-            'symbol-sort-key': ['get', 'id'],
+            "icon-image": "{image}",
+            "icon-size": iconScale,
+            "icon-allow-overlap": true,
+            "symbol-sort-key": ["get", "id"],
           },
-      ...(showTitles ? { paint: { 'text-halo-color': 'white', 'text-halo-width': 1 } } : {}),
+      ...(showTitles
+        ? { paint: { "text-halo-color": "white", "text-halo-width": 1 } }
+        : {}),
       ...(onClick
-        ? { on: { mouseenter: onMouseEnter, mouseleave: onMouseLeave, click: onMarkerClick } }
+        ? {
+            on: {
+              mouseenter: onMouseEnter,
+              mouseleave: onMouseLeave,
+              click: onMarkerClick,
+            },
+          }
         : {}),
     },
   ];
 
   if (direction) {
     layers.push({
-      key: 'direction',
-      type: 'symbol',
-      filter: ['all', ['!has', 'point_count'], ['==', 'direction', true]],
+      key: "direction",
+      type: "symbol",
+      filter: ["all", ["!has", "point_count"], ["==", "direction", true]],
       layout: {
-        'icon-image': 'direction',
-        'icon-size': iconScale,
-        'icon-allow-overlap': true,
-        'icon-rotate': ['get', 'rotation'],
-        'icon-rotation-alignment': 'map',
+        "icon-image": "direction",
+        "icon-size": iconScale,
+        "icon-allow-overlap": true,
+        "icon-rotate": ["get", "rotation"],
+        "icon-rotation-alignment": "map",
       },
     });
   }
 
   if (cluster) {
     layers.push({
-      key: 'clusters',
-      type: 'symbol',
-      filter: ['has', 'point_count'],
+      key: "clusters",
+      type: "symbol",
+      filter: ["has", "point_count"],
       layout: {
-        'icon-image': 'background',
-        'icon-size': iconScale,
-        'text-field': '{point_count_abbreviated}',
-        'text-font': findFonts(map),
-        'text-size': 14,
+        "icon-image": "background",
+        "icon-size": iconScale,
+        "text-field": "{point_count_abbreviated}",
+        "text-font": findFonts(map),
+        "text-size": 14,
       },
-      on: { mouseenter: onMouseEnter, mouseleave: onMouseLeave, click: onClusterClick },
+      on: {
+        mouseenter: onMouseEnter,
+        mouseleave: onMouseLeave,
+        click: onClusterClick,
+      },
     });
   }
 
   useMapLayer({
-    source: cluster ? { cluster: true, clusterMaxZoom: 14, clusterRadius: 50 } : undefined,
+    source: cluster
+      ? { cluster: true, clusterMaxZoom: 14, clusterRadius: 50 }
+      : undefined,
     layers,
-    layersDeps: [showTitles, cluster, direction, iconScale, onMarkerClick, onClusterClick],
+    layersDeps: [
+      showTitles,
+      cluster,
+      direction,
+      iconScale,
+      onMarkerClick,
+      onClusterClick,
+    ],
     data: {
-      type: 'FeatureCollection',
+      type: "FeatureCollection",
       features: markers.map(
-        ({ latitude, longitude, image, title, rotation, direction: showDirection, ...rest }) => ({
-          type: 'Feature',
+        ({
+          latitude,
+          longitude,
+          image,
+          title,
+          rotation,
+          direction: showDirection,
+          ...rest
+        }) => ({
+          type: "Feature",
           geometry: {
-            type: 'Point',
+            type: "Point",
             coordinates: toMapCoordinates(longitude, latitude),
           },
           properties: {
             ...rest,
-            image: image || 'default-neutral',
-            title: title || '',
+            image: image || "default-neutral",
+            title: title || "",
             rotation: rotation || 0,
             direction: showDirection || false,
           },

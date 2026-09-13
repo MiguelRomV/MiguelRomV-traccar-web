@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useState } from "react";
+import { useSelector } from "react-redux";
 
 import {
   Typography,
@@ -13,25 +13,25 @@ import {
   TableRow,
   TableCell,
   TableBody,
-} from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAsyncTask } from '../reactHelper';
-import BackIcon from '../common/components/BackIcon';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+} from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAsyncTask } from "../reactHelper";
+import BackIcon from "../common/components/BackIcon";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const useStyles = makeStyles()((theme) => ({
   root: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
   },
   content: {
-    overflow: 'auto',
+    overflow: "auto",
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
     gap: theme.spacing(2),
   },
 }));
@@ -47,7 +47,9 @@ const NetworkPage = () => {
   useAsyncTask(
     async ({ signal }) => {
       if (positionId) {
-        const response = await fetchOrThrow(`/api/positions?id=${positionId}`, { signal });
+        const response = await fetchOrThrow(`/api/positions?id=${positionId}`, {
+          signal,
+        });
         const positions = await response.json();
         if (positions.length > 0) {
           setItem(positions[0]);
@@ -71,7 +73,12 @@ const NetworkPage = () => {
     <div className={classes.root}>
       <AppBar position="sticky" color="inherit">
         <Toolbar>
-          <IconButton color="inherit" edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
+          <IconButton
+            color="inherit"
+            edge="start"
+            sx={{ mr: 2 }}
+            onClick={() => navigate(-1)}
+          >
             <BackIcon />
           </IconButton>
           <Typography variant="h6">{deviceName}</Typography>

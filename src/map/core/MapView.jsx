@@ -1,25 +1,28 @@
-import 'maplibre-gl/dist/maplibre-gl.css';
-import * as maplibregl from 'maplibre-gl';
-import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-import { googleProtocol } from 'maplibre-google-maps';
-import { Protocol } from 'pmtiles';
-import { useRef, useLayoutEffect, useEffect, useState, useMemo } from 'react';
-import { useTheme } from '@mui/material';
-import MapSwitcher from '../control/MapSwitcher';
-import { useAttributePreference, usePreference } from '../../common/util/preferences';
-import usePersistedState from '../../common/util/usePersistedState';
-import { mapImages } from './preloadImages';
-import useMapStyles from './useMapStyles';
-import { useAsyncTask } from '../../reactHelper';
+import "maplibre-gl/dist/maplibre-gl.css";
+import * as maplibregl from "maplibre-gl";
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+import { googleProtocol } from "maplibre-google-maps";
+import { Protocol } from "pmtiles";
+import { useRef, useLayoutEffect, useEffect, useState, useMemo } from "react";
+import { useTheme } from "@mui/material";
+import MapSwitcher from "../control/MapSwitcher";
+import {
+  useAttributePreference,
+  usePreference,
+} from "../../common/util/preferences";
+import usePersistedState from "../../common/util/usePersistedState";
+import { mapImages } from "./preloadImages";
+import useMapStyles from "./useMapStyles";
+import { useAsyncTask } from "../../reactHelper";
 
-const element = document.createElement('div');
-element.style.width = '100%';
-element.style.height = '100%';
-element.style.boxSizing = 'initial';
+const element = document.createElement("div");
+element.style.width = "100%";
+element.style.height = "100%";
+element.style.boxSizing = "initial";
 
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
-maplibregl.addProtocol('google', googleProtocol);
-maplibregl.addProtocol('pmtiles', new Protocol().tile);
+maplibregl.addProtocol("google", googleProtocol);
+maplibregl.addProtocol("pmtiles", new Protocol().tile);
 
 export const map = new maplibregl.Map({
   container: element,
@@ -59,7 +62,7 @@ export const useMapReady = () => {
 
 const initMap = async () => {
   if (ready) return;
-  if (!map.hasImage('background')) {
+  if (!map.hasImage("background")) {
     Object.entries(mapImages).forEach(([key, value]) => {
       map.addImage(key, value, {
         pixelRatio: window.devicePixelRatio,
@@ -77,31 +80,39 @@ const MapView = ({ children }) => {
 
   const mapStyles = useMapStyles();
   const activeMapStyles = useAttributePreference(
-    'activeMapStyles',
-    'locationIqStreets,locationIqDark,openFreeMap,esriSatellite,esriStreets',
+    "activeMapStyles",
+    "locationIqStreets,locationIqDark,openFreeMap,esriSatellite,esriStreets",
   );
   const [selectedStyleId, setSelectedStyleId] = usePersistedState(
-    'selectedMapStyle',
-    usePreference('map', 'locationIqStreets'),
+    "selectedMapStyle",
+    usePreference("map", "locationIqStreets"),
   );
-  const maxZoom = useAttributePreference('web.maxZoom');
+  const maxZoom = useAttributePreference("web.maxZoom");
 
   const styles = useMemo(() => {
-    const filtered = mapStyles.filter((s) => s.available && activeMapStyles.includes(s.id));
-    return filtered.length ? filtered : mapStyles.filter((s) => s.id === 'osm');
+    const filtered = mapStyles.filter(
+      (s) => s.available && activeMapStyles.includes(s.id),
+    );
+    return filtered.length ? filtered : mapStyles.filter((s) => s.id === "osm");
   }, [mapStyles, activeMapStyles]);
 
   useAsyncTask(async () => {
-    if (theme.direction === 'rtl') {
-      maplibregl.setRTLTextPlugin('/mapbox-gl-rtl-text.js');
+    if (theme.direction === "rtl") {
+      maplibregl.setRTLTextPlugin("/mapbox-gl-rtl-text.js");
     }
   }, [theme.direction]);
 
   useEffect(() => {
     const attribution = new maplibregl.AttributionControl({ compact: true });
     const navigation = new maplibregl.NavigationControl();
-    map.addControl(attribution, theme.direction === 'rtl' ? 'bottom-left' : 'bottom-right');
-    map.addControl(navigation, theme.direction === 'rtl' ? 'top-right' : 'top-left');
+    map.addControl(
+      attribution,
+      theme.direction === "rtl" ? "bottom-left" : "bottom-right",
+    );
+    map.addControl(
+      navigation,
+      theme.direction === "rtl" ? "top-right" : "top-left",
+    );
     return () => {
       map.removeControl(navigation);
       map.removeControl(attribution);
@@ -133,7 +144,7 @@ const MapView = ({ children }) => {
         updateReadyValue(true);
       }
     };
-    map.once('styledata', waiting);
+    map.once("styledata", waiting);
     return () => clearTimeout(timeoutId);
   }, [styles, selectedStyleId, setSelectedStyleId]);
 
@@ -147,8 +158,12 @@ const MapView = ({ children }) => {
   }, [containerRef]);
 
   return (
-    <div style={{ width: '100%', height: '100%' }} ref={containerRef}>
-      <MapSwitcher styles={styles} selectedId={selectedStyleId} onSelect={setSelectedStyleId} />
+    <div style={{ width: "100%", height: "100%" }} ref={containerRef}>
+      <MapSwitcher
+        styles={styles}
+        selectedId={selectedStyleId}
+        onSelect={setSelectedStyleId}
+      />
       {mapReady && children}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   AppBar,
   Breadcrumbs,
@@ -9,60 +9,60 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import MenuIcon from '@mui/icons-material/Menu';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslation } from './LocalizationProvider';
-import BackIcon from './BackIcon';
+} from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import MenuIcon from "@mui/icons-material/Menu";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "./LocalizationProvider";
+import BackIcon from "./BackIcon";
 
 const useStyles = makeStyles()((theme, { miniVariant }) => ({
   root: {
-    height: '100%',
-    display: 'flex',
-    [theme.breakpoints.down('md')]: {
-      flexDirection: 'column',
+    height: "100%",
+    display: "flex",
+    [theme.breakpoints.down("md")]: {
+      flexDirection: "column",
     },
   },
   desktopDrawer: {
     width: miniVariant ? theme.spacing(7) : theme.dimensions.drawerWidthDesktop,
-    overflowX: 'hidden',
-    transition: theme.transitions.create('width', {
+    overflowX: "hidden",
+    transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     ...(miniVariant && {
-      '& .MuiListItemButton-root': {
+      "& .MuiListItemButton-root": {
         minHeight: 48,
       },
-      '& .MuiListItemText-root': {
-        display: 'none',
+      "& .MuiListItemText-root": {
+        display: "none",
       },
     }),
-    '@media print': {
-      display: 'none',
+    "@media print": {
+      display: "none",
     },
   },
   mobileDrawer: {
     width: theme.dimensions.drawerWidthTablet,
-    '@media print': {
-      display: 'none',
+    "@media print": {
+      display: "none",
     },
   },
   mobileToolbar: {
     zIndex: 1,
-    '@media print': {
-      display: 'none',
+    "@media print": {
+      display: "none",
     },
   },
   content: {
     flexGrow: 1,
-    alignItems: 'stretch',
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
+    alignItems: "stretch",
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "auto",
   },
 }));
 
@@ -70,7 +70,7 @@ const PageTitle = ({ breadcrumbs }) => {
   const theme = useTheme();
   const t = useTranslation();
 
-  const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  const desktop = useMediaQuery(theme.breakpoints.up("md"));
 
   if (desktop) {
     return (
@@ -99,11 +99,13 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
   const theme = useTheme();
   const navigate = useNavigate();
 
-  const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  const desktop = useMediaQuery(theme.breakpoints.up("md"));
 
   const [searchParams] = useSearchParams();
 
-  const [openDrawer, setOpenDrawer] = useState(!desktop && searchParams.has('menu'));
+  const [openDrawer, setOpenDrawer] = useState(
+    !desktop && searchParams.has("menu"),
+  );
 
   const toggleDrawer = () => setMiniVariant(!miniVariant);
 
@@ -122,7 +124,7 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
                   color="inherit"
                   edge="start"
                   sx={{ mr: 2 }}
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate("/")}
                 >
                   <BackIcon />
                 </IconButton>
@@ -132,10 +134,10 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
             <IconButton
               color="inherit"
               edge="start"
-              sx={{ ml: miniVariant ? -2 : 'auto' }}
+              sx={{ ml: miniVariant ? -2 : "auto" }}
               onClick={toggleDrawer}
             >
-              {miniVariant !== (theme.direction === 'rtl') ? (
+              {miniVariant !== (theme.direction === "rtl") ? (
                 <ChevronRightIcon />
               ) : (
                 <ChevronLeftIcon />
@@ -156,7 +158,11 @@ const PageLayout = ({ menu, breadcrumbs, children }) => {
         </Drawer>
       )}
       {!desktop && (
-        <AppBar className={classes.mobileToolbar} position="static" color="inherit">
+        <AppBar
+          className={classes.mobileToolbar}
+          position="static"
+          color="inherit"
+        >
           <Toolbar>
             <IconButton
               color="inherit"

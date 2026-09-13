@@ -1,10 +1,10 @@
-import { saveAs } from 'file-saver';
+import { saveAs } from "file-saver";
 
 const borderDefinition = {
-  top: { style: 'thin' },
-  left: { style: 'thin' },
-  bottom: { style: 'thin' },
-  right: { style: 'thin' },
+  top: { style: "thin" },
+  left: { style: "thin" },
+  bottom: { style: "thin" },
+  right: { style: "thin" },
 };
 
 const exportExcel = async (title, fileName, sheets, theme) => {
@@ -12,9 +12,9 @@ const exportExcel = async (title, fileName, sheets, theme) => {
     return;
   }
 
-  const { default: ExcelJS } = await import('exceljs');
+  const { default: ExcelJS } = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
-  const headerColor = `FF${theme.palette.primary.main.replace('#', '').toUpperCase()}`;
+  const headerColor = `FF${theme.palette.primary.main.replace("#", "").toUpperCase()}`;
 
   sheets.forEach((rows, sheetTitle) => {
     const worksheet = workbook.addWorksheet(sheetTitle);
@@ -31,8 +31,8 @@ const exportExcel = async (title, fileName, sheets, theme) => {
       cell.border = borderDefinition;
       cell.font = {};
       cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
+        type: "pattern",
+        pattern: "solid",
         fgColor: { argb: headerColor },
       };
     });
@@ -51,7 +51,7 @@ const exportExcel = async (title, fileName, sheets, theme) => {
       rows.forEach((item) => {
         const value = item[header];
         if (value !== null && value !== undefined) {
-          const text = typeof value === 'string' ? value : String(value);
+          const text = typeof value === "string" ? value : String(value);
           maxLength = Math.max(maxLength, text.length);
         }
       });
@@ -60,7 +60,7 @@ const exportExcel = async (title, fileName, sheets, theme) => {
   });
 
   const blob = new Blob([await workbook.xlsx.writeBuffer()], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
   saveAs(blob, fileName);
 };

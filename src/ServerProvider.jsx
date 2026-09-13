@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Alert, IconButton } from '@mui/material';
-import ReplayIcon from '@mui/icons-material/Replay';
-import { useDispatch, useSelector } from 'react-redux';
-import { useAsyncTask } from './reactHelper';
-import { sessionActions } from './store';
-import Loader from './common/components/Loader';
+import { useState } from "react";
+import { Alert, IconButton } from "@mui/material";
+import ReplayIcon from "@mui/icons-material/Replay";
+import { useDispatch, useSelector } from "react-redux";
+import { useAsyncTask } from "./reactHelper";
+import { sessionActions } from "./store";
+import Loader from "./common/components/Loader";
 
 const ServerProvider = ({ children }) => {
   const dispatch = useDispatch();
@@ -16,7 +16,7 @@ const ServerProvider = ({ children }) => {
     async ({ signal }) => {
       if (!error) {
         try {
-          const response = await fetch('/api/server', { signal });
+          const response = await fetch("/api/server", { signal });
           if (response.ok) {
             dispatch(sessionActions.updateServer(await response.json()));
           } else {
@@ -36,7 +36,11 @@ const ServerProvider = ({ children }) => {
       <Alert
         severity="error"
         action={
-          <IconButton color="inherit" size="small" onClick={() => setError(null)}>
+          <IconButton
+            color="inherit"
+            size="small"
+            onClick={() => setError(null)}
+          >
             <ReplayIcon fontSize="inherit" />
           </IconButton>
         }

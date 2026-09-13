@@ -1,9 +1,9 @@
-import { makeStyles } from 'tss-react/mui';
-import { useSelector } from 'react-redux';
+import { makeStyles } from "tss-react/mui";
+import { useSelector } from "react-redux";
 
 const useStyles = makeStyles()((theme) => ({
   root: {
-    display: 'inline-flex',
+    display: "inline-flex",
     width: theme.spacing(16),
     height: theme.spacing(1),
     backgroundColor: theme.palette.action.disabledBackground,
@@ -18,14 +18,19 @@ const useStyles = makeStyles()((theme) => ({
 
 const MotionBar = ({ deviceId }) => {
   const { classes } = useStyles();
-  const segments = useSelector((state) => state.motion?.items?.[deviceId] || []);
+  const segments = useSelector(
+    (state) => state.motion?.items?.[deviceId] || [],
+  );
 
   return (
     <span className={classes.root}>
       {segments.map((segment, segmentIndex) => (
         <span
           key={segmentIndex}
-          style={{ flexGrow: segment.value, minWidth: segments.length > 16 ? 0 : 4 }}
+          style={{
+            flexGrow: segment.value,
+            minWidth: segments.length > 16 ? 0 : 4,
+          }}
           className={classes[segment.type]}
         />
       ))}

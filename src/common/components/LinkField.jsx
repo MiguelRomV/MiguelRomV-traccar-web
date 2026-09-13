@@ -1,9 +1,9 @@
-import { Autocomplete, Snackbar, TextField } from '@mui/material';
-import { useState } from 'react';
-import { useCatchCallback, useAsyncTask } from '../../reactHelper';
-import { snackBarDurationShortMs } from '../util/duration';
-import { useTranslation } from './LocalizationProvider';
-import fetchOrThrow from '../util/fetchOrThrow';
+import { Autocomplete, Snackbar, TextField } from "@mui/material";
+import { useState } from "react";
+import { useCatchCallback, useAsyncTask } from "../../reactHelper";
+import { snackBarDurationShortMs } from "../util/duration";
+import { useTranslation } from "./LocalizationProvider";
+import fetchOrThrow from "../util/fetchOrThrow";
 
 const defaultTitleGetter = (item) => item.name;
 
@@ -53,9 +53,9 @@ const LinkField = ({
           .filter((it) => !oldValue.includes(it))
           .forEach((added) => {
             results.push(
-              fetchOrThrow('/api/permissions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+              fetchOrThrow("/api/permissions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(createBody(added)),
               }),
             );
@@ -64,9 +64,9 @@ const LinkField = ({
           .filter((it) => !newValue.includes(it))
           .forEach((removed) => {
             results.push(
-              fetchOrThrow('/api/permissions', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
+              fetchOrThrow("/api/permissions", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(createBody(removed)),
               }),
             );
@@ -87,12 +87,12 @@ const LinkField = ({
         isOptionEqualToValue={(i1, i2) => i1.id === i2.id}
         options={items || []}
         getOptionLabel={(item) => titleGetter(item)}
-        slotProps={{ chip: { size: 'small' } }}
+        slotProps={{ chip: { size: "small" } }}
         renderInput={(params) => (
           <TextField
             {...params}
             label={label}
-            placeholder={!active ? t('reportShow') : null}
+            placeholder={!active ? t("reportShow") : null}
             onFocus={() => setActive(true)}
             slotProps={{
               ...params.slotProps,
@@ -111,7 +111,7 @@ const LinkField = ({
         open={Boolean(updated)}
         onClose={() => setUpdated(false)}
         autoHideDuration={snackBarDurationShortMs}
-        message={t('sharedSaved')}
+        message={t("sharedSaved")}
       />
     </>
   );

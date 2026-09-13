@@ -1,30 +1,30 @@
-import { lazy, Suspense, useState, useCallback, useEffect } from 'react';
-import { Paper } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useDispatch, useSelector } from 'react-redux';
-import DeviceList from './DeviceList';
-import StatusCard from '../common/components/StatusCard';
-import { devicesActions } from '../store';
-import usePersistedState from '../common/util/usePersistedState';
-import EventsDrawer from './EventsDrawer';
-import useFilter from './useFilter';
-import MainToolbar from './MainToolbar';
-import { useAttributePreference } from '../common/util/preferences';
+import { lazy, Suspense, useState, useCallback, useEffect } from "react";
+import { Paper } from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useDispatch, useSelector } from "react-redux";
+import DeviceList from "./DeviceList";
+import StatusCard from "../common/components/StatusCard";
+import { devicesActions } from "../store";
+import usePersistedState from "../common/util/usePersistedState";
+import EventsDrawer from "./EventsDrawer";
+import useFilter from "./useFilter";
+import MainToolbar from "./MainToolbar";
+import { useAttributePreference } from "../common/util/preferences";
 
-const MainMap = lazy(() => import('./MainMap'));
+const MainMap = lazy(() => import("./MainMap"));
 
 const useStyles = makeStyles()((theme) => ({
   root: {
-    height: '100%',
+    height: "100%",
   },
   sidebar: {
-    pointerEvents: 'none',
-    display: 'flex',
-    flexDirection: 'column',
-    [theme.breakpoints.up('md')]: {
-      position: 'fixed',
+    pointerEvents: "none",
+    display: "flex",
+    flexDirection: "column",
+    [theme.breakpoints.up("md")]: {
+      position: "fixed",
       left: theme.dimensions.sideNavWidth,
       top: 0,
       height: `calc(100% - ${theme.spacing(3)})`,
@@ -32,29 +32,29 @@ const useStyles = makeStyles()((theme) => ({
       margin: theme.spacing(1.5),
       zIndex: 3,
     },
-    [theme.breakpoints.down('md')]: {
-      height: '100%',
-      width: '100%',
+    [theme.breakpoints.down("md")]: {
+      height: "100%",
+      width: "100%",
     },
   },
   header: {
-    pointerEvents: 'auto',
+    pointerEvents: "auto",
     zIndex: 6,
   },
   middle: {
     flex: 1,
-    display: 'grid',
+    display: "grid",
     minHeight: 0,
   },
   contentMap: {
-    pointerEvents: 'auto',
-    gridArea: '1 / 1',
+    pointerEvents: "auto",
+    gridArea: "1 / 1",
   },
   contentList: {
-    pointerEvents: 'auto',
-    gridArea: '1 / 1',
+    pointerEvents: "auto",
+    gridArea: "1 / 1",
     zIndex: 4,
-    display: 'flex',
+    display: "flex",
     minHeight: 0,
   },
 }));
@@ -64,9 +64,9 @@ const MainPage = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
 
-  const desktop = useMediaQuery(theme.breakpoints.up('md'));
+  const desktop = useMediaQuery(theme.breakpoints.up("md"));
 
-  const mapOnSelect = useAttributePreference('mapOnSelect', true);
+  const mapOnSelect = useAttributePreference("mapOnSelect", true);
 
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
   const positions = useSelector((state) => state.session.positions);
@@ -77,15 +77,15 @@ const MainPage = () => {
 
   const [filteredDevices, setFilteredDevices] = useState([]);
 
-  const [keyword, setKeyword] = useState('');
-  const [filter, setFilter] = usePersistedState('deviceFilter', {
+  const [keyword, setKeyword] = useState("");
+  const [filter, setFilter] = usePersistedState("deviceFilter", {
     statuses: [],
     groups: [],
     geofences: [],
-    motion: '',
+    motion: "",
   });
-  const [filterSort, setFilterSort] = usePersistedState('filterSort', '');
-  const [filterMap, setFilterMap] = usePersistedState('filterMap', false);
+  const [filterSort, setFilterSort] = usePersistedState("filterSort", "");
+  const [filterMap, setFilterMap] = usePersistedState("filterMap", false);
 
   const [devicesOpen, setDevicesOpen] = useState(desktop);
   const [eventsOpen, setEventsOpen] = useState(false);
@@ -150,7 +150,7 @@ const MainPage = () => {
           <Paper
             square
             className={classes.contentList}
-            style={devicesOpen ? {} : { visibility: 'hidden' }}
+            style={devicesOpen ? {} : { visibility: "hidden" }}
           >
             <DeviceList devices={filteredDevices} />
           </Paper>

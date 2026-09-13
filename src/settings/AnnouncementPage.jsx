@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Accordion,
   AccordionSummary,
@@ -8,16 +8,16 @@ import {
   Container,
   TextField,
   Button,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import PageLayout from '../common/components/PageLayout';
-import SettingsMenu from './components/SettingsMenu';
-import { useCatchCallback } from '../reactHelper';
-import useSettingsStyles from './common/useSettingsStyles';
-import SelectField from '../common/components/SelectField';
-import { prefixString } from '../common/util/stringUtils';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import PageLayout from "../common/components/PageLayout";
+import SettingsMenu from "./components/SettingsMenu";
+import { useCatchCallback } from "../reactHelper";
+import useSettingsStyles from "./common/useSettingsStyles";
+import SelectField from "../common/components/SelectField";
+import { prefixString } from "../common/util/stringUtils";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const AnnouncementPage = () => {
   const navigate = useNavigate();
@@ -30,21 +30,24 @@ const AnnouncementPage = () => {
 
   const handleSend = useCatchCallback(async () => {
     const query = new URLSearchParams();
-    users.forEach((userId) => query.append('userId', userId));
-    await fetchOrThrow(`/api/notifications/send/${notificator}?${query.toString()}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(message),
-    });
+    users.forEach((userId) => query.append("userId", userId));
+    await fetchOrThrow(
+      `/api/notifications/send/${notificator}?${query.toString()}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(message),
+      },
+    );
     navigate(-1);
   }, [users, notificator, message, navigate]);
 
   return (
-    <PageLayout menu={<SettingsMenu />} breadcrumbs={['serverAnnouncement']}>
+    <PageLayout menu={<SettingsMenu />} breadcrumbs={["serverAnnouncement"]}>
       <Container maxWidth="xs" className={classes.container}>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">{t('sharedRequired')}</Typography>
+            <Typography variant="subtitle1">{t("sharedRequired")}</Typography>
           </AccordionSummary>
           <AccordionDetails className={classes.details}>
             <SelectField
@@ -52,31 +55,38 @@ const AnnouncementPage = () => {
               value={users}
               onChange={(e) => setUsers(e.target.value)}
               endpoint="/api/users"
-              label={t('settingsUsers')}
+              label={t("settingsUsers")}
             />
             <SelectField
               value={notificator}
               onChange={(e) => setNotificator(e.target.value)}
               endpoint="/api/notifications/notificators?announcement=true"
               keyGetter={(it) => it.type}
-              titleGetter={(it) => t(prefixString('notificator', it.type))}
-              label={t('notificationNotificators')}
+              titleGetter={(it) => t(prefixString("notificator", it.type))}
+              label={t("notificationNotificators")}
             />
             <TextField
               value={message.subject}
-              onChange={(e) => setMessage({ ...message, subject: e.target.value })}
-              label={t('sharedSubject')}
+              onChange={(e) =>
+                setMessage({ ...message, subject: e.target.value })
+              }
+              label={t("sharedSubject")}
             />
             <TextField
               value={message.body}
               onChange={(e) => setMessage({ ...message, body: e.target.value })}
-              label={t('commandMessage')}
+              label={t("commandMessage")}
             />
           </AccordionDetails>
         </Accordion>
         <div className={classes.buttons}>
-          <Button type="button" color="primary" variant="outlined" onClick={() => navigate(-1)}>
-            {t('sharedCancel')}
+          <Button
+            type="button"
+            color="primary"
+            variant="outlined"
+            onClick={() => navigate(-1)}
+          >
+            {t("sharedCancel")}
           </Button>
           <Button
             type="button"
@@ -85,7 +95,7 @@ const AnnouncementPage = () => {
             onClick={handleSend}
             disabled={!notificator || !message.subject || !message.body}
           >
-            {t('commandSend')}
+            {t("commandSend")}
           </Button>
         </div>
       </Container>

@@ -1,11 +1,11 @@
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from "tss-react/mui";
 
 export default makeStyles()((theme) => ({
   table: {
     marginBottom: theme.spacing(10),
   },
   columnAction: {
-    width: '1%',
+    width: "1%",
     paddingRight: theme.spacing(1),
   },
   container: {
@@ -14,20 +14,20 @@ export default makeStyles()((theme) => ({
   buttons: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
-    display: 'flex',
-    justifyContent: 'space-evenly',
-    '& > *': {
-      flexBasis: '33%',
+    display: "flex",
+    justifyContent: "space-evenly",
+    "& > *": {
+      flexBasis: "33%",
     },
   },
   details: {
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
     gap: theme.spacing(2),
     paddingBottom: theme.spacing(3),
   },
   verticalActions: {
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
   },
 }));

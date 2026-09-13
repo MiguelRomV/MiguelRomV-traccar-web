@@ -1,19 +1,26 @@
-import { useReducer, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Table, TableRow, TableCell, TableHead, TableBody, IconButton } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { useAsyncTask } from '../reactHelper';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import PageLayout from '../common/components/PageLayout';
-import ReportsMenu from './components/ReportsMenu';
-import TableShimmer from '../common/components/TableShimmer';
-import RemoveDialog from '../common/components/RemoveDialog';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+import { useReducer, useState } from "react";
+import { useSelector } from "react-redux";
+import {
+  Table,
+  TableRow,
+  TableCell,
+  TableHead,
+  TableBody,
+  IconButton,
+} from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useAsyncTask } from "../reactHelper";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import PageLayout from "../common/components/PageLayout";
+import ReportsMenu from "./components/ReportsMenu";
+import TableShimmer from "../common/components/TableShimmer";
+import RemoveDialog from "../common/components/RemoveDialog";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const useStyles = makeStyles()((theme) => ({
   columnAction: {
-    width: '1%',
+    width: "1%",
     paddingRight: theme.spacing(1),
   },
 }));
@@ -34,7 +41,7 @@ const ScheduledPage = () => {
       void reloadKey;
       setLoading(true);
       try {
-        const response = await fetchOrThrow('/api/reports', { signal });
+        const response = await fetchOrThrow("/api/reports", { signal });
         setItems(await response.json());
       } finally {
         setLoading(false);
@@ -45,29 +52,32 @@ const ScheduledPage = () => {
 
   const formatType = (type) => {
     switch (type) {
-      case 'events':
-        return t('reportEvents');
-      case 'route':
-        return t('reportPositions');
-      case 'summary':
-        return t('reportSummary');
-      case 'trips':
-        return t('reportTrips');
-      case 'stops':
-        return t('reportStops');
+      case "events":
+        return t("reportEvents");
+      case "route":
+        return t("reportPositions");
+      case "summary":
+        return t("reportSummary");
+      case "trips":
+        return t("reportTrips");
+      case "stops":
+        return t("reportStops");
       default:
         return type;
     }
   };
 
   return (
-    <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportScheduled']}>
+    <PageLayout
+      menu={<ReportsMenu />}
+      breadcrumbs={["reportTitle", "reportScheduled"]}
+    >
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>{t('sharedType')}</TableCell>
-            <TableCell>{t('sharedDescription')}</TableCell>
-            <TableCell>{t('sharedCalendar')}</TableCell>
+            <TableCell>{t("sharedType")}</TableCell>
+            <TableCell>{t("sharedDescription")}</TableCell>
+            <TableCell>{t("sharedCalendar")}</TableCell>
             <TableCell className={classes.columnAction} />
           </TableRow>
         </TableHead>
@@ -79,7 +89,10 @@ const ScheduledPage = () => {
                 <TableCell>{item.description}</TableCell>
                 <TableCell>{calendars[item.calendarId].name}</TableCell>
                 <TableCell className={classes.columnAction} padding="none">
-                  <IconButton size="small" onClick={() => setRemovingId(item.id)}>
+                  <IconButton
+                    size="small"
+                    onClick={() => setRemovingId(item.id)}
+                  >
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </TableCell>
@@ -91,7 +104,7 @@ const ScheduledPage = () => {
         </TableBody>
       </Table>
       <RemoveDialog
-        style={{ transform: 'none' }}
+        style={{ transform: "none" }}
         open={!!removingId}
         endpoint="reports"
         itemId={removingId}

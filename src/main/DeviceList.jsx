@@ -1,47 +1,59 @@
-import { useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { IconButton, Typography } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { makeStyles } from 'tss-react/mui';
-import { devicesActions } from '../store';
-import { useAsyncTask } from '../reactHelper';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import { useDeviceReadonly } from '../common/util/permissions';
-import DeviceRow from './DeviceRow';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+import { useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { IconButton, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { makeStyles } from "tss-react/mui";
+import { devicesActions } from "../store";
+import { useAsyncTask } from "../reactHelper";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import { useDeviceReadonly } from "../common/util/permissions";
+import DeviceRow from "./DeviceRow";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const useStyles = makeStyles()((theme) => ({
-  root: { height: '100%', minWidth: 0, display: 'flex', flexDirection: 'column' },
-  scroll: { flex: 1, minHeight: 0, overflowY: 'auto' },
+  root: {
+    height: "100%",
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+  },
+  scroll: { flex: 1, minHeight: 0, overflowY: "auto" },
   groupHeader: {
-    width: '100%',
+    width: "100%",
     minHeight: 38,
-    display: 'flex',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
     gap: theme.spacing(0.5),
     padding: theme.spacing(0.75, 1.25),
     border: 0,
     color: theme.palette.text.secondary,
-    backgroundColor: '#F5F6F8',
-    cursor: 'pointer',
-    textAlign: 'left',
+    backgroundColor: "#F5F6F8",
+    cursor: "pointer",
+    textAlign: "left",
   },
   groupName: { flex: 1, fontSize: 12, fontWeight: 600 },
   footer: {
     minHeight: 52,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-around',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-around",
     borderTop: `1px solid ${theme.palette.divider}`,
     backgroundColor: theme.palette.background.paper,
   },
-  add: { color: theme.palette.common.white, backgroundColor: theme.palette.primary.main },
-  empty: { padding: theme.spacing(4, 2), color: theme.palette.text.secondary, textAlign: 'center' },
+  add: {
+    color: theme.palette.common.white,
+    backgroundColor: theme.palette.primary.main,
+  },
+  empty: {
+    padding: theme.spacing(4, 2),
+    color: theme.palette.text.secondary,
+    textAlign: "center",
+  },
 }));
 
 const DeviceList = ({ devices }) => {
@@ -56,7 +68,7 @@ const DeviceList = ({ devices }) => {
 
   useAsyncTask(
     async ({ signal }) => {
-      const response = await fetchOrThrow('/api/devices', { signal });
+      const response = await fetchOrThrow("/api/devices", { signal });
       dispatch(devicesActions.refresh(await response.json()));
     },
     [dispatch],
@@ -72,7 +84,9 @@ const DeviceList = ({ devices }) => {
     return [...result.entries()].sort(([firstId], [secondId]) => {
       if (firstId === 0) return -1;
       if (secondId === 0) return 1;
-      return (groups[firstId]?.name || '').localeCompare(groups[secondId]?.name || '');
+      return (groups[firstId]?.name || "").localeCompare(
+        groups[secondId]?.name || "",
+      );
     });
   }, [devices, groups]);
 
@@ -82,14 +96,19 @@ const DeviceList = ({ devices }) => {
         {grouped.length ? (
           grouped.map(([groupId, groupDevices]) => {
             const isCollapsed = collapsed[groupId];
-            const name = groupId ? groups[groupId]?.name || t('deviceNoGroup') : t('deviceNoGroup');
+            const name = groupId
+              ? groups[groupId]?.name || t("deviceNoGroup")
+              : t("deviceNoGroup");
             return (
               <section key={groupId}>
                 <button
                   type="button"
                   className={classes.groupHeader}
                   onClick={() =>
-                    setCollapsed((current) => ({ ...current, [groupId]: !isCollapsed }))
+                    setCollapsed((current) => ({
+                      ...current,
+                      [groupId]: !isCollapsed,
+                    }))
                   }
                 >
                   {isCollapsed ? (
@@ -102,29 +121,34 @@ const DeviceList = ({ devices }) => {
                   </Typography>
                 </button>
                 {!isCollapsed &&
-                  groupDevices.map((device) => <DeviceRow key={device.id} device={device} />)}
+                  groupDevices.map((device) => (
+                    <DeviceRow key={device.id} device={device} />
+                  ))}
               </section>
             );
           })
         ) : (
-          <div className={classes.empty}>{t('sharedNoData')}</div>
+          <div className={classes.empty}>{t("sharedNoData")}</div>
         )}
       </div>
       <div className={classes.footer}>
         <IconButton
           className={classes.add}
-          onClick={() => navigate('/settings/device')}
+          onClick={() => navigate("/settings/device")}
           disabled={deviceReadonly}
         >
           <AddIcon />
         </IconButton>
         <IconButton
-          onClick={() => selectedDeviceId && navigate(`/settings/device/${selectedDeviceId}/share`)}
+          onClick={() =>
+            selectedDeviceId &&
+            navigate(`/settings/device/${selectedDeviceId}/share`)
+          }
           disabled={!selectedDeviceId}
         >
           <ShareOutlinedIcon />
         </IconButton>
-        <IconButton onClick={() => navigate('/settings/preferences')}>
+        <IconButton onClick={() => navigate("/settings/preferences")}>
           <SettingsOutlinedIcon />
         </IconButton>
       </div>

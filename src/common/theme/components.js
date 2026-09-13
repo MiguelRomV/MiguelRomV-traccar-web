@@ -8,10 +8,10 @@ export default {
     styleOverrides: {
       root: ({ theme }) => ({
         backgroundColor: theme.palette.background.default,
-        '& .MuiOutlinedInput-notchedOutline': {
-          borderColor: '#E0E3E8',
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#E0E3E8",
         },
-        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
           borderColor: theme.palette.primary.main,
         },
       }),
@@ -20,8 +20,8 @@ export default {
   MuiInput: {
     styleOverrides: {
       root: ({ theme }) => ({
-        '&::before': { borderBottomColor: '#E0E3E8' },
-        '&::after': { borderBottomColor: theme.palette.primary.main },
+        "&::before": { borderBottomColor: "#E0E3E8" },
+        "&::after": { borderBottomColor: theme.palette.primary.main },
       }),
     },
   },
@@ -35,9 +35,9 @@ export default {
   MuiTab: {
     styleOverrides: {
       root: ({ theme }) => ({
-        backgroundColor: 'transparent',
-        textTransform: 'none',
-        '&.Mui-selected': {
+        backgroundColor: "transparent",
+        textTransform: "none",
+        "&.Mui-selected": {
           color: theme.palette.primary.main,
         },
       }),
@@ -46,7 +46,7 @@ export default {
   MuiButton: {
     styleOverrides: {
       sizeMedium: {
-        height: '40px',
+        height: "40px",
       },
       containedPrimary: ({ theme }) => ({
         backgroundColor: theme.palette.primary.main,
@@ -56,7 +56,7 @@ export default {
   MuiCheckbox: {
     styleOverrides: {
       root: ({ theme }) => ({
-        '&.Mui-checked, &.MuiCheckbox-indeterminate': {
+        "&.Mui-checked, &.MuiCheckbox-indeterminate": {
           color: theme.palette.primary.main,
         },
       }),
@@ -65,11 +65,11 @@ export default {
   MuiIconButton: {
     styleOverrides: {
       root: ({ theme }) => ({
-        transition: theme.transitions.create('background-color', {
+        transition: theme.transitions.create("background-color", {
           duration: theme.transitions.duration.shortest,
         }),
-        '&:hover': {
-          backgroundColor: '#F5F6F8',
+        "&:hover": {
+          backgroundColor: "#F5F6F8",
         },
       }),
     },
@@ -78,20 +78,22 @@ export default {
     styleOverrides: {
       root: ({ ownerState }) => ({
         ...(!ownerState.square && { borderRadius: 8 }),
-        ...(ownerState.elevation > 0 && { boxShadow: '0 2px 10px rgba(15, 23, 42, 0.12)' }),
+        ...(ownerState.elevation > 0 && {
+          boxShadow: "0 2px 10px rgba(15, 23, 42, 0.12)",
+        }),
       }),
     },
   },
   MuiFormControl: {
     defaultProps: {
-      size: 'small',
+      size: "small",
     },
   },
   MuiSnackbar: {
     defaultProps: {
       anchorOrigin: {
-        vertical: 'bottom',
-        horizontal: 'center',
+        vertical: "bottom",
+        horizontal: "center",
       },
     },
   },
@@ -104,7 +106,7 @@ export default {
   MuiTableCell: {
     styleOverrides: {
       root: ({ theme }) => ({
-        '@media print': {
+        "@media print": {
           color: theme.palette.alwaysDark.main,
         },
       }),

@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Link } from '@mui/material';
-import { useCatch } from '../../reactHelper';
-import { useTranslation } from '../../common/components/LocalizationProvider';
-import fetchOrThrow from '../../common/util/fetchOrThrow';
+import { useState } from "react";
+import { Link } from "@mui/material";
+import { useCatch } from "../../reactHelper";
+import { useTranslation } from "../../common/components/LocalizationProvider";
+import fetchOrThrow from "../../common/util/fetchOrThrow";
 
 const DeviceUsersValue = ({ deviceId }) => {
   const t = useTranslation();
@@ -16,11 +16,11 @@ const DeviceUsersValue = ({ deviceId }) => {
   });
 
   if (users) {
-    return users.map((user) => user.name).join(', ');
+    return users.map((user) => user.name).join(", ");
   }
   return (
     <Link href="#" onClick={loadUsers}>
-      {t('reportShow')}
+      {t("reportShow")}
     </Link>
   );
 };

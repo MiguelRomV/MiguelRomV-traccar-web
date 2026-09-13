@@ -1,17 +1,17 @@
-import * as maplibregl from 'maplibre-gl';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { usePreference } from '../../common/util/preferences';
-import { map } from '../core/MapView';
-import { toMapCoordinates } from '../core/mapUtil';
+import * as maplibregl from "maplibre-gl";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { usePreference } from "../../common/util/preferences";
+import { map } from "../core/MapView";
+import { toMapCoordinates } from "../core/mapUtil";
 
 const MapDefaultCamera = ({ filteredPositions }) => {
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
   const positions = useSelector((state) => state.session.positions);
 
-  const defaultLatitude = usePreference('latitude');
-  const defaultLongitude = usePreference('longitude');
-  const defaultZoom = usePreference('zoom', 0);
+  const defaultLatitude = usePreference("latitude");
+  const defaultLongitude = usePreference("longitude");
+  const defaultZoom = usePreference("zoom", 0);
 
   const [initialized, setInitialized] = useState(false);
 
@@ -34,8 +34,8 @@ const MapDefaultCamera = ({ filteredPositions }) => {
         });
         setInitialized(true);
       } else {
-        const coordinates = (filteredPositions || Object.values(positions)).map((item) =>
-          toMapCoordinates(item.longitude, item.latitude),
+        const coordinates = (filteredPositions || Object.values(positions)).map(
+          (item) => toMapCoordinates(item.longitude, item.latitude),
         );
         if (coordinates.length > 1) {
           const bounds = coordinates.reduce(

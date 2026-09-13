@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
-import { map, useMapReady } from './core/MapView';
-import { useTheme } from '@mui/material';
+import { map, useMapReady } from "./core/MapView";
+import { useTheme } from "@mui/material";
 
 const MapPadding = ({ start }) => {
   const theme = useTheme();
@@ -9,12 +9,14 @@ const MapPadding = ({ start }) => {
 
   useEffect(() => {
     if (!mapReady) return;
-    const startKey = theme.direction === 'rtl' ? 'right' : 'left';
+    const startKey = theme.direction === "rtl" ? "right" : "left";
     const topStart = document.querySelector(`.maplibregl-ctrl-top-${startKey}`);
-    const bottomStart = document.querySelector(`.maplibregl-ctrl-bottom-${startKey}`);
+    const bottomStart = document.querySelector(
+      `.maplibregl-ctrl-bottom-${startKey}`,
+    );
     topStart.style.insetInlineStart = `${start}px`;
     bottomStart.style.insetInlineStart = `${start}px`;
-    map.setPadding({ [theme.direction === 'rtl' ? 'right' : 'left']: start });
+    map.setPadding({ [theme.direction === "rtl" ? "right" : "left"]: start });
     return () => {
       topStart.style.insetInlineStart = 0;
       bottomStart.style.insetInlineStart = 0;

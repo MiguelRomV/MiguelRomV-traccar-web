@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react';
-import { Autocomplete, TextField, Chip } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { useAsyncTask } from '../../reactHelper';
-import fetchOrThrow from '../util/fetchOrThrow';
+import { useEffect, useState } from "react";
+import { Autocomplete, TextField, Chip } from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import { useAsyncTask } from "../../reactHelper";
+import fetchOrThrow from "../util/fetchOrThrow";
 
 const useStyles = makeStyles()(() => ({
   autocompleteMultiple: {
-    '& .MuiAutocomplete-inputRoot': {
-      flexWrap: 'nowrap',
-      overflow: 'hidden',
+    "& .MuiAutocomplete-inputRoot": {
+      flexWrap: "nowrap",
+      overflow: "hidden",
     },
-    '& .MuiAutocomplete-input': {
-      minWidth: '1px !important',
+    "& .MuiAutocomplete-input": {
+      minWidth: "1px !important",
     },
-    '& .MuiAutocomplete-tag .MuiChip-label': {
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
+    "& .MuiAutocomplete-tag .MuiChip-label": {
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
     },
   },
 }));
@@ -27,7 +27,7 @@ const SelectField = ({
   multiple,
   value = null,
   emptyValue = null,
-  emptyTitle = '',
+  emptyTitle = "",
   onChange,
   endpoint,
   data,
@@ -42,7 +42,7 @@ const SelectField = ({
   const [items, setItems] = useState();
 
   const findOption = (option) => {
-    if (typeof option === 'object') {
+    if (typeof option === "object") {
       return option;
     }
     return items.find((obj) => keyGetter(obj) === option);
@@ -72,9 +72,11 @@ const SelectField = ({
 
     return (
       <Autocomplete
-        size={singleLine ? 'small' : 'medium'}
+        size={singleLine ? "small" : "medium"}
         multiple={multiple}
-        className={multiple && singleLine ? classes.autocompleteMultiple : undefined}
+        className={
+          multiple && singleLine ? classes.autocompleteMultiple : undefined
+        }
         options={items}
         getOptionLabel={getOptionLabel}
         renderOption={({ key, ...props }, option) => (
@@ -92,12 +94,18 @@ const SelectField = ({
             if (allValue && nextValue.length > 1) {
               const previousHadAll = (value || []).includes(allValue);
               if (nextValue.includes(allValue)) {
-                nextValue = previousHadAll ? nextValue.filter((it) => it !== allValue) : [allValue];
+                nextValue = previousHadAll
+                  ? nextValue.filter((it) => it !== allValue)
+                  : [allValue];
               }
             }
             onChange({ target: { value: nextValue } });
           } else {
-            onChange({ target: { value: selectedValue ? keyGetter(selectedValue) : emptyValue } });
+            onChange({
+              target: {
+                value: selectedValue ? keyGetter(selectedValue) : emptyValue,
+              },
+            });
           }
         }}
         renderValue={
@@ -116,7 +124,11 @@ const SelectField = ({
                       sx={{ minWidth: 0 }}
                     />
                     {tagValue.length > 1 && (
-                      <Chip label={`${tagValue.length - 1}`} size="small" sx={{ flexShrink: 0 }} />
+                      <Chip
+                        label={`${tagValue.length - 1}`}
+                        size="small"
+                        sx={{ flexShrink: 0 }}
+                      />
                     )}
                   </>
                 );
@@ -130,13 +142,17 @@ const SelectField = ({
             {...params}
             label={label}
             helperText={helperText}
-            placeholder={multiple && !autocompleteValue.length ? placeholder : undefined}
+            placeholder={
+              multiple && !autocompleteValue.length ? placeholder : undefined
+            }
             slotProps={{
               ...params.slotProps,
               inputLabel: {
                 ...params.slotProps?.inputLabel,
                 shrink:
-                  (multiple && !autocompleteValue.length && Boolean(placeholder)) ||
+                  (multiple &&
+                    !autocompleteValue.length &&
+                    Boolean(placeholder)) ||
                   params.slotProps?.inputLabel?.shrink,
               },
             }}

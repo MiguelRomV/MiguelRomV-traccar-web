@@ -1,7 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const { reducer, actions } = createSlice({
-  name: 'session',
+  name: "session",
   initialState: {
     server: null,
     user: null,
@@ -32,17 +32,22 @@ const { reducer, actions } = createSlice({
     },
     updatePositions(state, action) {
       const liveRoutes =
-        state.user.attributes.mapLiveRoutes || state.server.attributes.mapLiveRoutes || 'none';
+        state.user.attributes.mapLiveRoutes ||
+        state.server.attributes.mapLiveRoutes ||
+        "none";
       const liveRoutesLimit =
-        state.user.attributes['web.liveRouteLength'] ||
-        state.server.attributes['web.liveRouteLength'] ||
+        state.user.attributes["web.liveRouteLength"] ||
+        state.server.attributes["web.liveRouteLength"] ||
         10;
       action.payload.forEach((position) => {
         state.positions[position.deviceId] = position;
-        if (liveRoutes !== 'none') {
+        if (liveRoutes !== "none") {
           const route = state.history[position.deviceId] || [];
           const last = route.at(-1);
-          if (!last || (last[0] !== position.longitude && last[1] !== position.latitude)) {
+          if (
+            !last ||
+            (last[0] !== position.longitude && last[1] !== position.latitude)
+          ) {
             state.history[position.deviceId] = [
               ...route.slice(1 - liveRoutesLimit),
               [position.longitude, position.latitude],

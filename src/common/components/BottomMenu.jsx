@@ -1,9 +1,9 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
-import { useTranslation } from './LocalizationProvider';
-import { logout, navigationItems } from './SideNav';
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import { useTranslation } from "./LocalizationProvider";
+import { logout, navigationItems } from "./SideNav";
 
 const BottomMenu = () => {
   const navigate = useNavigate();
@@ -12,7 +12,9 @@ const BottomMenu = () => {
   const t = useTranslation();
   const user = useSelector((state) => state.session.user);
   const current = navigationItems.find((item) =>
-    item.href === '/' ? location.pathname === '/' : location.pathname.startsWith(item.href),
+    item.href === "/"
+      ? location.pathname === "/"
+      : location.pathname.startsWith(item.href),
   )?.value;
   return (
     <Paper square elevation={3}>
@@ -20,9 +22,12 @@ const BottomMenu = () => {
         value={current || false}
         showLabels
         sx={{
-          overflowX: 'auto',
-          justifyContent: 'flex-start',
-          '& .MuiBottomNavigationAction-root': { minWidth: 72, flex: '0 0 72px' },
+          overflowX: "auto",
+          justifyContent: "flex-start",
+          "& .MuiBottomNavigationAction-root": {
+            minWidth: 72,
+            flex: "0 0 72px",
+          },
         }}
       >
         {navigationItems.map((item) => {
@@ -39,7 +44,7 @@ const BottomMenu = () => {
         })}
         <BottomNavigationAction
           value="logout"
-          label={t('loginLogout')}
+          label={t("loginLogout")}
           icon={<LogoutOutlinedIcon />}
           onClick={() => logout(user, dispatch, navigate)}
         />

@@ -1,29 +1,32 @@
-import dayjs from 'dayjs';
-import { useDispatch } from 'react-redux';
-import { motionActions } from '../store';
-import { useAttributePreference } from '../common/util/preferences';
-import { useAsyncTask } from '../reactHelper';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+import dayjs from "dayjs";
+import { useDispatch } from "react-redux";
+import { motionActions } from "../store";
+import { useAttributePreference } from "../common/util/preferences";
+import { useAsyncTask } from "../reactHelper";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const buildSegments = (events, fromTimestamp, toTimestamp) => {
   const segments = [];
   let cursor = fromTimestamp;
   const firstEvent = events.length ? events[0] : null;
-  let state = 'stopped';
-  if (firstEvent && firstEvent.type === 'deviceStopped') {
-    state = 'moving';
+  let state = "stopped";
+  if (firstEvent && firstEvent.type === "deviceStopped") {
+    state = "moving";
   }
 
   events.forEach((event) => {
     const timestamp = dayjs(event.eventTime).valueOf();
-    const clampedTimestamp = Math.max(fromTimestamp, Math.min(toTimestamp, timestamp));
+    const clampedTimestamp = Math.max(
+      fromTimestamp,
+      Math.min(toTimestamp, timestamp),
+    );
     if (clampedTimestamp > cursor) {
       segments.push({
         type: state,
         value: clampedTimestamp - cursor,
       });
     }
-    state = event.type === 'deviceMoving' ? 'moving' : 'stopped';
+    state = event.type === "deviceMoving" ? "moving" : "stopped";
     cursor = clampedTimestamp;
   });
 
@@ -35,7 +38,7 @@ const buildSegments = (events, fromTimestamp, toTimestamp) => {
   }
 
   if (!segments.length) {
-    return [{ type: 'stopped', value: 1 }];
+    return [{ type: "stopped", value: 1 }];
   }
 
   return segments;
@@ -44,11 +47,11 @@ const buildSegments = (events, fromTimestamp, toTimestamp) => {
 const MotionController = () => {
   const dispatch = useDispatch();
 
-  const deviceSecondary = useAttributePreference('deviceSecondary', '');
+  const deviceSecondary = useAttributePreference("deviceSecondary", "");
 
   useAsyncTask(
     async ({ signal }) => {
-      if (deviceSecondary !== 'motion') {
+      if (deviceSecondary !== "motion") {
         dispatch(motionActions.clear());
         return;
       }
@@ -57,18 +60,21 @@ const MotionController = () => {
 
       const refreshMotion = async () => {
         const to = dayjs();
-        const from = to.subtract(24, 'hour');
+        const from = to.subtract(24, "hour");
         const query = new URLSearchParams({
           from: from.toISOString(),
           to: to.toISOString(),
         });
-        query.append('type', 'deviceMoving');
-        query.append('type', 'deviceStopped');
+        query.append("type", "deviceMoving");
+        query.append("type", "deviceStopped");
 
-        const response = await fetchOrThrow(`/api/reports/events?${query.toString()}`, {
-          headers: { Accept: 'application/json' },
-          signal,
-        });
+        const response = await fetchOrThrow(
+          `/api/reports/events?${query.toString()}`,
+          {
+            headers: { Accept: "application/json" },
+            signal,
+          },
+        );
         const events = await response.json();
 
         const groupedEvents = {};

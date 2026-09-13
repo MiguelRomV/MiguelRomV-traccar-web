@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -13,27 +13,27 @@ import {
   Autocomplete,
   Button,
   Snackbar,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import EditItemView from './components/EditItemView';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import usePositionAttributes from '../common/attributes/usePositionAttributes';
-import SettingsMenu from './components/SettingsMenu';
-import SelectField from '../common/components/SelectField';
-import { useCatch } from '../reactHelper';
-import { snackBarDurationLongMs } from '../common/util/duration';
-import useSettingsStyles from './common/useSettingsStyles';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import EditItemView from "./components/EditItemView";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import usePositionAttributes from "../common/attributes/usePositionAttributes";
+import SettingsMenu from "./components/SettingsMenu";
+import SelectField from "../common/components/SelectField";
+import { useCatch } from "../reactHelper";
+import { snackBarDurationLongMs } from "../common/util/duration";
+import useSettingsStyles from "./common/useSettingsStyles";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const allowedProperties = [
-  'valid',
-  'latitude',
-  'longitude',
-  'altitude',
-  'speed',
-  'course',
-  'address',
-  'accuracy',
+  "valid",
+  "latitude",
+  "longitude",
+  "altitude",
+  "speed",
+  "course",
+  "address",
+  "accuracy",
 ];
 
 const ComputedAttributePage = () => {
@@ -47,7 +47,9 @@ const ComputedAttributePage = () => {
   const [result, setResult] = useState();
 
   const options = Object.entries(positionAttributes)
-    .filter(([key, value]) => !value.property || allowedProperties.includes(key))
+    .filter(
+      ([key, value]) => !value.property || allowedProperties.includes(key),
+    )
     .map(([key, value]) => ({
       key,
       name: value.name,
@@ -62,8 +64,8 @@ const ComputedAttributePage = () => {
     const query = new URLSearchParams({ deviceId });
     const url = `/api/attributes/computed/test?${query.toString()}`;
     const response = await fetchOrThrow(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(item),
     });
     setResult(await response.text());
@@ -78,27 +80,33 @@ const ComputedAttributePage = () => {
       setItem={setItem}
       validate={validate}
       menu={<SettingsMenu />}
-      breadcrumbs={['settingsTitle', 'sharedComputedAttribute']}
+      breadcrumbs={["settingsTitle", "sharedComputedAttribute"]}
     >
       {item && (
         <>
           <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle1">{t('sharedRequired')}</Typography>
+              <Typography variant="subtitle1">{t("sharedRequired")}</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
               <TextField
-                value={item.description || ''}
-                onChange={(e) => setItem({ ...item, description: e.target.value })}
-                label={t('sharedDescription')}
+                value={item.description || ""}
+                onChange={(e) =>
+                  setItem({ ...item, description: e.target.value })
+                }
+                label={t("sharedDescription")}
               />
               <Autocomplete
                 freeSolo
                 value={
-                  options.find((option) => option.key === item.attribute) || item.attribute || null
+                  options.find((option) => option.key === item.attribute) ||
+                  item.attribute ||
+                  null
                 }
                 onChange={(_, option) => {
-                  const attribute = option ? option.key || option.inputValue || option : null;
+                  const attribute = option
+                    ? option.key || option.inputValue || option
+                    : null;
                   if (option && (option.type || option.inputValue)) {
                     setItem({ ...item, attribute, type: option.type });
                   } else {
@@ -109,66 +117,80 @@ const ComputedAttributePage = () => {
                   const filtered = filter(options, params);
                   if (
                     params.inputValue &&
-                    !options.some((x) => (typeof x === 'object' ? x.key : x) === params.inputValue)
+                    !options.some(
+                      (x) =>
+                        (typeof x === "object" ? x.key : x) ===
+                        params.inputValue,
+                    )
                   ) {
                     filtered.push({
                       inputValue: params.inputValue,
-                      name: `${t('sharedAdd')} "${params.inputValue}"`,
+                      name: `${t("sharedAdd")} "${params.inputValue}"`,
                     });
                   }
                   return filtered;
                 }}
                 options={options}
                 getOptionLabel={(option) =>
-                  typeof option === 'object' ? option.inputValue || option.name : option
+                  typeof option === "object"
+                    ? option.inputValue || option.name
+                    : option
                 }
-                renderOption={(props, option) => <li {...props}>{option.name || option}</li>}
-                renderInput={(params) => <TextField {...params} label={t('sharedAttribute')} />}
+                renderOption={(props, option) => (
+                  <li {...props}>{option.name || option}</li>
+                )}
+                renderInput={(params) => (
+                  <TextField {...params} label={t("sharedAttribute")} />
+                )}
               />
               <TextField
-                value={item.expression || ''}
-                onChange={(e) => setItem({ ...item, expression: e.target.value })}
-                label={t('sharedExpression')}
+                value={item.expression || ""}
+                onChange={(e) =>
+                  setItem({ ...item, expression: e.target.value })
+                }
+                label={t("sharedExpression")}
                 multiline
                 rows={4}
               />
               <FormControl disabled={item.attribute in positionAttributes}>
-                <InputLabel>{t('sharedType')}</InputLabel>
+                <InputLabel>{t("sharedType")}</InputLabel>
                 <Select
-                  label={t('sharedType')}
-                  value={item.type || ''}
+                  label={t("sharedType")}
+                  value={item.type || ""}
                   onChange={(e) => setItem({ ...item, type: e.target.value })}
                 >
-                  <MenuItem value="string">{t('sharedTypeString')}</MenuItem>
-                  <MenuItem value="number">{t('sharedTypeNumber')}</MenuItem>
-                  <MenuItem value="boolean">{t('sharedTypeBoolean')}</MenuItem>
+                  <MenuItem value="string">{t("sharedTypeString")}</MenuItem>
+                  <MenuItem value="number">{t("sharedTypeNumber")}</MenuItem>
+                  <MenuItem value="boolean">{t("sharedTypeBoolean")}</MenuItem>
                 </Select>
               </FormControl>
             </AccordionDetails>
           </Accordion>
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle1">{t('sharedExtra')}</Typography>
+              <Typography variant="subtitle1">{t("sharedExtra")}</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
               <TextField
                 type="number"
                 value={item.priority || 0}
-                onChange={(e) => setItem({ ...item, priority: Number(e.target.value) })}
-                label={t('sharedPriority')}
+                onChange={(e) =>
+                  setItem({ ...item, priority: Number(e.target.value) })
+                }
+                label={t("sharedPriority")}
               />
             </AccordionDetails>
           </Accordion>
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle1">{t('sharedTest')}</Typography>
+              <Typography variant="subtitle1">{t("sharedTest")}</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
               <SelectField
                 value={deviceId}
                 onChange={(e) => setDeviceId(Number(e.target.value))}
                 endpoint="/api/devices"
-                label={t('sharedDevice')}
+                label={t("sharedDevice")}
               />
               <Button
                 variant="outlined"
@@ -176,7 +198,7 @@ const ComputedAttributePage = () => {
                 onClick={testAttribute}
                 disabled={!deviceId}
               >
-                {t('sharedTestExpression')}
+                {t("sharedTestExpression")}
               </Button>
               <Snackbar
                 open={!!result}

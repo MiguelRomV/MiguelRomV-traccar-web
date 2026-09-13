@@ -1,11 +1,11 @@
-import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from '../../common/components/LocalizationProvider';
-import { useAttributePreference } from '../../common/util/preferences';
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
+import { useTranslation } from "../../common/components/LocalizationProvider";
+import { useAttributePreference } from "../../common/util/preferences";
 
 const styleCustom = ({ tiles, minZoom, maxZoom, attribution, scheme }) => {
   const source = {
-    type: 'raster',
+    type: "raster",
     tiles,
     attribution,
     tileSize: 256,
@@ -13,18 +13,20 @@ const styleCustom = ({ tiles, minZoom, maxZoom, attribution, scheme }) => {
     maxzoom: maxZoom,
     scheme,
   };
-  Object.keys(source).forEach((key) => source[key] === undefined && delete source[key]);
+  Object.keys(source).forEach(
+    (key) => source[key] === undefined && delete source[key],
+  );
   return {
     version: 8,
     sources: {
       custom: source,
     },
-    glyphs: 'https://cdn.traccar.com/map/fonts/{fontstack}/{range}.pbf',
+    glyphs: "https://cdn.traccar.com/map/fonts/{fontstack}/{range}.pbf",
     layers: [
       {
-        id: 'custom',
-        type: 'raster',
-        source: 'custom',
+        id: "custom",
+        type: "raster",
+        source: "custom",
       },
     ],
   };
@@ -33,43 +35,45 @@ const styleCustom = ({ tiles, minZoom, maxZoom, attribution, scheme }) => {
 export default () => {
   const t = useTranslation();
 
-  const googleKey = useAttributePreference('googleKey');
-  const mapTilerKey = useAttributePreference('mapTilerKey');
+  const googleKey = useAttributePreference("googleKey");
+  const mapTilerKey = useAttributePreference("mapTilerKey");
   const locationIqKey =
-    useAttributePreference('locationIqKey') || 'pk.0f147952a41c555a5b70614039fd148b';
-  const bingMapsKey = useAttributePreference('bingMapsKey');
-  const tomTomKey = useAttributePreference('tomTomKey');
-  const hereKey = useAttributePreference('hereKey');
-  const mapboxAccessToken = useAttributePreference('mapboxAccessToken');
+    useAttributePreference("locationIqKey") ||
+    "pk.0f147952a41c555a5b70614039fd148b";
+  const bingMapsKey = useAttributePreference("bingMapsKey");
+  const tomTomKey = useAttributePreference("tomTomKey");
+  const hereKey = useAttributePreference("hereKey");
+  const mapboxAccessToken = useAttributePreference("mapboxAccessToken");
   const ordnanceSurveyKey =
-    useAttributePreference('ordnanceSurveyKey') || 'EAZ8p83u72FTGiLjLC2MsTAl1ko6XQHC';
+    useAttributePreference("ordnanceSurveyKey") ||
+    "EAZ8p83u72FTGiLjLC2MsTAl1ko6XQHC";
   const customMapUrl = useSelector((state) => state.session.server.mapUrl);
 
   return useMemo(
     () => [
       {
-        id: 'openFreeMap',
-        title: t('mapOpenFreeMap'),
-        style: 'https://tiles.openfreemap.org/styles/liberty',
+        id: "openFreeMap",
+        title: t("mapOpenFreeMap"),
+        style: "https://tiles.openfreemap.org/styles/liberty",
         available: true,
       },
       {
-        id: 'locationIqStreets',
-        title: t('mapLocationIqStreets'),
+        id: "locationIqStreets",
+        title: t("mapLocationIqStreets"),
         style: `https://tiles.locationiq.com/v3/streets/vector.json?key=${locationIqKey}`,
         available: true,
       },
       {
-        id: 'locationIqDark',
-        title: t('mapLocationIqDark'),
+        id: "locationIqDark",
+        title: t("mapLocationIqDark"),
         style: `https://tiles.locationiq.com/v3/dark/vector.json?key=${locationIqKey}`,
         available: true,
       },
       {
-        id: 'osm',
-        title: t('mapOsm'),
+        id: "osm",
+        title: t("mapOsm"),
         style: styleCustom({
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
           maxZoom: 19,
           attribution:
             '© <a target="_top" rel="noopener" href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -77,44 +81,47 @@ export default () => {
         available: true,
       },
       {
-        id: 'esriSatellite',
-        title: t('mapEsriSatellite'),
+        id: "esriSatellite",
+        title: t("mapEsriSatellite"),
         style: styleCustom({
           tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           ],
           maxZoom: 19,
-          attribution: '© Esri',
+          attribution: "© Esri",
         }),
         available: true,
       },
       {
-        id: 'esriStreets',
-        title: t('mapEsriStreets'),
+        id: "esriStreets",
+        title: t("mapEsriStreets"),
         style: styleCustom({
           tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
           ],
           maxZoom: 19,
-          attribution: '© Esri',
+          attribution: "© Esri",
         }),
         available: true,
       },
       {
-        id: 'openTopoMap',
-        title: t('mapOpenTopoMap'),
+        id: "openTopoMap",
+        title: t("mapOpenTopoMap"),
         style: styleCustom({
-          tiles: ['a', 'b', 'c'].map((i) => `https://${i}.tile.opentopomap.org/{z}/{x}/{y}.png`),
+          tiles: ["a", "b", "c"].map(
+            (i) => `https://${i}.tile.opentopomap.org/{z}/{x}/{y}.png`,
+          ),
           maxZoom: 17,
         }),
         available: true,
       },
       {
-        id: 'carto',
-        title: t('mapCarto'),
+        id: "carto",
+        title: t("mapCarto"),
         style: styleCustom({
-          tiles: ['a', 'b', 'c', 'd'].map(
-            (i) => `https://${i}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png`,
+          tiles: ["a", "b", "c", "d"].map(
+            (i) =>
+              `https://${i}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png`,
           ),
           maxZoom: 22,
           attribution:
@@ -123,67 +130,72 @@ export default () => {
         available: true,
       },
       {
-        id: 'googleRoad',
-        title: t('mapGoogleRoad'),
+        id: "googleRoad",
+        title: t("mapGoogleRoad"),
         style: styleCustom({
           tiles: googleKey
             ? [`google://roadmap/{z}/{x}/{y}?key=${googleKey}`]
             : [0, 1, 2, 3].map(
-                (i) => `https://mt${i}.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga`,
+                (i) =>
+                  `https://mt${i}.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga`,
               ),
           maxZoom: 20,
-          attribution: '© Google',
+          attribution: "© Google",
         }),
         available: true,
-        attribute: 'googleKey',
+        attribute: "googleKey",
       },
       {
-        id: 'googleSatellite',
-        title: t('mapGoogleSatellite'),
+        id: "googleSatellite",
+        title: t("mapGoogleSatellite"),
         style: styleCustom({
           tiles: googleKey
             ? [`google://satellite/{z}/{x}/{y}?key=${googleKey}`]
             : [0, 1, 2, 3].map(
-                (i) => `https://mt${i}.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga`,
+                (i) =>
+                  `https://mt${i}.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga`,
               ),
           maxZoom: 20,
-          attribution: '© Google',
+          attribution: "© Google",
         }),
         available: true,
-        attribute: 'googleKey',
+        attribute: "googleKey",
       },
       {
-        id: 'googleHybrid',
-        title: t('mapGoogleHybrid'),
+        id: "googleHybrid",
+        title: t("mapGoogleHybrid"),
         style: styleCustom({
           tiles: googleKey
-            ? [`google://satellite/{z}/{x}/{y}?key=${googleKey}&layerType=layerRoadmap`]
+            ? [
+                `google://satellite/{z}/{x}/{y}?key=${googleKey}&layerType=layerRoadmap`,
+              ]
             : [0, 1, 2, 3].map(
-                (i) => `https://mt${i}.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}&s=Ga`,
+                (i) =>
+                  `https://mt${i}.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}&s=Ga`,
               ),
           maxZoom: 20,
-          attribution: '© Google',
+          attribution: "© Google",
         }),
         available: true,
-        attribute: 'googleKey',
+        attribute: "googleKey",
       },
       {
-        id: 'mapTilerBasic',
-        title: t('mapMapTilerBasic'),
+        id: "mapTilerBasic",
+        title: t("mapMapTilerBasic"),
         style: `https://api.maptiler.com/maps/basic/style.json?key=${mapTilerKey}`,
         available: Boolean(mapTilerKey),
-        attribute: 'mapTilerKey',
+        attribute: "mapTilerKey",
       },
       {
-        id: 'mapTilerHybrid',
-        title: t('mapMapTilerHybrid'),
+        id: "mapTilerHybrid",
+        title: t("mapMapTilerHybrid"),
         style: `https://api.maptiler.com/maps/hybrid/style.json?key=${mapTilerKey}`,
         available: Boolean(mapTilerKey),
-        attribute: 'mapTilerKey',
+        attribute: "mapTilerKey",
       },
       {
-        id: 'bingRoad',
-        title: t('mapBingRoad'),
+        id: "bingRoad",
+        title: t("mapBingRoad"),
         style: styleCustom({
           tiles: [0, 1, 2, 3].map(
             (i) =>
@@ -192,23 +204,24 @@ export default () => {
           maxZoom: 21,
         }),
         available: Boolean(bingMapsKey),
-        attribute: 'bingMapsKey',
+        attribute: "bingMapsKey",
       },
       {
-        id: 'bingAerial',
-        title: t('mapBingAerial'),
+        id: "bingAerial",
+        title: t("mapBingAerial"),
         style: styleCustom({
           tiles: [0, 1, 2, 3].map(
-            (i) => `https://ecn.t${i}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=12327`,
+            (i) =>
+              `https://ecn.t${i}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=12327`,
           ),
           maxZoom: 19,
         }),
         available: Boolean(bingMapsKey),
-        attribute: 'bingMapsKey',
+        attribute: "bingMapsKey",
       },
       {
-        id: 'bingHybrid',
-        title: t('mapBingHybrid'),
+        id: "bingHybrid",
+        title: t("mapBingHybrid"),
         style: styleCustom({
           tiles: [0, 1, 2, 3].map(
             (i) =>
@@ -217,68 +230,68 @@ export default () => {
           maxZoom: 19,
         }),
         available: Boolean(bingMapsKey),
-        attribute: 'bingMapsKey',
+        attribute: "bingMapsKey",
       },
       {
-        id: 'tomTomBasic',
-        title: t('mapTomTomBasic'),
+        id: "tomTomBasic",
+        title: t("mapTomTomBasic"),
         style: `https://api.tomtom.com/map/1/style/20.0.0-8/basic_main.json?key=${tomTomKey}`,
         available: Boolean(tomTomKey),
-        attribute: 'tomTomKey',
+        attribute: "tomTomKey",
       },
       {
-        id: 'hereBasic',
-        title: t('mapHereBasic'),
+        id: "hereBasic",
+        title: t("mapHereBasic"),
         style: styleCustom({
           tiles: [
             `https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png8?apiKey=${hereKey}&size=512`,
           ],
           maxZoom: 20,
-          attribution: '© HERE',
+          attribution: "© HERE",
         }),
         available: Boolean(hereKey),
-        attribute: 'hereKey',
+        attribute: "hereKey",
       },
       {
-        id: 'hereHybrid',
-        title: t('mapHereHybrid'),
+        id: "hereHybrid",
+        title: t("mapHereHybrid"),
         style: styleCustom({
           tiles: [
             `https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/jpeg?style=explore.satellite.day&apiKey=${hereKey}&size=512`,
           ],
           maxZoom: 20,
-          attribution: '© HERE',
+          attribution: "© HERE",
         }),
         available: Boolean(hereKey),
-        attribute: 'hereKey',
+        attribute: "hereKey",
       },
       {
-        id: 'hereSatellite',
-        title: t('mapHereSatellite'),
+        id: "hereSatellite",
+        title: t("mapHereSatellite"),
         style: styleCustom({
           tiles: [
             `https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/jpeg?style=satellite.day&apiKey=${hereKey}&size=512`,
           ],
           maxZoom: 20,
-          attribution: '© HERE',
+          attribution: "© HERE",
         }),
         available: Boolean(hereKey),
-        attribute: 'hereKey',
+        attribute: "hereKey",
       },
       {
-        id: 'yandexMap',
-        title: t('mapYandexMap'),
+        id: "yandexMap",
+        title: t("mapYandexMap"),
         style: styleCustom({
           tiles: [
-            'https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&projection=web_mercator',
+            "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&projection=web_mercator",
           ],
           maxZoom: 19,
         }),
         available: true,
       },
       {
-        id: 'autoNavi',
-        title: t('mapAutoNavi'),
+        id: "autoNavi",
+        title: t("mapAutoNavi"),
         style: styleCustom({
           tiles: [1, 2, 3, 4].map(
             (i) =>
@@ -287,39 +300,41 @@ export default () => {
           minZoom: 3,
           maxZoom: 18,
         }),
-        coordinateSystem: 'gcj02',
+        coordinateSystem: "gcj02",
         available: true,
       },
       {
-        id: 'autoNaviSatellite',
-        title: t('mapAutoNaviSatellite'),
+        id: "autoNaviSatellite",
+        title: t("mapAutoNaviSatellite"),
         style: styleCustom({
           tiles: [1, 2, 3, 4].map(
-            (i) => `https://webst0${i}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}`,
+            (i) =>
+              `https://webst0${i}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}`,
           ),
           minZoom: 3,
           maxZoom: 18,
         }),
-        coordinateSystem: 'gcj02',
+        coordinateSystem: "gcj02",
         available: true,
       },
       {
-        id: 'tencentMap',
-        title: t('mapTencentMap'),
+        id: "tencentMap",
+        title: t("mapTencentMap"),
         style: styleCustom({
           tiles: [0, 1, 2, 3].map(
-            (i) => `https://rt${i}.map.gtimg.com/tile?z={z}&x={x}&y={y}&type=vector&styleid=3`,
+            (i) =>
+              `https://rt${i}.map.gtimg.com/tile?z={z}&x={x}&y={y}&type=vector&styleid=3`,
           ),
-          scheme: 'tms',
+          scheme: "tms",
           minZoom: 4,
           maxZoom: 18,
         }),
-        coordinateSystem: 'gcj02',
+        coordinateSystem: "gcj02",
         available: true,
       },
       {
-        id: 'ordnanceSurvey',
-        title: t('mapOrdnanceSurvey'),
+        id: "ordnanceSurvey",
+        title: t("mapOrdnanceSurvey"),
         style: `https://api.os.uk/maps/vector/v1/vts/resources/styles?key=${ordnanceSurveyKey}`,
         transformRequest: (url) => ({
           url: `${url}&srs=3857`,
@@ -327,8 +342,8 @@ export default () => {
         available: true,
       },
       {
-        id: 'mapboxStreets',
-        title: t('mapMapboxStreets'),
+        id: "mapboxStreets",
+        title: t("mapMapboxStreets"),
         style: styleCustom({
           tiles: [
             `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`,
@@ -336,11 +351,11 @@ export default () => {
           maxZoom: 22,
         }),
         available: Boolean(mapboxAccessToken),
-        attribute: 'mapboxAccessToken',
+        attribute: "mapboxAccessToken",
       },
       {
-        id: 'mapboxStreetsDark',
-        title: t('mapMapboxStreetsDark'),
+        id: "mapboxStreetsDark",
+        title: t("mapMapboxStreetsDark"),
         style: styleCustom({
           tiles: [
             `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`,
@@ -348,11 +363,11 @@ export default () => {
           maxZoom: 22,
         }),
         available: Boolean(mapboxAccessToken),
-        attribute: 'mapboxAccessToken',
+        attribute: "mapboxAccessToken",
       },
       {
-        id: 'mapboxOutdoors',
-        title: t('mapMapboxOutdoors'),
+        id: "mapboxOutdoors",
+        title: t("mapMapboxOutdoors"),
         style: styleCustom({
           tiles: [
             `https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`,
@@ -360,11 +375,11 @@ export default () => {
           maxZoom: 22,
         }),
         available: Boolean(mapboxAccessToken),
-        attribute: 'mapboxAccessToken',
+        attribute: "mapboxAccessToken",
       },
       {
-        id: 'mapboxSatelliteStreet',
-        title: t('mapMapboxSatellite'),
+        id: "mapboxSatelliteStreet",
+        title: t("mapMapboxSatellite"),
         style: styleCustom({
           tiles: [
             `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`,
@@ -372,13 +387,13 @@ export default () => {
           maxZoom: 22,
         }),
         available: Boolean(mapboxAccessToken),
-        attribute: 'mapboxAccessToken',
+        attribute: "mapboxAccessToken",
       },
       {
-        id: 'custom',
-        title: t('mapCustom'),
+        id: "custom",
+        title: t("mapCustom"),
         style:
-          !customMapUrl?.includes('{z}') && !customMapUrl?.includes('{quadkey}')
+          !customMapUrl?.includes("{z}") && !customMapUrl?.includes("{quadkey}")
             ? customMapUrl
             : styleCustom({
                 tiles: [customMapUrl],

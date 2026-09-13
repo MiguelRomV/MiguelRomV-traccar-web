@@ -1,7 +1,7 @@
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import localizedFormat from 'dayjs/plugin/localizedFormat';
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+import relativeTime from "dayjs/plugin/relativeTime";
+import localizedFormat from "dayjs/plugin/localizedFormat";
 
 import {
   altitudeFromMeters,
@@ -12,68 +12,72 @@ import {
   speedUnitString,
   volumeFromLiters,
   volumeUnitString,
-} from './converter';
-import { prefixString } from './stringUtils';
+} from "./converter";
+import { prefixString } from "./stringUtils";
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 
-export const formatBoolean = (value, t) => (value ? t('sharedYes') : t('sharedNo'));
+export const formatBoolean = (value, t) =>
+  value ? t("sharedYes") : t("sharedNo");
 
-export const formatNumber = (value, precision = 1) => Number(value.toFixed(precision));
+export const formatNumber = (value, precision = 1) =>
+  Number(value.toFixed(precision));
 
 export const formatPercentage = (value) => `${value}%`;
 
 export const formatTemperature = (value) => `${value.toFixed(1)}°C`;
 
-export const formatVoltage = (value, t) => `${value.toFixed(2)} ${t('sharedVoltAbbreviation')}`;
+export const formatVoltage = (value, t) =>
+  `${value.toFixed(2)} ${t("sharedVoltAbbreviation")}`;
 
 export const formatConsumption = (value, t) =>
-  `${value.toFixed(2)} ${t('sharedLiterPerHourAbbreviation')}`;
+  `${value.toFixed(2)} ${t("sharedLiterPerHourAbbreviation")}`;
 
 export const formatTime = (value, format) => {
   if (value) {
     const d = dayjs(value).toDate();
-    const dateConfig = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    const minuteConfig = { hour: '2-digit', minute: '2-digit' };
-    const secondConfig = { ...minuteConfig, second: '2-digit' };
+    const dateConfig = { year: "numeric", month: "2-digit", day: "2-digit" };
+    const minuteConfig = { hour: "2-digit", minute: "2-digit" };
+    const secondConfig = { ...minuteConfig, second: "2-digit" };
     switch (format) {
-      case 'date':
+      case "date":
         return d.toLocaleDateString(undefined, dateConfig);
-      case 'time':
+      case "time":
         return d.toLocaleTimeString(undefined, secondConfig);
-      case 'minutes':
+      case "minutes":
         return d.toLocaleString(undefined, { ...dateConfig, ...minuteConfig });
       default:
         return d.toLocaleString(undefined, { ...dateConfig, ...secondConfig });
     }
   }
-  return '';
+  return "";
 };
 
-export const formatStatus = (value, t) => t(prefixString('deviceStatus', value));
+export const formatStatus = (value, t) =>
+  t(prefixString("deviceStatus", value));
 
 export const formatAlarm = (value, t) => {
   if (value) {
     return value
-      .split(',')
-      .map((alarm) => t(prefixString('alarm', alarm)))
-      .join(', ');
+      .split(",")
+      .map((alarm) => t(prefixString("alarm", alarm)))
+      .join(", ");
   }
-  return '';
+  return "";
 };
 
 export const formatCourse = (value) => {
   const courseValues = [
-    '\u2191',
-    '\u2197',
-    '\u2192',
-    '\u2198',
-    '\u2193',
-    '\u2199',
-    '\u2190',
-    '\u2196',
+    "\u2191",
+    "\u2197",
+    "\u2192",
+    "\u2198",
+    "\u2193",
+    "\u2199",
+    "\u2190",
+    "\u2196",
   ];
   let normalizedValue = (value + 45 / 2) % 360;
   if (normalizedValue < 0) {
@@ -97,7 +101,7 @@ export const formatVolume = (value, unit, t) =>
 export const formatNumericHours = (value, t) => {
   const hours = Math.floor(value / 3600000);
   const minutes = Math.floor((value % 3600000) / 60000);
-  return `${hours} ${t('sharedHourAbbreviation')} ${minutes} ${t('sharedMinuteAbbreviation')}`;
+  return `${hours} ${t("sharedHourAbbreviation")} ${minutes} ${t("sharedMinuteAbbreviation")}`;
 };
 
 export const formatCoordinate = (key, value, unit) => {
@@ -106,19 +110,19 @@ export const formatCoordinate = (key, value, unit) => {
   let minutes;
   let seconds;
 
-  if (key === 'latitude') {
-    hemisphere = value >= 0 ? 'N' : 'S';
+  if (key === "latitude") {
+    hemisphere = value >= 0 ? "N" : "S";
   } else {
-    hemisphere = value >= 0 ? 'E' : 'W';
+    hemisphere = value >= 0 ? "E" : "W";
   }
 
   switch (unit) {
-    case 'ddm':
+    case "ddm":
       value = Math.abs(value);
       degrees = Math.floor(value);
       minutes = (value - degrees) * 60;
       return `${degrees}° ${minutes.toFixed(3)}' ${hemisphere}`;
-    case 'dms':
+    case "dms":
       value = Math.abs(value);
       degrees = Math.floor(value);
       minutes = Math.floor((value - degrees) * 60);
@@ -133,42 +137,50 @@ export const formatAddress = (position, unit) => {
   if (position.address) {
     return position.address;
   }
-  const formattedLatitude = formatCoordinate('latitude', position.latitude, unit);
-  const formattedLongitude = formatCoordinate('longitude', position.longitude, unit);
+  const formattedLatitude = formatCoordinate(
+    "latitude",
+    position.latitude,
+    unit,
+  );
+  const formattedLongitude = formatCoordinate(
+    "longitude",
+    position.longitude,
+    unit,
+  );
   return `${formattedLatitude}, ${formattedLongitude}`;
 };
 
 export const getStatusColor = (status) => {
   switch (status) {
-    case 'online':
-      return 'success';
-    case 'offline':
-      return 'error';
-    case 'unknown':
+    case "online":
+      return "success";
+    case "offline":
+      return "error";
+    case "unknown":
     default:
-      return 'neutral';
+      return "neutral";
   }
 };
 
 export const getBatteryStatus = (batteryLevel) => {
   if (batteryLevel >= 70) {
-    return 'success';
+    return "success";
   }
   if (batteryLevel > 30) {
-    return 'warning';
+    return "warning";
   }
-  return 'error';
+  return "error";
 };
 
 export const formatNotificationTitle = (t, notification, includeId) => {
   if (notification.description) {
     return notification.description;
   }
-  let title = t(prefixString('event', notification.type));
-  if (notification.type === 'alarm') {
+  let title = t(prefixString("event", notification.type));
+  if (notification.type === "alarm") {
     const alarmString = notification.attributes.alarms;
     if (alarmString) {
-      const alarms = alarmString.split(',');
+      const alarms = alarmString.split(",");
       if (alarms.length > 1) {
         title += ` (${alarms.length})`;
       } else {

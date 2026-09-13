@@ -1,11 +1,18 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { useTheme } from '@mui/material/styles';
-import { IconButton, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import GpsFixedIcon from '@mui/icons-material/GpsFixed';
-import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
-import RouteIcon from '@mui/icons-material/Route';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useTheme } from "@mui/material/styles";
+import {
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import GpsFixedIcon from "@mui/icons-material/GpsFixed";
+import LocationSearchingIcon from "@mui/icons-material/LocationSearching";
+import RouteIcon from "@mui/icons-material/Route";
 import {
   formatAddress,
   formatDistance,
@@ -13,44 +20,47 @@ import {
   formatVolume,
   formatTime,
   formatNumericHours,
-} from '../common/util/formatter';
-import ReportFilter from './components/ReportFilter';
-import { useAttributePreference, usePreference } from '../common/util/preferences';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import PageLayout from '../common/components/PageLayout';
-import ReportsMenu from './components/ReportsMenu';
-import ColumnSelect from './components/ColumnSelect';
-import ResizeHandle from './components/ResizeHandle';
-import usePersistedState from '../common/util/usePersistedState';
-import { useCatch, useCatchCallback, useAsyncTask } from '../reactHelper';
-import useReportStyles from './common/useReportStyles';
-import MapView from '../map/core/MapView';
-import MapRoutePath from '../map/MapRoutePath';
-import AddressValue from '../common/components/AddressValue';
-import TableShimmer from '../common/components/TableShimmer';
-import MapMarkers from '../map/MapMarkers';
-import MapCamera from '../map/MapCamera';
-import MapGeofence from '../map/MapGeofence';
-import scheduleReport from './common/scheduleReport';
-import MapScale from '../map/MapScale';
-import fetchOrThrow from '../common/util/fetchOrThrow';
-import exportExcel from '../common/util/exportExcel';
-import exportPDF from '../common/util/exportPDF';
-import { deviceEquality } from '../common/util/deviceEquality';
+} from "../common/util/formatter";
+import ReportFilter from "./components/ReportFilter";
+import {
+  useAttributePreference,
+  usePreference,
+} from "../common/util/preferences";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import PageLayout from "../common/components/PageLayout";
+import ReportsMenu from "./components/ReportsMenu";
+import ColumnSelect from "./components/ColumnSelect";
+import ResizeHandle from "./components/ResizeHandle";
+import usePersistedState from "../common/util/usePersistedState";
+import { useCatch, useCatchCallback, useAsyncTask } from "../reactHelper";
+import useReportStyles from "./common/useReportStyles";
+import MapView from "../map/core/MapView";
+import MapRoutePath from "../map/MapRoutePath";
+import AddressValue from "../common/components/AddressValue";
+import TableShimmer from "../common/components/TableShimmer";
+import MapMarkers from "../map/MapMarkers";
+import MapCamera from "../map/MapCamera";
+import MapGeofence from "../map/MapGeofence";
+import scheduleReport from "./common/scheduleReport";
+import MapScale from "../map/MapScale";
+import fetchOrThrow from "../common/util/fetchOrThrow";
+import exportExcel from "../common/util/exportExcel";
+import exportPDF from "../common/util/exportPDF";
+import { deviceEquality } from "../common/util/deviceEquality";
 
 const columnsArray = [
-  ['startTime', 'reportStartTime'],
-  ['startOdometer', 'reportStartOdometer'],
-  ['startAddress', 'reportStartAddress'],
-  ['endTime', 'reportEndTime'],
-  ['endOdometer', 'reportEndOdometer'],
-  ['endAddress', 'reportEndAddress'],
-  ['distance', 'sharedDistance'],
-  ['averageSpeed', 'reportAverageSpeed'],
-  ['maxSpeed', 'reportMaximumSpeed'],
-  ['duration', 'reportDuration'],
-  ['spentFuel', 'reportSpentFuel'],
-  ['driverName', 'sharedDriver'],
+  ["startTime", "reportStartTime"],
+  ["startOdometer", "reportStartOdometer"],
+  ["startAddress", "reportStartAddress"],
+  ["endTime", "reportEndTime"],
+  ["endOdometer", "reportEndOdometer"],
+  ["endAddress", "reportEndAddress"],
+  ["distance", "sharedDistance"],
+  ["averageSpeed", "reportAverageSpeed"],
+  ["maxSpeed", "reportMaximumSpeed"],
+  ["duration", "reportDuration"],
+  ["spentFuel", "reportSpentFuel"],
+  ["driverName", "sharedDriver"],
 ];
 const columnsMap = new Map(columnsArray);
 
@@ -60,18 +70,21 @@ const TripReportPage = () => {
   const t = useTranslation();
   const theme = useTheme();
 
-  const devices = useSelector((state) => state.devices.items, deviceEquality(['id', 'name']));
+  const devices = useSelector(
+    (state) => state.devices.items,
+    deviceEquality(["id", "name"]),
+  );
 
-  const distanceUnit = useAttributePreference('distanceUnit');
-  const speedUnit = useAttributePreference('speedUnit');
-  const volumeUnit = useAttributePreference('volumeUnit');
-  const coordinateFormat = usePreference('coordinateFormat');
+  const distanceUnit = useAttributePreference("distanceUnit");
+  const speedUnit = useAttributePreference("speedUnit");
+  const volumeUnit = useAttributePreference("volumeUnit");
+  const coordinateFormat = usePreference("coordinateFormat");
 
-  const [columns, setColumns] = usePersistedState('tripColumns', [
-    'startTime',
-    'endTime',
-    'distance',
-    'averageSpeed',
+  const [columns, setColumns] = usePersistedState("tripColumns", [
+    "startTime",
+    "endTime",
+    "distance",
+    "averageSpeed",
   ]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -82,12 +95,12 @@ const TripReportPage = () => {
     {
       latitude: selectedItem.startLat,
       longitude: selectedItem.startLon,
-      image: 'start-success',
+      image: "start-success",
     },
     {
       latitude: selectedItem.endLat,
       longitude: selectedItem.endLon,
-      image: 'finish-error',
+      image: "finish-error",
     },
   ];
 
@@ -99,10 +112,13 @@ const TripReportPage = () => {
           from: selectedItem.startTime,
           to: selectedItem.endTime,
         });
-        const response = await fetchOrThrow(`/api/reports/route?${query.toString()}`, {
-          headers: { Accept: 'application/json' },
-          signal,
-        });
+        const response = await fetchOrThrow(
+          `/api/reports/route?${query.toString()}`,
+          {
+            headers: { Accept: "application/json" },
+            signal,
+          },
+        );
         setRoute(await response.json());
       } else {
         setRoute(null);
@@ -113,13 +129,16 @@ const TripReportPage = () => {
 
   const onShow = useCatchCallback(async ({ deviceIds, groupIds, from, to }) => {
     const query = new URLSearchParams({ from, to });
-    deviceIds.forEach((deviceId) => query.append('deviceId', deviceId));
-    groupIds.forEach((groupId) => query.append('groupId', groupId));
+    deviceIds.forEach((deviceId) => query.append("deviceId", deviceId));
+    groupIds.forEach((groupId) => query.append("groupId", groupId));
     setLoading(true);
     try {
-      const response = await fetchOrThrow(`/api/reports/trips?${query.toString()}`, {
-        headers: { Accept: 'application/json' },
-      });
+      const response = await fetchOrThrow(
+        `/api/reports/trips?${query.toString()}`,
+        {
+          headers: { Accept: "application/json" },
+        },
+      );
       setItems(await response.json());
     } finally {
       setLoading(false);
@@ -136,7 +155,7 @@ const TripReportPage = () => {
       const row = {};
       columns.forEach((key) => {
         const header = t(columnsMap.get(key));
-        if (key === 'startAddress') {
+        if (key === "startAddress") {
           row[header] = formatAddress(
             {
               address: item.startAddress,
@@ -145,7 +164,7 @@ const TripReportPage = () => {
             },
             coordinateFormat,
           );
-        } else if (key === 'endAddress') {
+        } else if (key === "endAddress") {
           row[header] = formatAddress(
             {
               address: item.endAddress,
@@ -160,22 +179,22 @@ const TripReportPage = () => {
       });
       sheets.get(deviceName).push(row);
     });
-    if (format === 'pdf') {
-      await exportPDF(t('reportTrips'), 'trips.pdf', sheets);
+    if (format === "pdf") {
+      await exportPDF(t("reportTrips"), "trips.pdf", sheets);
     } else {
-      await exportExcel(t('reportTrips'), 'trips.xlsx', sheets, theme);
+      await exportExcel(t("reportTrips"), "trips.xlsx", sheets, theme);
     }
   });
 
   const onSchedule = useCatch(async (deviceIds, groupIds, report) => {
-    report.type = 'trips';
+    report.type = "trips";
     await scheduleReport(deviceIds, groupIds, report);
-    navigate('/reports/scheduled');
+    navigate("/reports/scheduled");
   });
 
   const navigateToReplay = (item) => {
     navigate({
-      pathname: '/replay',
+      pathname: "/replay",
       search: new URLSearchParams({
         from: item.startTime,
         to: item.endTime,
@@ -187,23 +206,23 @@ const TripReportPage = () => {
   const formatValue = (item, key) => {
     const value = item[key];
     switch (key) {
-      case 'deviceId':
+      case "deviceId":
         return devices[value].name;
-      case 'startTime':
-      case 'endTime':
-        return formatTime(value, 'minutes');
-      case 'startOdometer':
-      case 'endOdometer':
-      case 'distance':
+      case "startTime":
+      case "endTime":
+        return formatTime(value, "minutes");
+      case "startOdometer":
+      case "endOdometer":
+      case "distance":
         return formatDistance(value, distanceUnit, t);
-      case 'averageSpeed':
-      case 'maxSpeed':
+      case "averageSpeed":
+      case "maxSpeed":
         return value > 0 ? formatSpeed(value, speedUnit, t) : null;
-      case 'duration':
+      case "duration":
         return formatNumericHours(value, t);
-      case 'spentFuel':
+      case "spentFuel":
         return value > 0 ? formatVolume(value, volumeUnit, t) : null;
-      case 'startAddress':
+      case "startAddress":
         return (
           <AddressValue
             latitude={item.startLat}
@@ -211,9 +230,13 @@ const TripReportPage = () => {
             originalAddress={value}
           />
         );
-      case 'endAddress':
+      case "endAddress":
         return (
-          <AddressValue latitude={item.endLat} longitude={item.endLon} originalAddress={value} />
+          <AddressValue
+            latitude={item.endLat}
+            longitude={item.endLon}
+            originalAddress={value}
+          />
         );
       default:
         return value;
@@ -221,7 +244,10 @@ const TripReportPage = () => {
   };
 
   return (
-    <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportTrips']}>
+    <PageLayout
+      menu={<ReportsMenu />}
+      breadcrumbs={["reportTitle", "reportTrips"]}
+    >
       <div className={classes.container}>
         {selectedItem && (
           <>
@@ -249,16 +275,20 @@ const TripReportPage = () => {
               onSchedule={onSchedule}
               deviceType="multiple"
               loading={loading}
-              formats={['xlsx', 'pdf']}
+              formats={["xlsx", "pdf"]}
             >
-              <ColumnSelect columns={columns} setColumns={setColumns} columnsArray={columnsArray} />
+              <ColumnSelect
+                columns={columns}
+                setColumns={setColumns}
+                columnsArray={columnsArray}
+              />
             </ReportFilter>
           </div>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell className={classes.columnAction} />
-                <TableCell>{t('sharedDevice')}</TableCell>
+                <TableCell>{t("sharedDevice")}</TableCell>
                 {columns.map((key) => (
                   <TableCell key={key}>{t(columnsMap.get(key))}</TableCell>
                 ))}
@@ -271,15 +301,24 @@ const TripReportPage = () => {
                     <TableCell className={classes.columnAction} padding="none">
                       <div className={classes.columnActionContainer}>
                         {selectedItem === item ? (
-                          <IconButton size="small" onClick={() => setSelectedItem(null)}>
+                          <IconButton
+                            size="small"
+                            onClick={() => setSelectedItem(null)}
+                          >
                             <GpsFixedIcon fontSize="small" />
                           </IconButton>
                         ) : (
-                          <IconButton size="small" onClick={() => setSelectedItem(item)}>
+                          <IconButton
+                            size="small"
+                            onClick={() => setSelectedItem(item)}
+                          >
                             <LocationSearchingIcon fontSize="small" />
                           </IconButton>
                         )}
-                        <IconButton size="small" onClick={() => navigateToReplay(item)}>
+                        <IconButton
+                          size="small"
+                          onClick={() => navigateToReplay(item)}
+                        >
                           <RouteIcon fontSize="small" />
                         </IconButton>
                       </div>

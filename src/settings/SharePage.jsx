@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
-import dayjs from 'dayjs';
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import dayjs from "dayjs";
 import {
   Accordion,
   AccordionSummary,
@@ -10,14 +10,14 @@ import {
   Container,
   TextField,
   Button,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import PageLayout from '../common/components/PageLayout';
-import SettingsMenu from './components/SettingsMenu';
-import { useCatchCallback } from '../reactHelper';
-import useSettingsStyles from './common/useSettingsStyles';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import PageLayout from "../common/components/PageLayout";
+import SettingsMenu from "./components/SettingsMenu";
+import { useCatchCallback } from "../reactHelper";
+import useSettingsStyles from "./common/useSettingsStyles";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const SharePage = () => {
   const navigate = useNavigate();
@@ -27,18 +27,18 @@ const SharePage = () => {
   const { type, id } = useParams();
 
   const item = useSelector((state) =>
-    type === 'group' ? state.groups.items[id] : state.devices.items[id],
+    type === "group" ? state.groups.items[id] : state.devices.items[id],
   );
 
   const [expiration, setExpiration] = useState(() =>
-    dayjs().add(1, 'week').locale('en').format('YYYY-MM-DDTHH:mm'),
+    dayjs().add(1, "week").locale("en").format("YYYY-MM-DDTHH:mm"),
   );
   const [link, setLink] = useState();
 
   const handleShare = useCatchCallback(async () => {
     const expirationTime = dayjs(expiration).toISOString();
     const response = await fetchOrThrow(`/api/share/${type}`, {
-      method: 'POST',
+      method: "POST",
       body: new URLSearchParams(`${type}Id=${id}&expiration=${expirationTime}`),
     });
     const token = await response.text();
@@ -46,38 +46,43 @@ const SharePage = () => {
   }, [id, expiration, type, setLink]);
 
   return (
-    <PageLayout menu={<SettingsMenu />} breadcrumbs={['sharedShare']}>
+    <PageLayout menu={<SettingsMenu />} breadcrumbs={["sharedShare"]}>
       <Container maxWidth="xs" className={classes.container}>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">{t('sharedRequired')}</Typography>
+            <Typography variant="subtitle1">{t("sharedRequired")}</Typography>
           </AccordionSummary>
           <AccordionDetails className={classes.details}>
             <TextField
               value={item.name}
-              label={t(type === 'group' ? 'groupDialog' : 'sharedDevice')}
+              label={t(type === "group" ? "groupDialog" : "sharedDevice")}
               disabled
             />
             <TextField
-              label={t('userExpirationTime')}
+              label={t("userExpirationTime")}
               type="datetime-local"
               value={expiration}
               onChange={(e) => setExpiration(e.target.value)}
             />
             <Button variant="outlined" color="primary" onClick={handleShare}>
-              {t('reportShow')}
+              {t("reportShow")}
             </Button>
             <TextField
-              value={link || ''}
+              value={link || ""}
               onChange={(e) => setLink(e.target.value)}
-              label={t('sharedLink')}
+              label={t("sharedLink")}
               slotProps={{ input: { readOnly: true } }}
             />
           </AccordionDetails>
         </Accordion>
         <div className={classes.buttons}>
-          <Button type="button" color="primary" variant="outlined" onClick={() => navigate(-1)}>
-            {t('sharedCancel')}
+          <Button
+            type="button"
+            color="primary"
+            variant="outlined"
+            onClick={() => navigate(-1)}
+          >
+            {t("sharedCancel")}
           </Button>
           <Button
             type="button"
@@ -86,7 +91,7 @@ const SharePage = () => {
             onClick={() => navigator.clipboard?.writeText(link)}
             disabled={!link}
           >
-            {t('sharedCopy')}
+            {t("sharedCopy")}
           </Button>
         </div>
       </Container>

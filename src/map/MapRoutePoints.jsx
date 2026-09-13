@@ -1,12 +1,12 @@
-import { useCallback } from 'react';
-import { map } from './core/MapView';
-import useMapLayer from './core/useMapLayer';
-import getSpeedColor from '../common/util/colors';
-import { findFonts, toMapCoordinates } from './core/mapUtil';
-import MapSpeedLegend from './control/MapSpeedLegend';
+import { useCallback } from "react";
+import { map } from "./core/MapView";
+import useMapLayer from "./core/useMapLayer";
+import getSpeedColor from "../common/util/colors";
+import { findFonts, toMapCoordinates } from "./core/mapUtil";
+import MapSpeedLegend from "./control/MapSpeedLegend";
 
-const onMouseEnter = () => (map.getCanvas().style.cursor = 'pointer');
-const onMouseLeave = () => (map.getCanvas().style.cursor = '');
+const onMouseEnter = () => (map.getCanvas().style.cursor = "pointer");
+const onMouseLeave = () => (map.getCanvas().style.cursor = "");
 
 const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
   const onMarkerClick = useCallback(
@@ -26,16 +26,16 @@ const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
   useMapLayer({
     layers: [
       {
-        type: 'symbol',
+        type: "symbol",
         paint: {
-          'text-color': ['get', 'color'],
+          "text-color": ["get", "color"],
         },
         layout: {
-          'text-font': findFonts(map),
-          'text-size': 12,
-          'text-field': '▲',
-          'text-allow-overlap': true,
-          'text-rotate': ['get', 'rotation'],
+          "text-font": findFonts(map),
+          "text-size": 12,
+          "text-field": "▲",
+          "text-allow-overlap": true,
+          "text-rotate": ["get", "rotation"],
         },
         on: {
           mouseenter: onMouseEnter,
@@ -46,11 +46,11 @@ const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
     ],
     layersDeps: [onMarkerClick],
     data: {
-      type: 'FeatureCollection',
+      type: "FeatureCollection",
       features: positions.map((position, index) => ({
-        type: 'Feature',
+        type: "Feature",
         geometry: {
-          type: 'Point',
+          type: "Point",
           coordinates: toMapCoordinates(position.longitude, position.latitude),
         },
         properties: {

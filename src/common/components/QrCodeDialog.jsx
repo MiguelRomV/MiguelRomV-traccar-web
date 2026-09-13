@@ -1,13 +1,20 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogActions, TextField, Button, useTheme } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { QRCode } from 'react-qr-code';
-import { useTranslation } from './LocalizationProvider';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  useTheme,
+} from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import { QRCode } from "react-qr-code";
+import { useTranslation } from "./LocalizationProvider";
 
 const useStyles = makeStyles()((theme) => ({
   qrCode: {
-    display: 'flex',
-    justifyContent: 'center',
+    display: "flex",
+    justifyContent: "center",
     marginBottom: theme.spacing(2),
   },
 }));
@@ -18,7 +25,7 @@ const QrCodeDialog = ({ open, onClose }) => {
   const t = useTranslation();
 
   const [serverUrl, setServerUrl] = useState(window.location.origin);
-  const [queryParams, setQueryParams] = useState('');
+  const [queryParams, setQueryParams] = useState("");
 
   const fullUrl = queryParams ? `${serverUrl}?${queryParams}` : serverUrl;
 
@@ -30,7 +37,7 @@ const QrCodeDialog = ({ open, onClose }) => {
         </div>
 
         <TextField
-          label={t('settingsServer')}
+          label={t("settingsServer")}
           value={serverUrl}
           onChange={(e) => setServerUrl(e.target.value)}
           margin="dense"
@@ -38,7 +45,7 @@ const QrCodeDialog = ({ open, onClose }) => {
         />
 
         <TextField
-          label={t('commandConfiguration')}
+          label={t("commandConfiguration")}
           value={queryParams}
           onChange={(e) => setQueryParams(e.target.value)}
           margin="dense"
@@ -47,7 +54,7 @@ const QrCodeDialog = ({ open, onClose }) => {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>{t('sharedCancel')}</Button>
+        <Button onClick={onClose}>{t("sharedCancel")}</Button>
       </DialogActions>
     </Dialog>
   );

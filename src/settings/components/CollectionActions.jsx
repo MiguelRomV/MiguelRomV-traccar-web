@@ -1,27 +1,40 @@
-import { useState } from 'react';
-import { IconButton, Menu, MenuItem, useMediaQuery, useTheme } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { useNavigate } from 'react-router-dom';
-import { makeStyles } from 'tss-react/mui';
-import RemoveDialog from '../../common/components/RemoveDialog';
-import { useTranslation } from '../../common/components/LocalizationProvider';
+import { useState } from "react";
+import {
+  IconButton,
+  Menu,
+  MenuItem,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useNavigate } from "react-router-dom";
+import { makeStyles } from "tss-react/mui";
+import RemoveDialog from "../../common/components/RemoveDialog";
+import { useTranslation } from "../../common/components/LocalizationProvider";
 
 const useStyles = makeStyles()(() => ({
   row: {
-    display: 'flex',
+    display: "flex",
   },
 }));
 
-const CollectionActions = ({ itemId, editPath, endpoint, onReload, customActions, readonly }) => {
+const CollectionActions = ({
+  itemId,
+  editPath,
+  endpoint,
+  onReload,
+  customActions,
+  readonly,
+}) => {
   const theme = useTheme();
   const { classes } = useStyles();
   const navigate = useNavigate();
   const t = useTranslation();
 
-  const phone = useMediaQuery(theme.breakpoints.down('sm'));
+  const phone = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [removing, setRemoving] = useState(false);
@@ -52,10 +65,17 @@ const CollectionActions = ({ itemId, editPath, endpoint, onReload, customActions
     <>
       {phone ? (
         <>
-          <IconButton size="small" onClick={(event) => setMenuAnchorEl(event.currentTarget)}>
+          <IconButton
+            size="small"
+            onClick={(event) => setMenuAnchorEl(event.currentTarget)}
+          >
             <MoreVertIcon fontSize="small" />
           </IconButton>
-          <Menu open={!!menuAnchorEl} anchorEl={menuAnchorEl} onClose={() => setMenuAnchorEl(null)}>
+          <Menu
+            open={!!menuAnchorEl}
+            anchorEl={menuAnchorEl}
+            onClose={() => setMenuAnchorEl(null)}
+          >
             {customActions &&
               customActions.map((action) => (
                 <MenuItem onClick={() => handleCustom(action)} key={action.key}>
@@ -64,8 +84,10 @@ const CollectionActions = ({ itemId, editPath, endpoint, onReload, customActions
               ))}
             {!readonly && (
               <>
-                {editPath && <MenuItem onClick={handleEdit}>{t('sharedEdit')}</MenuItem>}
-                <MenuItem onClick={handleRemove}>{t('sharedRemove')}</MenuItem>
+                {editPath && (
+                  <MenuItem onClick={handleEdit}>{t("sharedEdit")}</MenuItem>
+                )}
+                <MenuItem onClick={handleRemove}>{t("sharedRemove")}</MenuItem>
               </>
             )}
           </Menu>
@@ -83,13 +105,13 @@ const CollectionActions = ({ itemId, editPath, endpoint, onReload, customActions
           {!readonly && (
             <>
               {editPath && (
-                <Tooltip title={t('sharedEdit')}>
+                <Tooltip title={t("sharedEdit")}>
                   <IconButton size="small" onClick={handleEdit}>
                     <EditIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               )}
-              <Tooltip title={t('sharedRemove')}>
+              <Tooltip title={t("sharedRemove")}>
                 <IconButton size="small" onClick={handleRemove}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
@@ -99,7 +121,7 @@ const CollectionActions = ({ itemId, editPath, endpoint, onReload, customActions
         </div>
       )}
       <RemoveDialog
-        style={{ transform: 'none' }}
+        style={{ transform: "none" }}
         open={removing}
         endpoint={endpoint}
         itemId={itemId}

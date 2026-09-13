@@ -8,12 +8,12 @@ import {
   DialogContentText,
   DialogActions,
   Typography,
-} from '@mui/material';
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { usePrevious } from '../../reactHelper';
-import { errorsActions } from '../../store';
-import { useTranslation } from './LocalizationProvider';
+} from "@mui/material";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { usePrevious } from "../../reactHelper";
+import { errorsActions } from "../../store";
+import { useTranslation } from "./LocalizationProvider";
 
 const ErrorHandler = () => {
   const dispatch = useDispatch();
@@ -23,9 +23,11 @@ const ErrorHandler = () => {
   const cachedError = usePrevious(error);
 
   const message = error || cachedError;
-  const multiline = message?.includes('\n');
+  const multiline = message?.includes("\n");
   const displayMessage = multiline
-    ? message.split('\n')[0].replace(/^(?:(?:[\w$]+\.)*[\w$]+(?:Exception|Error)?:\s*)+/i, '')
+    ? message
+        .split("\n")[0]
+        .replace(/^(?:(?:[\w$]+\.)*[\w$]+(?:Exception|Error)?:\s*)+/i, "")
     : message;
 
   const [expanded, setExpanded] = useState(false);
@@ -42,15 +44,19 @@ const ErrorHandler = () => {
           {displayMessage}
           {multiline && (
             <>
-              {' | '}
+              {" | "}
               <Link color="inherit" href="#" onClick={() => setExpanded(true)}>
-                {t('sharedShowDetails')}
+                {t("sharedShowDetails")}
               </Link>
             </>
           )}
         </Alert>
       </Snackbar>
-      <Dialog open={expanded} onClose={() => setExpanded(false)} maxWidth={false}>
+      <Dialog
+        open={expanded}
+        onClose={() => setExpanded(false)}
+        maxWidth={false}
+      >
         <DialogContent>
           <DialogContentText component="div">
             <Typography component="pre" variant="caption">
@@ -60,7 +66,7 @@ const ErrorHandler = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setExpanded(false)} autoFocus>
-            {t('sharedHide')}
+            {t("sharedHide")}
           </Button>
         </DialogActions>
       </Dialog>

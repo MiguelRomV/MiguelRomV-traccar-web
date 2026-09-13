@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Button,
   Container,
@@ -9,15 +9,18 @@ import {
   Paper,
   Select,
   Typography,
-} from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { useLocalization, useTranslation } from '../common/components/LocalizationProvider';
-import { sessionActions } from '../store';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+} from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import {
+  useLocalization,
+  useTranslation,
+} from "../common/components/LocalizationProvider";
+import { sessionActions } from "../store";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const useStyles = makeStyles()((theme) => ({
   root: { paddingTop: theme.spacing(5) },
-  card: { maxWidth: 620, margin: '0 auto', padding: theme.spacing(4) },
+  card: { maxWidth: 620, margin: "0 auto", padding: theme.spacing(4) },
   title: { marginBottom: theme.spacing(3) },
   select: { marginBottom: theme.spacing(3) },
 }));
@@ -33,10 +36,13 @@ const LanguagePage = () => {
   const save = async () => {
     setLocalLanguage(selectedLanguage);
     if (user && !user.readonly) {
-      const updated = { ...user, attributes: { ...user.attributes, language: selectedLanguage } };
+      const updated = {
+        ...user,
+        attributes: { ...user.attributes, language: selectedLanguage },
+      };
       const response = await fetchOrThrow(`/api/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
       });
       dispatch(sessionActions.updateUser(await response.json()));
@@ -47,12 +53,12 @@ const LanguagePage = () => {
     <Container className={classes.root}>
       <Paper className={classes.card}>
         <Typography variant="h5" className={classes.title}>
-          {t('navigationLanguage')}
+          {t("navigationLanguage")}
         </Typography>
         <FormControl fullWidth className={classes.select}>
-          <InputLabel>{t('navigationLanguage')}</InputLabel>
+          <InputLabel>{t("navigationLanguage")}</InputLabel>
           <Select
-            label={t('navigationLanguage')}
+            label={t("navigationLanguage")}
             value={selectedLanguage}
             onChange={(event) => setSelectedLanguage(event.target.value)}
           >
@@ -64,7 +70,7 @@ const LanguagePage = () => {
           </Select>
         </FormControl>
         <Button variant="contained" onClick={save}>
-          {t('sharedSave')}
+          {t("sharedSave")}
         </Button>
       </Paper>
     </Container>

@@ -1,22 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
-import { IconButton, Paper, Typography } from '@mui/material';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { makeStyles } from 'tss-react/mui';
-import { useTranslation } from '../../common/components/LocalizationProvider';
+import { useEffect, useMemo, useState } from "react";
+import { IconButton, Paper, Typography } from "@mui/material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { makeStyles } from "tss-react/mui";
+import { useTranslation } from "../../common/components/LocalizationProvider";
 
 const useStyles = makeStyles()((theme) => ({
   root: {
-    position: 'fixed',
+    position: "fixed",
     right: theme.spacing(2),
     bottom: 322,
     zIndex: 3,
     width: 280,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: 8,
     boxShadow: theme.shadows[4],
-    pointerEvents: 'auto',
-    [theme.breakpoints.down('md')]: {
+    pointerEvents: "auto",
+    [theme.breakpoints.down("md")]: {
       right: theme.spacing(1),
       bottom: `calc(${theme.dimensions.bottomBarHeight}px + ${theme.spacing(1)})`,
       width: 220,
@@ -24,29 +24,29 @@ const useStyles = makeStyles()((theme) => ({
   },
   header: {
     height: 36,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingLeft: theme.spacing(1.5),
     backgroundColor: theme.palette.background.paper,
   },
   frame: {
-    display: 'block',
-    width: '100%',
+    display: "block",
+    width: "100%",
     height: 200,
     border: 0,
   },
   content: {
-    position: 'relative',
+    position: "relative",
     minHeight: 200,
   },
   loading: {
-    position: 'absolute',
+    position: "absolute",
     inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
     zIndex: 1,
   },
 }));
@@ -93,15 +93,25 @@ const StreetViewMini = ({ position }) => {
         </Typography>
         <IconButton
           size="small"
-          aria-label={expanded ? 'Contraer Street View' : 'Expandir Street View'}
+          aria-label={
+            expanded ? "Contraer Street View" : "Expandir Street View"
+          }
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? <ExpandMoreIcon fontSize="small" /> : <ExpandLessIcon fontSize="small" />}
+          {expanded ? (
+            <ExpandMoreIcon fontSize="small" />
+          ) : (
+            <ExpandLessIcon fontSize="small" />
+          )}
         </IconButton>
       </div>
       {expanded && (
         <div className={classes.content}>
-          {loading && <Typography className={classes.loading}>{t('streetViewLoading')}</Typography>}
+          {loading && (
+            <Typography className={classes.loading}>
+              {t("streetViewLoading")}
+            </Typography>
+          )}
           <iframe
             className={classes.frame}
             title="Street View"

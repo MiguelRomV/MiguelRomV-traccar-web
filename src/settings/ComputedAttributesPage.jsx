@@ -1,16 +1,22 @@
-import { useCallback, useReducer, useState } from 'react';
-import { Table, TableRow, TableCell, TableHead, TableBody } from '@mui/material';
-import { useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import { useAdministrator } from '../common/util/permissions';
-import PageLayout from '../common/components/PageLayout';
-import SettingsMenu from './components/SettingsMenu';
-import CollectionFab from './components/CollectionFab';
-import CollectionActions from './components/CollectionActions';
-import TableShimmer from '../common/components/TableShimmer';
-import SearchHeader from './components/SearchHeader';
-import useSettingsStyles from './common/useSettingsStyles';
-import fetchOrThrow from '../common/util/fetchOrThrow';
+import { useCallback, useReducer, useState } from "react";
+import {
+  Table,
+  TableRow,
+  TableCell,
+  TableHead,
+  TableBody,
+} from "@mui/material";
+import { useAsyncTask, useScrollToLoad, pageSize } from "../reactHelper";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import { useAdministrator } from "../common/util/permissions";
+import PageLayout from "../common/components/PageLayout";
+import SettingsMenu from "./components/SettingsMenu";
+import CollectionFab from "./components/CollectionFab";
+import CollectionActions from "./components/CollectionActions";
+import TableShimmer from "../common/components/TableShimmer";
+import SearchHeader from "./components/SearchHeader";
+import useSettingsStyles from "./common/useSettingsStyles";
+import fetchOrThrow from "../common/util/fetchOrThrow";
 
 const ComputedAttributesPage = () => {
   const { classes } = useSettingsStyles();
@@ -18,7 +24,7 @@ const ComputedAttributesPage = () => {
 
   const [reloadKey, reload] = useReducer((k) => k + 1, 0);
   const [items, setItems] = useState([]);
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const administrator = useAdministrator();
 
@@ -26,11 +32,14 @@ const ComputedAttributesPage = () => {
     async (offset, signal) => {
       const query = new URLSearchParams({ limit: pageSize, offset });
       if (searchKeyword) {
-        query.append('keyword', searchKeyword);
+        query.append("keyword", searchKeyword);
       }
-      const response = await fetchOrThrow(`/api/attributes/computed?${query.toString()}`, {
-        signal,
-      });
+      const response = await fetchOrThrow(
+        `/api/attributes/computed?${query.toString()}`,
+        {
+          signal,
+        },
+      );
       const data = await response.json();
       setItems((previous) => (offset ? [...previous, ...data] : data));
       setHasMore(data.length >= pageSize);
@@ -50,15 +59,18 @@ const ComputedAttributesPage = () => {
   );
 
   return (
-    <PageLayout menu={<SettingsMenu />} breadcrumbs={['settingsTitle', 'sharedComputedAttributes']}>
+    <PageLayout
+      menu={<SettingsMenu />}
+      breadcrumbs={["settingsTitle", "sharedComputedAttributes"]}
+    >
       <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
       <Table className={classes.table}>
         <TableHead>
           <TableRow>
-            <TableCell>{t('sharedDescription')}</TableCell>
-            <TableCell>{t('sharedAttribute')}</TableCell>
-            <TableCell>{t('sharedExpression')}</TableCell>
-            <TableCell>{t('sharedType')}</TableCell>
+            <TableCell>{t("sharedDescription")}</TableCell>
+            <TableCell>{t("sharedAttribute")}</TableCell>
+            <TableCell>{t("sharedExpression")}</TableCell>
+            <TableCell>{t("sharedType")}</TableCell>
             {administrator && <TableCell className={classes.columnAction} />}
           </TableRow>
         </TableHead>

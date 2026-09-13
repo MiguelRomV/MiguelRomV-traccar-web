@@ -1,163 +1,163 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 export default (t) =>
   useMemo(
     () => ({
       language: {
-        name: t('loginLanguage'),
-        type: 'string',
+        name: t("loginLanguage"),
+        type: "string",
       },
       mapLiveRoutes: {
-        name: t('mapLiveRoutes'),
-        type: 'string',
+        name: t("mapLiveRoutes"),
+        type: "string",
       },
       mapDirection: {
-        name: t('mapDirection'),
-        type: 'string',
+        name: t("mapDirection"),
+        type: "string",
       },
       mapFollow: {
-        name: t('deviceFollow'),
-        type: 'boolean',
+        name: t("deviceFollow"),
+        type: "boolean",
       },
       mapCluster: {
-        name: t('mapClustering'),
-        type: 'boolean',
+        name: t("mapClustering"),
+        type: "boolean",
       },
       mapOnSelect: {
-        name: t('mapOnSelect'),
-        type: 'boolean',
+        name: t("mapOnSelect"),
+        type: "boolean",
       },
       activeMapStyles: {
-        name: t('mapActive'),
-        type: 'string',
+        name: t("mapActive"),
+        type: "string",
       },
       devicePrimary: {
-        name: t('devicePrimaryInfo'),
-        type: 'string',
+        name: t("devicePrimaryInfo"),
+        type: "string",
       },
       deviceSecondary: {
-        name: t('deviceSecondaryInfo'),
-        type: 'string',
+        name: t("deviceSecondaryInfo"),
+        type: "string",
       },
       soundEvents: {
-        name: t('eventsSoundEvents'),
-        type: 'string',
+        name: t("eventsSoundEvents"),
+        type: "string",
       },
       soundAlarms: {
-        name: t('eventsSoundAlarms'),
-        type: 'string',
+        name: t("eventsSoundAlarms"),
+        type: "string",
       },
       positionItems: {
-        name: t('attributePopupInfo'),
-        type: 'string',
+        name: t("attributePopupInfo"),
+        type: "string",
       },
       googleKey: {
-        name: t('mapGoogleKey'),
-        type: 'string',
+        name: t("mapGoogleKey"),
+        type: "string",
       },
       locationIqKey: {
-        name: t('mapLocationIqKey'),
-        type: 'string',
+        name: t("mapLocationIqKey"),
+        type: "string",
       },
       mapboxAccessToken: {
-        name: t('mapMapboxKey'),
-        type: 'string',
+        name: t("mapMapboxKey"),
+        type: "string",
       },
       mapTilerKey: {
-        name: t('mapMapTilerKey'),
-        type: 'string',
+        name: t("mapMapTilerKey"),
+        type: "string",
       },
       bingMapsKey: {
-        name: t('mapBingKey'),
-        type: 'string',
+        name: t("mapBingKey"),
+        type: "string",
       },
       openWeatherKey: {
-        name: t('mapOpenWeatherKey'),
-        type: 'string',
+        name: t("mapOpenWeatherKey"),
+        type: "string",
       },
       ordnanceSurveyKey: {
-        name: t('mapOrdnanceSurveyKey'),
-        type: 'string',
+        name: t("mapOrdnanceSurveyKey"),
+        type: "string",
       },
       tomTomKey: {
-        name: t('mapTomTomKey'),
-        type: 'string',
+        name: t("mapTomTomKey"),
+        type: "string",
       },
       hereKey: {
-        name: t('mapHereKey'),
-        type: 'string',
+        name: t("mapHereKey"),
+        type: "string",
       },
       notificationTokens: {
-        name: t('attributeNotificationTokens'),
-        type: 'string',
+        name: t("attributeNotificationTokens"),
+        type: "string",
       },
-      'ui.disableSavedCommands': {
-        name: t('attributeUiDisableSavedCommands'),
-        type: 'boolean',
+      "ui.disableSavedCommands": {
+        name: t("attributeUiDisableSavedCommands"),
+        type: "boolean",
       },
-      'ui.disableGroups': {
-        name: t('attributeUiDisableGroups'),
-        type: 'boolean',
+      "ui.disableGroups": {
+        name: t("attributeUiDisableGroups"),
+        type: "boolean",
       },
-      'ui.disableAttributes': {
-        name: t('attributeUiDisableAttributes'),
-        type: 'boolean',
+      "ui.disableAttributes": {
+        name: t("attributeUiDisableAttributes"),
+        type: "boolean",
       },
-      'ui.disableEvents': {
-        name: t('attributeUiDisableEvents'),
-        type: 'boolean',
+      "ui.disableEvents": {
+        name: t("attributeUiDisableEvents"),
+        type: "boolean",
       },
-      'ui.disableVehicleFeatures': {
-        name: t('attributeUiDisableVehicleFeatures'),
-        type: 'boolean',
+      "ui.disableVehicleFeatures": {
+        name: t("attributeUiDisableVehicleFeatures"),
+        type: "boolean",
       },
-      'ui.disableDrivers': {
-        name: t('attributeUiDisableDrivers'),
-        type: 'boolean',
+      "ui.disableDrivers": {
+        name: t("attributeUiDisableDrivers"),
+        type: "boolean",
       },
-      'ui.disableComputedAttributes': {
-        name: t('attributeUiDisableComputedAttributes'),
-        type: 'boolean',
+      "ui.disableComputedAttributes": {
+        name: t("attributeUiDisableComputedAttributes"),
+        type: "boolean",
       },
-      'ui.disableCalendars': {
-        name: t('attributeUiDisableCalendars'),
-        type: 'boolean',
+      "ui.disableCalendars": {
+        name: t("attributeUiDisableCalendars"),
+        type: "boolean",
       },
-      'ui.disableMaintenance': {
-        name: t('attributeUiDisableMaintenance'),
-        type: 'boolean',
+      "ui.disableMaintenance": {
+        name: t("attributeUiDisableMaintenance"),
+        type: "boolean",
       },
-      'web.liveRouteLength': {
-        name: t('attributeWebLiveRouteLength'),
-        type: 'number',
+      "web.liveRouteLength": {
+        name: t("attributeWebLiveRouteLength"),
+        type: "number",
       },
       mapLineWidth: {
-        name: t('attributeMapLineWidth'),
-        type: 'number',
+        name: t("attributeMapLineWidth"),
+        type: "number",
       },
       mapLineOpacity: {
-        name: t('attributeMapLineOpacity'),
-        type: 'number',
+        name: t("attributeMapLineOpacity"),
+        type: "number",
       },
-      'web.selectZoom': {
-        name: t('attributeWebSelectZoom'),
-        type: 'number',
+      "web.selectZoom": {
+        name: t("attributeWebSelectZoom"),
+        type: "number",
       },
-      'web.maxZoom': {
-        name: t('attributeWebMaxZoom'),
-        type: 'number',
+      "web.maxZoom": {
+        name: t("attributeWebMaxZoom"),
+        type: "number",
       },
       iconScale: {
-        name: t('sharedIconScale'),
-        type: 'number',
+        name: t("sharedIconScale"),
+        type: "number",
       },
       navigationAppLink: {
-        name: t('attributeNavigationAppLink'),
-        type: 'string',
+        name: t("attributeNavigationAppLink"),
+        type: "string",
       },
       navigationAppTitle: {
-        name: t('attributeNavigationAppTitle'),
-        type: 'string',
+        name: t("attributeNavigationAppTitle"),
+        type: "string",
       },
     }),
     [t],

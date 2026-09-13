@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   Badge,
   Button,
@@ -18,30 +18,30 @@ import {
   Tab,
   Tabs,
   Tooltip,
-} from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import GpsFixedIcon from '@mui/icons-material/GpsFixed';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
-import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
-import HistoryIcon from '@mui/icons-material/History';
-import SearchIcon from '@mui/icons-material/Search';
-import MapIcon from '@mui/icons-material/Map';
-import DnsIcon from '@mui/icons-material/Dns';
-import AddIcon from '@mui/icons-material/Add';
-import TuneIcon from '@mui/icons-material/Tune';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import { useDeviceReadonly } from '../common/util/permissions';
-import { speedFromKnots } from '../common/util/converter';
+} from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import GpsFixedIcon from "@mui/icons-material/GpsFixed";
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
+import HistoryIcon from "@mui/icons-material/History";
+import SearchIcon from "@mui/icons-material/Search";
+import MapIcon from "@mui/icons-material/Map";
+import DnsIcon from "@mui/icons-material/Dns";
+import AddIcon from "@mui/icons-material/Add";
+import TuneIcon from "@mui/icons-material/Tune";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import { useDeviceReadonly } from "../common/util/permissions";
+import { speedFromKnots } from "../common/util/converter";
 
 const useStyles = makeStyles()((theme) => ({
   root: {
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
     backgroundColor: theme.palette.background.paper,
   },
   tabs: {
     minHeight: 48,
-    '& .MuiTab-root': {
+    "& .MuiTab-root": {
       minWidth: 0,
       minHeight: 48,
       flex: 1,
@@ -50,10 +50,10 @@ const useStyles = makeStyles()((theme) => ({
     },
   },
   states: {
-    display: 'flex',
+    display: "flex",
     gap: theme.spacing(0.5),
     padding: theme.spacing(0.75, 1),
-    overflowX: 'auto',
+    overflowX: "auto",
     borderTop: `1px solid ${theme.palette.divider}`,
     borderBottom: `1px solid ${theme.palette.divider}`,
   },
@@ -63,20 +63,23 @@ const useStyles = makeStyles()((theme) => ({
     height: 30,
     padding: theme.spacing(0.25, 1),
     fontSize: 11,
-    textTransform: 'none',
+    textTransform: "none",
   },
-  selectedState: { backgroundColor: '#E6F0FA' },
+  selectedState: { backgroundColor: "#E6F0FA" },
   searchRow: {
-    display: 'flex',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
     gap: theme.spacing(0.75),
     padding: theme.spacing(1),
   },
   input: { flex: 1 },
-  add: { color: theme.palette.common.white, backgroundColor: theme.palette.primary.main },
+  add: {
+    color: theme.palette.common.white,
+    backgroundColor: theme.palette.primary.main,
+  },
   filterPanel: {
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
     padding: theme.spacing(2),
     gap: theme.spacing(2),
     width: theme.dimensions.drawerWidthTablet,
@@ -109,21 +112,22 @@ const MainToolbar = ({
   const stateOf = (device) => {
     const position = positions[device.id];
     const updated = Date.parse(device.lastUpdate);
-    if (device.status !== 'online' || !updated || Date.now() - updated > 300000) return 'noSignal';
-    if (speedFromKnots(position?.speed || 0, 'kmh') > 5) return 'moving';
-    return position?.attributes?.ignition ? 'idle' : 'stopped';
+    if (device.status !== "online" || !updated || Date.now() - updated > 300000)
+      return "noSignal";
+    if (speedFromKnots(position?.speed || 0, "kmh") > 5) return "moving";
+    return position?.attributes?.ignition ? "idle" : "stopped";
   };
   const deviceValues = Object.values(devices);
   const count = (state) =>
-    state === 'all'
+    state === "all"
       ? deviceValues.length
       : deviceValues.filter((device) => stateOf(device) === state).length;
   const stateOptions = [
-    ['all', t('eventAll')],
-    ['moving', t('eventDeviceMoving')],
-    ['stopped', t('eventDeviceStopped')],
-    ['idle', t('positionStateIdle')],
-    ['noSignal', t('positionStateNoSignal')],
+    ["all", t("eventAll")],
+    ["moving", t("eventDeviceMoving")],
+    ["stopped", t("eventDeviceStopped")],
+    ["idle", t("positionStateIdle")],
+    ["noSignal", t("positionStateNoSignal")],
   ];
 
   return (
@@ -133,34 +137,34 @@ const MainToolbar = ({
           icon={<GpsFixedIcon fontSize="small" />}
           iconPosition="start"
           label="GPS"
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
         />
         <Tab
           icon={<NotificationsNoneIcon fontSize="small" />}
           iconPosition="start"
-          label={t('reportEvents')}
-          onClick={() => navigate('/reports/events')}
+          label={t("reportEvents")}
+          onClick={() => navigate("/reports/events")}
         />
         <Tab
           icon={<PlaceOutlinedIcon fontSize="small" />}
           iconPosition="start"
-          label={t('sharedGeofences')}
-          onClick={() => navigate('/geofences')}
+          label={t("sharedGeofences")}
+          onClick={() => navigate("/geofences")}
         />
         <Tab
           icon={<HistoryIcon fontSize="small" />}
           iconPosition="start"
-          label={t('reportReplay')}
-          onClick={() => navigate('/replay')}
+          label={t("reportReplay")}
+          onClick={() => navigate("/replay")}
         />
       </Tabs>
       <div className={classes.states}>
         {stateOptions.map(([key, label]) => {
-          const value = key === 'all' ? '' : key;
+          const value = key === "all" ? "" : key;
           return (
             <Button
               key={key}
-              className={`${classes.stateButton} ${(filter.motion || '') === value ? classes.selectedState : ''}`}
+              className={`${classes.stateButton} ${(filter.motion || "") === value ? classes.selectedState : ""}`}
               onClick={() => setFilter({ ...filter, motion: value })}
             >
               {label} {count(key)}
@@ -175,7 +179,7 @@ const MainToolbar = ({
         <OutlinedInput
           ref={inputRef}
           className={classes.input}
-          placeholder={t('sharedSearchDevices')}
+          placeholder={t("sharedSearchDevices")}
           value={keyword}
           onChange={(event) => setKeyword(event.target.value)}
           startAdornment={
@@ -185,12 +189,17 @@ const MainToolbar = ({
           }
           endAdornment={
             <InputAdornment position="end">
-              <IconButton size="small" onClick={() => setFilterAnchorEl(inputRef.current)}>
+              <IconButton
+                size="small"
+                onClick={() => setFilterAnchorEl(inputRef.current)}
+              >
                 <Badge
                   color="info"
                   variant="dot"
                   invisible={
-                    !filter.statuses.length && !filter.groups.length && !filter.geofences.length
+                    !filter.statuses.length &&
+                    !filter.groups.length &&
+                    !filter.geofences.length
                   }
                 >
                   <TuneIcon fontSize="small" />
@@ -200,12 +209,12 @@ const MainToolbar = ({
           }
           size="small"
         />
-        <Tooltip title={t('sharedAdd')}>
+        <Tooltip title={t("sharedAdd")}>
           <span>
             <IconButton
               className={classes.add}
               size="small"
-              onClick={() => navigate('/settings/device')}
+              onClick={() => navigate("/settings/device")}
               disabled={deviceReadonly}
             >
               <AddIcon />
@@ -217,28 +226,32 @@ const MainToolbar = ({
         open={Boolean(filterAnchorEl)}
         anchorEl={filterAnchorEl}
         onClose={() => setFilterAnchorEl(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <div className={classes.filterPanel}>
           <FormControl>
-            <InputLabel>{t('deviceStatus')}</InputLabel>
+            <InputLabel>{t("deviceStatus")}</InputLabel>
             <Select
-              label={t('deviceStatus')}
+              label={t("deviceStatus")}
               value={filter.statuses}
-              onChange={(event) => setFilter({ ...filter, statuses: event.target.value })}
+              onChange={(event) =>
+                setFilter({ ...filter, statuses: event.target.value })
+              }
               multiple
             >
-              <MenuItem value="online">{t('deviceStatusOnline')}</MenuItem>
-              <MenuItem value="offline">{t('deviceStatusOffline')}</MenuItem>
-              <MenuItem value="unknown">{t('deviceStatusUnknown')}</MenuItem>
+              <MenuItem value="online">{t("deviceStatusOnline")}</MenuItem>
+              <MenuItem value="offline">{t("deviceStatusOffline")}</MenuItem>
+              <MenuItem value="unknown">{t("deviceStatusUnknown")}</MenuItem>
             </Select>
           </FormControl>
           <FormControl>
-            <InputLabel>{t('settingsGroups')}</InputLabel>
+            <InputLabel>{t("settingsGroups")}</InputLabel>
             <Select
-              label={t('settingsGroups')}
+              label={t("settingsGroups")}
               value={filter.groups}
-              onChange={(event) => setFilter({ ...filter, groups: event.target.value })}
+              onChange={(event) =>
+                setFilter({ ...filter, groups: event.target.value })
+              }
               multiple
             >
               {Object.values(groups)
@@ -251,11 +264,13 @@ const MainToolbar = ({
             </Select>
           </FormControl>
           <FormControl>
-            <InputLabel>{t('sharedGeofences')}</InputLabel>
+            <InputLabel>{t("sharedGeofences")}</InputLabel>
             <Select
-              label={t('sharedGeofences')}
+              label={t("sharedGeofences")}
               value={filter.geofences}
-              onChange={(event) => setFilter({ ...filter, geofences: event.target.value })}
+              onChange={(event) =>
+                setFilter({ ...filter, geofences: event.target.value })
+              }
               multiple
             >
               {Object.values(geofences)
@@ -268,15 +283,15 @@ const MainToolbar = ({
             </Select>
           </FormControl>
           <FormControl>
-            <InputLabel>{t('sharedSortBy')}</InputLabel>
+            <InputLabel>{t("sharedSortBy")}</InputLabel>
             <Select
-              label={t('sharedSortBy')}
+              label={t("sharedSortBy")}
               value={filterSort}
               onChange={(event) => setFilterSort(event.target.value)}
             >
-              <MenuItem value="">{'\u00a0'}</MenuItem>
-              <MenuItem value="name">{t('sharedName')}</MenuItem>
-              <MenuItem value="lastUpdate">{t('deviceLastUpdate')}</MenuItem>
+              <MenuItem value="">{"\u00a0"}</MenuItem>
+              <MenuItem value="name">{t("sharedName")}</MenuItem>
+              <MenuItem value="lastUpdate">{t("deviceLastUpdate")}</MenuItem>
             </Select>
           </FormControl>
           <FormGroup>
@@ -287,7 +302,7 @@ const MainToolbar = ({
                   onChange={(event) => setFilterMap(event.target.checked)}
                 />
               }
-              label={t('sharedFilterMap')}
+              label={t("sharedFilterMap")}
             />
           </FormGroup>
         </div>

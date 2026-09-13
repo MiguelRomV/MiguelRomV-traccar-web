@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import { TextField } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { useTranslation } from '../../common/components/LocalizationProvider';
+import { useState, useEffect, useRef } from "react";
+import { TextField } from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import { useTranslation } from "../../common/components/LocalizationProvider";
 
 const useStyles = makeStyles()((theme) => ({
   header: {
-    position: 'sticky',
+    position: "sticky",
     left: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'stretch',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
     padding: theme.spacing(3, 2, 2),
   },
 }));
@@ -30,7 +30,7 @@ const SearchHeader = ({ keyword, setKeyword }) => {
     <div className={classes.header}>
       <TextField
         variant="outlined"
-        placeholder={t('sharedSearch')}
+        placeholder={t("sharedSearch")}
         value={input}
         onChange={(e) => setInput(e.target.value)}
       />

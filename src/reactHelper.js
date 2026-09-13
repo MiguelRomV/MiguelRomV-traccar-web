@@ -1,6 +1,6 @@
-import { useRef, useEffect, useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { errorsActions } from './store';
+import { useRef, useEffect, useCallback, useState } from "react";
+import { useDispatch } from "react-redux";
+import { errorsActions } from "./store";
 
 export const pageSize = 50;
 
@@ -22,7 +22,7 @@ export const useAsyncTask = (effect, deps) => {
         cleanup = result;
       })
       .catch((error) => {
-        if (error.name !== 'AbortError') {
+        if (error.name !== "AbortError") {
           dispatch(errorsActions.push(error.message));
         }
       });
@@ -37,7 +37,9 @@ export const useAsyncTask = (effect, deps) => {
 export const useCatch = (method) => {
   const dispatch = useDispatch();
   return (...parameters) => {
-    method(...parameters).catch((error) => dispatch(errorsActions.push(error.message)));
+    method(...parameters).catch((error) =>
+      dispatch(errorsActions.push(error.message)),
+    );
   };
 };
 
@@ -45,7 +47,9 @@ export const useCatchCallback = (method, deps) => {
   const dispatch = useDispatch();
   return useCallback(
     (...parameters) => {
-      method(...parameters).catch((error) => dispatch(errorsActions.push(error.message)));
+      method(...parameters).catch((error) =>
+        dispatch(errorsActions.push(error.message)),
+      );
     },
     // eslint-disable-next-line @eslint-react/exhaustive-deps
     deps,

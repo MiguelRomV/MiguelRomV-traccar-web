@@ -1,4 +1,4 @@
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
 
 const DriverValue = ({ driverUniqueId }) => {
   const driver = useSelector((state) => state.drivers.items[driverUniqueId]);

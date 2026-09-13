@@ -1,5 +1,5 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   Drawer,
   IconButton,
@@ -8,12 +8,12 @@ import {
   ListItemText,
   Toolbar,
   Typography,
-} from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { formatNotificationTitle, formatTime } from '../common/util/formatter';
-import { useTranslation } from '../common/components/LocalizationProvider';
-import { eventsActions } from '../store';
+} from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { formatNotificationTitle, formatTime } from "../common/util/formatter";
+import { useTranslation } from "../common/components/LocalizationProvider";
+import { eventsActions } from "../store";
 
 const useStyles = makeStyles()((theme) => ({
   drawer: {
@@ -50,7 +50,7 @@ const EventsDrawer = ({ open, onClose }) => {
     <Drawer anchor="right" open={open} onClose={onClose}>
       <Toolbar className={classes.toolbar} disableGutters>
         <Typography variant="h6" className={classes.title}>
-          {t('reportEvents')}
+          {t("reportEvents")}
         </Typography>
         <IconButton
           size="small"
@@ -69,7 +69,7 @@ const EventsDrawer = ({ open, onClose }) => {
           >
             <ListItemText
               primary={`${devices[event.deviceId]?.name} • ${formatType(event)}`}
-              secondary={formatTime(event.eventTime, 'seconds')}
+              secondary={formatTime(event.eventTime, "seconds")}
             />
             <IconButton
               size="small"

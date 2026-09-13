@@ -1,73 +1,73 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 export default (t) =>
   useMemo(
     () => ({
       support: {
-        name: t('settingsSupport'),
-        type: 'string',
+        name: t("settingsSupport"),
+        type: "string",
       },
       title: {
-        name: t('serverName'),
-        type: 'string',
+        name: t("serverName"),
+        type: "string",
       },
       description: {
-        name: t('serverDescription'),
-        type: 'string',
+        name: t("serverDescription"),
+        type: "string",
       },
       logo: {
-        name: t('serverLogo'),
-        type: 'string',
+        name: t("serverLogo"),
+        type: "string",
       },
       logoInverted: {
-        name: t('serverLogoInverted'),
-        type: 'string',
+        name: t("serverLogoInverted"),
+        type: "string",
       },
       colorPrimary: {
-        name: t('serverColorPrimary'),
-        type: 'string',
-        dataType: 'color',
+        name: t("serverColorPrimary"),
+        type: "string",
+        dataType: "color",
       },
       colorSecondary: {
-        name: t('serverColorSecondary'),
-        type: 'string',
-        dataType: 'color',
+        name: t("serverColorSecondary"),
+        type: "string",
+        dataType: "color",
       },
       disableChange: {
-        name: t('serverChangeDisable'),
-        type: 'boolean',
+        name: t("serverChangeDisable"),
+        type: "boolean",
       },
       darkMode: {
-        name: t('settingsDarkMode'),
-        type: 'boolean',
+        name: t("settingsDarkMode"),
+        type: "boolean",
       },
       termsUrl: {
-        name: t('userTerms'),
-        type: 'string',
+        name: t("userTerms"),
+        type: "string",
       },
       privacyUrl: {
-        name: t('userPrivacy'),
-        type: 'string',
+        name: t("userPrivacy"),
+        type: "string",
       },
       totpEnable: {
-        name: t('settingsTotpEnable'),
-        type: 'boolean',
+        name: t("settingsTotpEnable"),
+        type: "boolean",
       },
       totpForce: {
-        name: t('settingsTotpForce'),
-        type: 'boolean',
+        name: t("settingsTotpForce"),
+        type: "boolean",
       },
       serviceWorkerUpdateInterval: {
-        name: t('settingsServiceWorkerUpdateInterval'),
-        type: 'number',
+        name: t("settingsServiceWorkerUpdateInterval"),
+        type: "number",
       },
-      'ui.disableLoginLanguage': {
-        name: t('attributeUiDisableLoginLanguage'),
-        type: 'boolean',
+      "ui.disableLoginLanguage": {
+        name: t("attributeUiDisableLoginLanguage"),
+        type: "boolean",
       },
       disableShare: {
-        name: t('serverDisableShare'),
-        type: 'boolean',
+        name: t("serverDisableShare"),
+        type: "boolean",
       },
     }),
     [t],

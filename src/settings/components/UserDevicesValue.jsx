@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Link } from '@mui/material';
-import { useCatch } from '../../reactHelper';
-import { useTranslation } from '../../common/components/LocalizationProvider';
-import fetchOrThrow from '../../common/util/fetchOrThrow';
+import { useState } from "react";
+import { Link } from "@mui/material";
+import { useCatch } from "../../reactHelper";
+import { useTranslation } from "../../common/components/LocalizationProvider";
+import fetchOrThrow from "../../common/util/fetchOrThrow";
 
 const UserDevicesValue = ({ userId }) => {
   const t = useTranslation();
@@ -20,7 +20,7 @@ const UserDevicesValue = ({ userId }) => {
   }
   return (
     <Link href="#" onClick={loadDevices}>
-      {t('reportShow')}
+      {t("reportShow")}
     </Link>
   );
 };

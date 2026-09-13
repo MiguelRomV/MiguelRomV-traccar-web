@@ -1,15 +1,16 @@
-import { Snackbar, IconButton } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import { useSelector } from 'react-redux';
-import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useTranslation } from './common/components/LocalizationProvider';
+import { Snackbar, IconButton } from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { useSelector } from "react-redux";
+import { useRegisterSW } from "virtual:pwa-register/react";
+import { useTranslation } from "./common/components/LocalizationProvider";
 
 // Based on https://vite-pwa-org.netlify.app/frameworks/react.html
 const UpdateController = () => {
   const t = useTranslation();
 
   const swUpdateInterval = useSelector(
-    (state) => state.session.server.attributes.serviceWorkerUpdateInterval || 3600000,
+    (state) =>
+      state.session.server.attributes.serviceWorkerUpdateInterval || 3600000,
   );
 
   const {
@@ -23,15 +24,15 @@ const UpdateController = () => {
             return;
           }
 
-          if ('connection' in navigator && !navigator.onLine) {
+          if ("connection" in navigator && !navigator.onLine) {
             return;
           }
 
           const newSW = await fetch(swUrl, {
-            cache: 'no-store',
+            cache: "no-store",
             headers: {
-              cache: 'no-store',
-              'cache-control': 'no-cache',
+              cache: "no-store",
+              "cache-control": "no-cache",
             },
           });
 
@@ -46,7 +47,7 @@ const UpdateController = () => {
   return (
     <Snackbar
       open={needRefresh}
-      message={t('settingsUpdateAvailable')}
+      message={t("settingsUpdateAvailable")}
       action={
         <IconButton color="inherit" onClick={() => updateServiceWorker(true)}>
           <RefreshIcon />

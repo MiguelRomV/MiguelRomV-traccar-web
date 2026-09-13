@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Container,
   Button,
@@ -8,12 +8,12 @@ import {
   Skeleton,
   Typography,
   TextField,
-} from '@mui/material';
-import { useCatch, useAsyncTask } from '../../reactHelper';
-import { useTranslation } from '../../common/components/LocalizationProvider';
-import PageLayout from '../../common/components/PageLayout';
-import useSettingsStyles from '../common/useSettingsStyles';
-import fetchOrThrow from '../../common/util/fetchOrThrow';
+} from "@mui/material";
+import { useCatch, useAsyncTask } from "../../reactHelper";
+import { useTranslation } from "../../common/components/LocalizationProvider";
+import PageLayout from "../../common/components/PageLayout";
+import useSettingsStyles from "../common/useSettingsStyles";
+import fetchOrThrow from "../../common/util/fetchOrThrow";
 
 const EditItemView = ({
   children,
@@ -36,7 +36,9 @@ const EditItemView = ({
     async ({ signal }) => {
       if (!item) {
         if (id) {
-          const response = await fetchOrThrow(`/api/${endpoint}/${id}`, { signal });
+          const response = await fetchOrThrow(`/api/${endpoint}/${id}`, {
+            signal,
+          });
           setItem(await response.json());
         } else {
           setItem(defaultItem || {});
@@ -53,8 +55,8 @@ const EditItemView = ({
     }
 
     const response = await fetchOrThrow(url, {
-      method: !id ? 'POST' : 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: !id ? "POST" : "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(item),
     });
 
@@ -86,8 +88,13 @@ const EditItemView = ({
           </Accordion>
         )}
         <div className={classes.buttons}>
-          <Button color="primary" variant="outlined" onClick={() => navigate(-1)} disabled={!item}>
-            {t('sharedCancel')}
+          <Button
+            color="primary"
+            variant="outlined"
+            onClick={() => navigate(-1)}
+            disabled={!item}
+          >
+            {t("sharedCancel")}
           </Button>
           <Button
             color="primary"
@@ -95,7 +102,7 @@ const EditItemView = ({
             onClick={handleSave}
             disabled={!item || !validate()}
           >
-            {t('sharedSave')}
+            {t("sharedSave")}
           </Button>
         </div>
       </Container>

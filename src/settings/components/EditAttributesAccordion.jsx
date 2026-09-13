@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 import {
   Button,
@@ -14,13 +14,13 @@ import {
   AccordionSummary,
   Typography,
   AccordionDetails,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import AddIcon from '@mui/icons-material/Add';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AddAttributeDialog from './AddAttributeDialog';
-import { useTranslation } from '../../common/components/LocalizationProvider';
-import { useAttributePreference } from '../../common/util/preferences';
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import AddAttributeDialog from "./AddAttributeDialog";
+import { useTranslation } from "../../common/components/LocalizationProvider";
+import { useAttributePreference } from "../../common/util/preferences";
 import {
   distanceFromMeters,
   distanceToMeters,
@@ -31,9 +31,9 @@ import {
   volumeFromLiters,
   volumeToLiters,
   volumeUnitString,
-} from '../../common/util/converter';
-import useFeatures from '../../common/util/useFeatures';
-import useSettingsStyles from '../common/useSettingsStyles';
+} from "../../common/util/converter";
+import useFeatures from "../../common/util/useFeatures";
+import useSettingsStyles from "../common/useSettingsStyles";
 
 const EditAttributesAccordion = ({
   attribute,
@@ -47,26 +47,26 @@ const EditAttributesAccordion = ({
 
   const features = useFeatures();
 
-  const speedUnit = useAttributePreference('speedUnit');
-  const distanceUnit = useAttributePreference('distanceUnit');
-  const volumeUnit = useAttributePreference('volumeUnit');
+  const speedUnit = useAttributePreference("speedUnit");
+  const distanceUnit = useAttributePreference("distanceUnit");
+  const volumeUnit = useAttributePreference("volumeUnit");
 
   const [addDialogShown, setAddDialogShown] = useState(false);
 
   const updateAttribute = (key, value, type, dataType) => {
     const updatedAttributes = { ...attributes };
     switch (dataType) {
-      case 'speed':
+      case "speed":
         updatedAttributes[key] = speedToKnots(Number(value), speedUnit);
         break;
-      case 'distance':
+      case "distance":
         updatedAttributes[key] = distanceToMeters(Number(value), distanceUnit);
         break;
-      case 'volume':
+      case "volume":
         updatedAttributes[key] = volumeToLiters(Number(value), volumeUnit);
         break;
       default:
-        updatedAttributes[key] = type === 'number' ? Number(value) : value;
+        updatedAttributes[key] = type === "number" ? Number(value) : value;
         break;
     }
     setAttributes(updatedAttributes);
@@ -82,11 +82,11 @@ const EditAttributesAccordion = ({
     const definition = definitions[key];
     const name = definition ? definition.name : key;
     switch (dataType) {
-      case 'speed':
+      case "speed":
         return `${name} (${speedUnitString(speedUnit, t)})`;
-      case 'distance':
+      case "distance":
         return `${name} (${distanceUnitString(distanceUnit, t)})`;
-      case 'volume':
+      case "volume":
         return `${name} (${volumeUnitString(volumeUnit, t)})`;
       default:
         return name;
@@ -94,13 +94,13 @@ const EditAttributesAccordion = ({
   };
 
   const getAttributeType = (value) => {
-    if (typeof value === 'number') {
-      return 'number';
+    if (typeof value === "number") {
+      return "number";
     }
-    if (typeof value === 'boolean') {
-      return 'boolean';
+    if (typeof value === "boolean") {
+      return "boolean";
     }
-    return 'string';
+    return "string";
   };
 
   const getAttributeDataType = (key) => {
@@ -111,28 +111,28 @@ const EditAttributesAccordion = ({
   const getDisplayValue = (value, dataType) => {
     if (value) {
       switch (dataType) {
-        case 'speed':
+        case "speed":
           return speedFromKnots(value, speedUnit);
-        case 'distance':
+        case "distance":
           return distanceFromMeters(value, distanceUnit);
-        case 'volume':
+        case "volume":
           return volumeFromLiters(value, volumeUnit);
         default:
           return value;
       }
     }
-    return '';
+    return "";
   };
 
   const convertToList = (attributes) => {
     const booleanList = [];
     const otherList = [];
     const excludeAttributes = [
-      'speedUnit',
-      'distanceUnit',
-      'altitudeUnit',
-      'volumeUnit',
-      'timezone',
+      "speedUnit",
+      "distanceUnit",
+      "altitudeUnit",
+      "volumeUnit",
+      "timezone",
     ];
     Object.keys(attributes || [])
       .filter((key) => !excludeAttributes.includes(key))
@@ -140,7 +140,7 @@ const EditAttributesAccordion = ({
         const value = attributes[key];
         const type = getAttributeType(value);
         const dataType = getAttributeDataType(key);
-        if (type === 'boolean') {
+        if (type === "boolean") {
           booleanList.push({
             key,
             value,
@@ -163,31 +163,36 @@ const EditAttributesAccordion = ({
     setAddDialogShown(false);
     if (definition) {
       switch (definition.type) {
-        case 'number':
+        case "number":
           updateAttribute(definition.key, 0);
           break;
-        case 'boolean':
+        case "boolean":
           updateAttribute(definition.key, false);
           break;
         default:
-          updateAttribute(definition.key, '');
+          updateAttribute(definition.key, "");
           break;
       }
     }
   };
 
   return features.disableAttributes ? (
-    ''
+    ""
   ) : (
     <Accordion defaultExpanded={!!attribute}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography variant="subtitle1">{t('sharedAttributes')}</Typography>
+        <Typography variant="subtitle1">{t("sharedAttributes")}</Typography>
       </AccordionSummary>
       <AccordionDetails className={classes.details}>
         {convertToList(attributes).map(({ key, value, type, dataType }) => {
-          if (type === 'boolean') {
+          if (type === "boolean") {
             return (
-              <Grid container direction="row" justifyContent="space-between" key={key}>
+              <Grid
+                container
+                direction="row"
+                justifyContent="space-between"
+                key={key}
+              >
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -212,13 +217,19 @@ const EditAttributesAccordion = ({
               <InputLabel>{getAttributeName(key, dataType)}</InputLabel>
               <OutlinedInput
                 label={getAttributeName(key, dataType)}
-                type={type === 'number' ? 'number' : 'text'}
+                type={type === "number" ? "number" : "text"}
                 value={getDisplayValue(value, dataType)}
-                onChange={(e) => updateAttribute(key, e.target.value, type, dataType)}
+                onChange={(e) =>
+                  updateAttribute(key, e.target.value, type, dataType)
+                }
                 autoFocus={focusAttribute === key}
                 endAdornment={
                   <InputAdornment position="end">
-                    <IconButton size="small" edge="end" onClick={() => deleteAttribute(key)}>
+                    <IconButton
+                      size="small"
+                      edge="end"
+                      onClick={() => deleteAttribute(key)}
+                    >
                       <CloseIcon fontSize="small" />
                     </IconButton>
                   </InputAdornment>
@@ -233,7 +244,7 @@ const EditAttributesAccordion = ({
           onClick={() => setAddDialogShown(true)}
           startIcon={<AddIcon />}
         >
-          {t('sharedAdd')}
+          {t("sharedAdd")}
         </Button>
         <AddAttributeDialog
           open={addDialogShown}
