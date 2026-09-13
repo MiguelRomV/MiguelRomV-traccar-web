@@ -304,16 +304,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
           >
             {t('linkAppleMaps')}
           </MenuItem>
-          {Boolean(position.latitude && position.longitude) && (
-            <MenuItem
-              component="a"
-              target="_blank"
-              rel="noopener"
-              href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${position.latitude},${position.longitude}`}
-            >
-              {t('sharedStreetView')}
-            </MenuItem>
-          )}
           {navigationAppTitle && navigationAppLink && (
             <MenuItem
               component="a"
