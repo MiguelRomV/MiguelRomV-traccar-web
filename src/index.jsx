@@ -14,6 +14,10 @@ import AppThemeProvider from './AppThemeProvider';
 
 preloadImages();
 
+if (import.meta.env.DEV) {
+  document.title = 'VigilaTeh';
+}
+
 const root = createRoot(document.getElementById('root'));
 root.render(
   <ErrorBoundary>
