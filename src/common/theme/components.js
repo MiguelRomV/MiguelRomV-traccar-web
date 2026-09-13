@@ -9,11 +9,19 @@ export default {
       root: ({ theme }) => ({
         backgroundColor: theme.palette.background.default,
         '& .MuiOutlinedInput-notchedOutline': {
-          borderColor: theme.palette.divider,
+          borderColor: '#E0E3E8',
         },
         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
           borderColor: theme.palette.primary.main,
         },
+      }),
+    },
+  },
+  MuiInput: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        '&::before': { borderBottomColor: '#E0E3E8' },
+        '&::after': { borderBottomColor: theme.palette.primary.main },
       }),
     },
   },
@@ -27,6 +35,7 @@ export default {
   MuiTab: {
     styleOverrides: {
       root: ({ theme }) => ({
+        backgroundColor: 'transparent',
         textTransform: 'none',
         '&.Mui-selected': {
           color: theme.palette.primary.main,
@@ -60,8 +69,16 @@ export default {
           duration: theme.transitions.duration.shortest,
         }),
         '&:hover': {
-          backgroundColor: theme.palette.action.hover,
+          backgroundColor: '#F5F6F8',
         },
+      }),
+    },
+  },
+  MuiPaper: {
+    styleOverrides: {
+      root: ({ ownerState }) => ({
+        ...(!ownerState.square && { borderRadius: 8 }),
+        ...(ownerState.elevation > 0 && { boxShadow: '0 2px 10px rgba(15, 23, 42, 0.12)' }),
       }),
     },
   },
