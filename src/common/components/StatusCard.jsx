@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -51,6 +51,8 @@ import { useAttributePreference } from '../util/preferences';
 import { speedFromKnots, speedUnitString } from '../util/converter';
 import fetchOrThrow from '../util/fetchOrThrow';
 import { isJammerActive } from '../util/jammer';
+
+const SpeedChart = lazy(() => import('./SpeedChart'));
 
 const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   root: {
@@ -581,7 +583,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     </div>
                   </>
                 )}
-                {tab === 1 && <div className={classes.empty}>{t('sharedNoData')}</div>}
+                {tab === 1 && (
+                  <div className={classes.empty}>
+                    <Suspense fallback={t('sharedLoading')}>
+                      <SpeedChart deviceId={deviceId} />
+                    </Suspense>
+                  </div>
+                )}
                 {tab === 2 && (
                   <div className={messages.length ? classes.messages : classes.empty}>
                     {messages.length
