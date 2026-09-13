@@ -418,6 +418,7 @@
   "mapGoogleHybrid": "Google Hybrid",
   "mapGoogleSatellite": "Google Satellite",
   "mapGoogleTraffic": "Google Traffic",
+  "mapGoogleTrafficUnavailable": "Requires the Google Maps JavaScript API to be enabled",
   "mapGoogleKey": "Google API Key",
   "mapOpenTopoMap": "OpenTopoMap",
   "mapBingKey": "Bing Maps Key",

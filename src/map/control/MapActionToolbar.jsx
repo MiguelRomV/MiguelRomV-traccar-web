@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { IconButton, Paper, Tooltip } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +7,6 @@ import PolylineOutlinedIcon from '@mui/icons-material/PolylineOutlined';
 import RouteOutlinedIcon from '@mui/icons-material/RouteOutlined';
 import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
 import TrafficOutlinedIcon from '@mui/icons-material/TrafficOutlined';
-import { map } from '../core/MapView';
 import { useTranslation } from '../../common/components/LocalizationProvider';
 
 const useStyles = makeStyles()((theme) => ({
@@ -25,34 +23,10 @@ const useStyles = makeStyles()((theme) => ({
   active: { color: theme.palette.primary.main, backgroundColor: '#E6F0FA' },
 }));
 
-const trafficLayer = (layer) => {
-  const value = `${layer.id} ${layer.metadata?.['traccar:title'] || ''}`.toLowerCase();
-  return value.includes('traffic') || value.includes('tráfico') || value.includes('trafico');
-};
-
 const MapActionToolbar = ({ routesVisible, setRoutesVisible, labelsVisible, setLabelsVisible }) => {
   const { classes } = useStyles();
   const t = useTranslation();
   const navigate = useNavigate();
-  const [trafficVisible, setTrafficVisible] = useState(true);
-
-  useEffect(() => {
-    const apply = () => {
-      map
-        .getStyle()
-        ?.layers?.filter(trafficLayer)
-        .forEach((layer) => {
-          const visibility = trafficVisible ? 'visible' : 'none';
-          if ((map.getLayoutProperty(layer.id, 'visibility') || 'visible') !== visibility) {
-            map.setLayoutProperty(layer.id, 'visibility', visibility);
-          }
-        });
-    };
-    map.on('styledata', apply);
-    apply();
-    return () => map.off('styledata', apply);
-  }, [trafficVisible]);
-
   const fullscreen = () => {
     if (document.fullscreenElement) {
       document.exitFullscreen();
@@ -70,10 +44,9 @@ const MapActionToolbar = ({ routesVisible, setRoutesVisible, labelsVisible, setL
       action: () => navigate('/settings/geofence'),
     },
     {
-      title: t('mapGoogleTraffic'),
+      title: t('mapGoogleTrafficUnavailable'),
       Icon: TrafficOutlinedIcon,
-      action: () => setTrafficVisible((value) => !value),
-      active: trafficVisible,
+      disabled: true,
     },
     {
       title: t('mapLiveRoutes'),
@@ -91,11 +64,12 @@ const MapActionToolbar = ({ routesVisible, setRoutesVisible, labelsVisible, setL
 
   return (
     <Paper className={classes.root} elevation={3}>
-      {items.map(({ title, Icon, action, active }, index) => (
+      {items.map(({ title, Icon, action, active, disabled }, index) => (
         <Tooltip key={title} title={title} placement="left">
           <IconButton
             className={`${classes.button} ${index > 2 && active ? classes.active : ''}`}
             onClick={action}
+            disabled={disabled}
           >
             <Icon />
           </IconButton>
