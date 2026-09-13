@@ -21,16 +21,17 @@ const MapOverlayLayer = ({ overlay }) => {
   return null;
 };
 
-const MapOverlay = () => {
+const MapOverlay = ({ forcedIds = [] }) => {
   const mapOverlays = useMapOverlays();
   const selectedMapOverlay = useAttributePreference("selectedMapOverlay");
 
   const activeOverlays = useMemo(() => {
     const selectedIds = selectedMapOverlay ? selectedMapOverlay.split(",") : [];
+    const activeIds = new Set([...selectedIds, ...forcedIds]);
     return mapOverlays
       .filter((overlay) => overlay.available)
-      .filter((overlay) => selectedIds.includes(overlay.id));
-  }, [mapOverlays, selectedMapOverlay]);
+      .filter((overlay) => activeIds.has(overlay.id));
+  }, [mapOverlays, selectedMapOverlay, forcedIds]);
 
   return activeOverlays.map((overlay) => (
     <MapOverlayLayer key={overlay.id} overlay={overlay} />

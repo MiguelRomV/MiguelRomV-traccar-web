@@ -20,6 +20,7 @@ import MapRuler from "../map/control/MapRuler";
 import MapNotification from "../map/control/MapNotification";
 import MapActionToolbar from "../map/control/MapActionToolbar";
 import useFeatures from "../common/util/useFeatures";
+import useMapOverlays from "../map/overlay/useMapOverlays";
 
 const StreetViewMini = lazy(() => import("../map/control/StreetViewMini"));
 
@@ -36,6 +37,12 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const [rulerActive, setRulerActive] = useState(false);
   const [routesVisible, setRoutesVisible] = useState(true);
   const [labelsVisible, setLabelsVisible] = useState(true);
+  const [geofenceActive, setGeofenceActive] = useState(false);
+  const [trafficVisible, setTrafficVisible] = useState(false);
+  const trafficAvailable = useMapOverlays().some(
+    (overlay) => overlay.id === "googleTraffic" && overlay.available,
+  );
+  const forcedOverlayIds = trafficVisible ? ["googleTraffic"] : [];
 
   const onMarkerClick = useCallback(
     (_, deviceId) => {
@@ -47,7 +54,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   return (
     <>
       <MapView>
-        <MapOverlay />
+        <MapOverlay forcedIds={forcedOverlayIds} />
         <MapGeofence />
         <MapAccuracy positions={filteredPositions} />
         <MapLiveRoutes
@@ -87,6 +94,11 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
         setRoutesVisible={setRoutesVisible}
         labelsVisible={labelsVisible}
         setLabelsVisible={setLabelsVisible}
+        geofenceActive={geofenceActive}
+        setGeofenceActive={setGeofenceActive}
+        trafficAvailable={trafficAvailable}
+        trafficVisible={trafficVisible}
+        setTrafficVisible={setTrafficVisible}
       />
       {desktop && (
         <MapPadding

@@ -27,7 +27,9 @@ const sourceOpenWeather = (style, key) =>
 export default () => {
   const t = useTranslation();
 
-  const googleKey = useAttributePreference("googleKey");
+  const googleKey =
+    useAttributePreference("googleKey") ||
+    import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const openWeatherKey = useAttributePreference("openWeatherKey");
   const tomTomKey = useAttributePreference("tomTomKey");
   const hereKey = useAttributePreference("hereKey");

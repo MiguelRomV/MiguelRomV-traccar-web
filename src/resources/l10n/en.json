@@ -418,7 +418,7 @@
   "mapGoogleHybrid": "Google Hybrid",
   "mapGoogleSatellite": "Google Satellite",
   "mapGoogleTraffic": "Google Traffic",
-  "mapGoogleTrafficUnavailable": "Requires the Google Maps JavaScript API to be enabled",
+  "mapGoogleTrafficUnavailable": "Configure a Google Maps key to enable traffic",
   "streetViewLoading": "Loading Street View...",
   "statusChartNoData": "No data in the last 24 hours",
   "statusChartLoadError": "Unable to load telemetry data",

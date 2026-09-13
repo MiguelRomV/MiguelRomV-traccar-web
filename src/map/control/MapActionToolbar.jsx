@@ -1,6 +1,5 @@
 import { IconButton, Paper, Tooltip } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
-import { useNavigate } from "react-router-dom";
 import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 import FullscreenOutlinedIcon from "@mui/icons-material/FullscreenOutlined";
 import PolylineOutlinedIcon from "@mui/icons-material/PolylineOutlined";
@@ -29,10 +28,14 @@ const MapActionToolbar = ({
   setRoutesVisible,
   labelsVisible,
   setLabelsVisible,
+  geofenceActive,
+  setGeofenceActive,
+  trafficAvailable,
+  trafficVisible,
+  setTrafficVisible,
 }) => {
   const { classes } = useStyles();
   const t = useTranslation();
-  const navigate = useNavigate();
   const fullscreen = () => {
     if (document.fullscreenElement) {
       document.exitFullscreen();
@@ -55,12 +58,17 @@ const MapActionToolbar = ({
     {
       title: t("sharedGeofence"),
       Icon: PolylineOutlinedIcon,
-      action: () => navigate("/settings/geofence"),
+      action: () => setGeofenceActive((value) => !value),
+      active: geofenceActive,
     },
     {
-      title: t("mapGoogleTrafficUnavailable"),
+      title: t(
+        trafficAvailable ? "mapGoogleTraffic" : "mapGoogleTrafficUnavailable",
+      ),
       Icon: TrafficOutlinedIcon,
-      disabled: true,
+      action: () => setTrafficVisible((value) => !value),
+      active: trafficVisible,
+      disabled: !trafficAvailable,
     },
     {
       title: t("mapLiveRoutes"),
@@ -81,7 +89,7 @@ const MapActionToolbar = ({
       {items.map(({ title, Icon, action, active, disabled }, index) => (
         <Tooltip key={title} title={title} placement="left">
           <IconButton
-            className={`${classes.button} ${index > 2 && active ? classes.active : ""}`}
+            className={`${classes.button} ${active ? classes.active : ""}`}
             onClick={action}
             disabled={disabled}
           >
