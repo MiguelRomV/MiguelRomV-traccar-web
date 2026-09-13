@@ -19,6 +19,7 @@ import MapScale from '../map/MapScale';
 import MapRuler from '../map/control/MapRuler';
 import MapNotification from '../map/control/MapNotification';
 import StreetViewMini from '../map/control/StreetViewMini';
+import MapActionToolbar from '../map/control/MapActionToolbar';
 import useFeatures from '../common/util/useFeatures';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
@@ -32,6 +33,8 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
   const features = useFeatures();
 
   const [rulerActive, setRulerActive] = useState(false);
+  const [routesVisible, setRoutesVisible] = useState(true);
+  const [labelsVisible, setLabelsVisible] = useState(true);
 
   const onMarkerClick = useCallback(
     (_, deviceId) => {
@@ -46,7 +49,10 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
         <MapOverlay />
         <MapGeofence />
         <MapAccuracy positions={filteredPositions} />
-        <MapLiveRoutes deviceIds={filteredPositions.map((p) => p.deviceId)} />
+        <MapLiveRoutes
+          deviceIds={filteredPositions.map((p) => p.deviceId)}
+          visible={routesVisible}
+        />
         <MapPositionMarkers
           positions={filteredPositions}
           onMarkerClick={onMarkerClick}
@@ -54,6 +60,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
           showStatus
           titleField="speed"
           disabled={rulerActive}
+          showTitles={labelsVisible}
         />
         <MapDefaultCamera filteredPositions={filteredPositions} />
         <MapSelectedDevice />
@@ -67,6 +74,12 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
       <MapCurrentLocation />
       <MapGeocoder />
       <StreetViewMini position={selectedPosition} />
+      <MapActionToolbar
+        routesVisible={routesVisible}
+        setRoutesVisible={setRoutesVisible}
+        labelsVisible={labelsVisible}
+        setLabelsVisible={setLabelsVisible}
+      />
       {desktop && (
         <MapPadding
           start={

@@ -5,7 +5,7 @@ import { useAttributePreference } from '../../common/util/preferences';
 import { toMapCoordinates } from '../core/mapUtil';
 import { useTranslation } from '../../common/components/LocalizationProvider';
 
-const MapLiveRoutes = ({ deviceIds }) => {
+const MapLiveRoutes = ({ deviceIds, visible = true }) => {
   const theme = useTheme();
   const t = useTranslation();
 
@@ -25,7 +25,7 @@ const MapLiveRoutes = ({ deviceIds }) => {
     .filter((id) => devices[id]);
 
   useMapLayer({
-    enabled: type !== 'none',
+    enabled: visible && type !== 'none',
     layers: [
       {
         type: 'line',
@@ -68,6 +68,7 @@ const MapLiveRoutes = ({ deviceIds }) => {
       deviceIds,
       mapLineWidth,
       mapLineOpacity,
+      visible,
     ],
   });
 

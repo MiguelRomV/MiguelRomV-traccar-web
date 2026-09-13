@@ -16,6 +16,7 @@ const MapPositionMarkers = ({
   selectedPosition,
   titleField,
   disabled,
+  showTitles = true,
 }) => {
   const t = useTranslation();
   const devices = useSelector((state) => state.devices.items);
@@ -85,7 +86,7 @@ const MapPositionMarkers = ({
     <>
       <MapMarkers
         markers={markers.filter((it) => it.deviceId !== selectedDeviceId)}
-        showTitles
+        showTitles={showTitles}
         direction
         cluster={mapCluster}
         onClick={onClick}
@@ -93,7 +94,7 @@ const MapPositionMarkers = ({
       />
       <MapMarkers
         markers={markers.filter((it) => it.deviceId === selectedDeviceId)}
-        showTitles
+        showTitles={showTitles}
         direction
         onClick={onClick}
         disabled={disabled}
