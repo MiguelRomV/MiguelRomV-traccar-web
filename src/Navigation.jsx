@@ -62,6 +62,9 @@ const AnnouncementPage = lazy(() => import('./settings/AnnouncementPage'));
 const EmulatorPage = lazy(() => import('./other/EmulatorPage'));
 const StreamPage = lazy(() => import('./other/StreamPage'));
 const AuditPage = lazy(() => import('./reports/AuditPage'));
+const NavigationCommandsPage = lazy(() => import('./pages/CommandsPage'));
+const BillingPage = lazy(() => import('./pages/BillingPage'));
+const LanguagePage = lazy(() => import('./pages/LanguagePage'));
 
 const Navigation = () => {
   const dispatch = useDispatch();
@@ -136,6 +139,9 @@ const Navigation = () => {
           <Route path="geofences" element={<GeofencesPage />} />
           <Route path="emulator" element={<EmulatorPage />} />
           <Route path="stream" element={<StreamPage />} />
+          <Route path="commands" element={<NavigationCommandsPage />} />
+          <Route path="billing" element={<BillingPage />} />
+          <Route path="language" element={<LanguagePage />} />
 
           <Route path="settings">
             <Route path=":type/:id/share" element={<SharePage />} />
