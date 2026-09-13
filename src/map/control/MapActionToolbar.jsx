@@ -8,6 +8,7 @@ import RouteOutlinedIcon from "@mui/icons-material/RouteOutlined";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import TrafficOutlinedIcon from "@mui/icons-material/TrafficOutlined";
 import { useTranslation } from "../../common/components/LocalizationProvider";
+import { map } from "../core/MapView";
 
 const useStyles = makeStyles()((theme) => ({
   root: {
