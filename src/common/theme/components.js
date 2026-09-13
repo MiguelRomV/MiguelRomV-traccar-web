@@ -8,6 +8,29 @@ export default {
     styleOverrides: {
       root: ({ theme }) => ({
         backgroundColor: theme.palette.background.default,
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderColor: theme.palette.divider,
+        },
+        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+          borderColor: theme.palette.primary.main,
+        },
+      }),
+    },
+  },
+  MuiTabs: {
+    styleOverrides: {
+      indicator: ({ theme }) => ({
+        backgroundColor: theme.palette.primary.main,
+      }),
+    },
+  },
+  MuiTab: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        textTransform: 'none',
+        '&.Mui-selected': {
+          color: theme.palette.primary.main,
+        },
       }),
     },
   },
@@ -16,6 +39,30 @@ export default {
       sizeMedium: {
         height: '40px',
       },
+      containedPrimary: ({ theme }) => ({
+        backgroundColor: theme.palette.primary.main,
+      }),
+    },
+  },
+  MuiCheckbox: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        '&.Mui-checked, &.MuiCheckbox-indeterminate': {
+          color: theme.palette.primary.main,
+        },
+      }),
+    },
+  },
+  MuiIconButton: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        transition: theme.transitions.create('background-color', {
+          duration: theme.transitions.duration.shortest,
+        }),
+        '&:hover': {
+          backgroundColor: theme.palette.action.hover,
+        },
+      }),
     },
   },
   MuiFormControl: {
