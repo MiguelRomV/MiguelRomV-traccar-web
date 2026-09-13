@@ -21,6 +21,7 @@ import MapNotification from "../map/control/MapNotification";
 import MapActionToolbar from "../map/control/MapActionToolbar";
 import useFeatures from "../common/util/useFeatures";
 import useMapOverlays from "../map/overlay/useMapOverlays";
+import GeofenceDrawer from "../map/control/GeofenceDrawer";
 
 const StreetViewMini = lazy(() => import("../map/control/StreetViewMini"));
 
@@ -56,6 +57,10 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
       <MapView>
         <MapOverlay forcedIds={forcedOverlayIds} />
         <MapGeofence />
+        <GeofenceDrawer
+          active={geofenceActive}
+          onClose={() => setGeofenceActive(false)}
+        />
         <MapAccuracy positions={filteredPositions} />
         <MapLiveRoutes
           deviceIds={filteredPositions.map((p) => p.deviceId)}

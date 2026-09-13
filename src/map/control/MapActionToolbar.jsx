@@ -86,7 +86,7 @@ const MapActionToolbar = ({
 
   return (
     <Paper className={classes.root} elevation={3}>
-      {items.map(({ title, Icon, action, active, disabled }, index) => (
+      {items.map(({ title, Icon, action, active, disabled }) => (
         <Tooltip key={title} title={title} placement="left">
           <IconButton
             className={`${classes.button} ${active ? classes.active : ""}`}
