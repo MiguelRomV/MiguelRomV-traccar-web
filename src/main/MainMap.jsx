@@ -18,6 +18,7 @@ import MapGeocoder from '../map/control/MapGeocoder';
 import MapScale from '../map/MapScale';
 import MapRuler from '../map/control/MapRuler';
 import MapNotification from '../map/control/MapNotification';
+import StreetViewMini from '../map/control/StreetViewMini';
 import useFeatures from '../common/util/useFeatures';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
@@ -65,6 +66,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
       <MapScale />
       <MapCurrentLocation />
       <MapGeocoder />
+      <StreetViewMini position={selectedPosition} />
       {desktop && (
         <MapPadding
           start={
