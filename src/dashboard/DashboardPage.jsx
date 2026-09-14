@@ -1,6 +1,8 @@
 import { Grid, Paper, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 import RecentEvents from "./components/RecentEvents";
+import MiniFleetMap from "./components/MiniFleetMap";
+import WeeklyChart from "./components/WeeklyChart";
 const DashboardPage = () => {
   const devices = Object.values(useSelector((state) => state.devices.items));
   const positions = useSelector((state) => state.session.positions);
@@ -27,8 +29,14 @@ const DashboardPage = () => {
           </Paper>
         </Grid>
       ))}
+      <Grid size={{ xs: 12, md: 7 }}>
+        <MiniFleetMap />
+      </Grid>
       <Grid size={{ xs: 12, md: 5 }}>
         <RecentEvents />
+      </Grid>
+      <Grid size={{ xs: 12 }}>
+        <WeeklyChart />
       </Grid>
     </Grid>
   );
