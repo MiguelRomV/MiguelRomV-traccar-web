@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Route, Routes, useSearchParams } from "react-router-dom";
+import { Navigate, Route, Routes, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import MainPage from "./main/MainPage";
 import App from "./App";
@@ -9,6 +9,8 @@ import { devicesActions } from "./store";
 import { generateLoginToken } from "./common/components/NativeInterface";
 import { useLocalization } from "./common/components/LocalizationProvider";
 import fetchOrThrow from "./common/util/fetchOrThrow";
+import useCurrentRole from "./common/auth/useCurrentRole";
+import { ADMIN, MANAGER, VIEWER } from "./common/auth/roles";
 
 const CombinedReportPage = lazy(() => import("./reports/CombinedReportPage"));
 const PositionsReportPage = lazy(() => import("./reports/PositionsReportPage"));
@@ -76,6 +78,18 @@ const NavigationCommandsPage = lazy(() => import("./pages/CommandsPage"));
 const BillingPage = lazy(() => import("./pages/BillingPage"));
 const LanguagePage = lazy(() => import("./pages/LanguagePage"));
 const DashboardPage = lazy(() => import("./dashboard/DashboardPage"));
+const ServicesPage = lazy(() => import("./services/ServicesPage"));
+const DeliveriesPage = lazy(() => import("./deliveries/DeliveriesPage"));
+const ExpensesPage = lazy(() => import("./expenses/ExpensesPage"));
+const PhotosPage = lazy(() => import("./photos/PhotosPage"));
+const VideoPage = lazy(() => import("./video/VideoPage"));
+const ChatPage = lazy(() => import("./chat/ChatPage"));
+const HelpPage = lazy(() => import("./help/HelpPage"));
+
+const RoleRoute = ({ roles, children }) => {
+  const { role } = useCurrentRole();
+  return roles.includes(role) ? children : <Navigate to="/" replace />;
+};
 
 const Navigation = () => {
   const dispatch = useDispatch();
@@ -144,7 +158,70 @@ const Navigation = () => {
         <Route path="/change-server" element={<ChangeServerPage />} />
         <Route path="/" element={<App />}>
           <Route index element={<MainPage />} />
-          <Route path="dashboard" element={<DashboardPage />} />
+          <Route
+            path="dashboard"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <DashboardPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="services"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <ServicesPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="deliveries"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <DeliveriesPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="expenses"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <ExpensesPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="photos"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <PhotosPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="video"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <VideoPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="chat"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <ChatPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="help"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER, VIEWER]}>
+                <HelpPage />
+              </RoleRoute>
+            }
+          />
 
           <Route path="position/:id" element={<PositionPage />} />
           <Route path="network/:positionId" element={<NetworkPage />} />
