@@ -62,6 +62,7 @@ const ReplayPage = () => {
   const [tab, setTab] = useState("chart");
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [sheetExpanded, setSheetExpanded] = useState(true);
   const from = searchParams.get("from");
   const to = searchParams.get("to");
 
@@ -160,15 +161,41 @@ const ReplayPage = () => {
         sx={{
           position: "fixed",
           left: desktop ? `calc(${theme.dimensions.sideNavWidth} + 12px)` : 0,
-          top: 12,
+          right: desktop ? "auto" : 0,
+          top: desktop ? 12 : "auto",
           bottom: desktop ? 12 : 0,
           width: desktop ? 320 : "100%",
+          height: desktop ? "auto" : sheetExpanded ? "55vh" : "96px",
+          borderTopLeftRadius: desktop ? 0 : 16,
+          borderTopRightRadius: desktop ? 0 : 16,
+          transition: "height 0.25s ease",
           zIndex: 3,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
         }}
       >
+        {!desktop && (
+          <Box
+            onClick={() => setSheetExpanded((value) => !value)}
+            sx={{
+              height: 24,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              cursor: "pointer",
+            }}
+          >
+            <Box
+              sx={{
+                width: 40,
+                height: 4,
+                borderRadius: 2,
+                bgcolor: "rgba(0,0,0,0.3)",
+              }}
+            />
+          </Box>
+        )}
         <Box
           sx={{
             display: "flex",
