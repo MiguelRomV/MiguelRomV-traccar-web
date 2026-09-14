@@ -223,7 +223,11 @@ const ReplayPage = () => {
             Mostrar
           </Button>
         </Box>
-        <ReplayTimeline positions={positions} onSelect={setIndex} />
+        <ReplayTimeline
+          positions={positions}
+          events={events}
+          onSelect={setIndex}
+        />
       </Paper>
 
       <Paper

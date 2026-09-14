@@ -23,7 +23,7 @@ const duration = (from, to) => {
   return `${minutes} min ${seconds % 60} s`;
 };
 
-const ReplayTimeline = ({ positions, onSelect }) => {
+const ReplayTimeline = ({ positions, events, onSelect }) => {
   const items = useMemo(() => {
     if (!positions.length) return [];
     const result = [];
@@ -55,8 +55,22 @@ const ReplayTimeline = ({ positions, onSelect }) => {
         });
       }
     }
+    events
+      .filter((event) => ["ignitionOn", "ignitionOff"].includes(event.type))
+      .forEach((event) => {
+        const eventTime = Date.parse(event.eventTime || event.serverTime);
+        const index = positions.reduce(
+          (best, position, candidate) =>
+            Math.abs(Date.parse(position.fixTime) - eventTime) <
+            Math.abs(Date.parse(positions[best].fixTime) - eventTime)
+              ? candidate
+              : best,
+          0,
+        );
+        result.push({ type: event.type, start: index, end: index });
+      });
     return result.sort((a, b) => a.start - b.start);
-  }, [positions]);
+  }, [events, positions]);
 
   return (
     <Box sx={{ overflowY: "auto", flex: 1 }}>

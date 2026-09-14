@@ -1,4 +1,4 @@
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AddIcon from "@mui/icons-material/Add";
@@ -31,6 +31,22 @@ const ReplayChart = ({ positions, index }) => {
   const maxOffset = Math.max(0, data.length - visibleCount);
   const visible = data.slice(offset, offset + visibleCount);
   const playhead = data[index]?.time;
+  const dayStart = data.length
+    ? new Date(data[0].time).setHours(0, 0, 0, 0)
+    : 0;
+  const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+  const ticks = Array.from(
+    { length: 13 },
+    (_, tick) => dayStart + tick * 2 * 60 * 60 * 1000,
+  );
+
+  if (!data.length) {
+    return (
+      <Typography sx={{ p: 3 }} color="text.secondary">
+        Sin datos en el periodo seleccionado
+      </Typography>
+    );
+  }
 
   return (
     <Box sx={{ position: "relative", height: 220, px: 1 }}>
@@ -79,7 +95,8 @@ const ReplayChart = ({ positions, index }) => {
           <XAxis
             dataKey="time"
             type="number"
-            domain={["dataMin", "dataMax"]}
+            domain={zoom === 1 ? [dayStart, dayEnd] : ["dataMin", "dataMax"]}
+            ticks={zoom === 1 ? ticks : undefined}
             tickFormatter={(value) =>
               new Date(value).toLocaleTimeString([], {
                 hour: "2-digit",

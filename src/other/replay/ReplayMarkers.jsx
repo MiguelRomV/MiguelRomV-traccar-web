@@ -23,7 +23,34 @@ const ReplayMarkers = ({ positions, events }) => {
           details,
         },
       });
-    add(positions[0], "start", "▶", "#2E7D32", "Inicio");
+    const start = positions[0];
+    const [longitude, latitude] = toMapCoordinates(
+      start.longitude,
+      start.latitude,
+    );
+    const size = 0.00012;
+    result.push({
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [longitude - size, latitude - size],
+            [longitude + size, latitude - size],
+            [longitude + size, latitude + size],
+            [longitude - size, latitude + size],
+            [longitude - size, latitude - size],
+          ],
+        ],
+      },
+      properties: {
+        type: "start",
+        label: "▶",
+        color: "#2E7D32",
+        time: new Date(start.fixTime).toLocaleString(),
+        details: "Inicio",
+      },
+    });
     positions.forEach((position, index) => {
       if (
         position.speed === 0 &&
@@ -32,7 +59,7 @@ const ReplayMarkers = ({ positions, events }) => {
         add(position, "stop", "P", "#0A76C4", "Detenido");
       }
       if (position.attributes?.alarm) {
-        add(position, "alarm", "!", "#E53935", position.attributes.alarm);
+        add(position, "alarm", "🔔", "#E53935", position.attributes.alarm);
       }
     });
     events.forEach((event) => {
@@ -43,7 +70,7 @@ const ReplayMarkers = ({ positions, events }) => {
           ? candidate
           : best,
       );
-      add(position, "alarm", "!", "#E53935", event.type);
+      add(position, "alarm", "🔔", "#E53935", event.type);
     });
     return result;
   }, [events, positions]);
@@ -51,8 +78,15 @@ const ReplayMarkers = ({ positions, events }) => {
   useMapLayer({
     layers: [
       {
+        key: "start",
+        type: "fill",
+        filter: ["==", ["get", "type"], "start"],
+        paint: { "fill-color": "#2E7D32", "fill-outline-color": "#FFFFFF" },
+      },
+      {
         key: "circle",
         type: "circle",
+        filter: ["!=", ["get", "type"], "start"],
         paint: {
           "circle-radius": 11,
           "circle-color": ["get", "color"],
