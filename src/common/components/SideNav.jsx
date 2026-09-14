@@ -14,6 +14,7 @@ import { sessionActions } from "../../store";
 import { nativePostMessage } from "./NativeInterface";
 import { useTranslation } from "./LocalizationProvider";
 import logo from "../../resources/images/logo-vigilateh.png";
+import useCurrentRole from "../auth/useCurrentRole";
 
 export const navigationItems = [
   { value: "map", href: "/", label: "mapTitle", icon: MapOutlinedIcon },
@@ -130,6 +131,7 @@ const SideNav = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.session.user);
   const socket = useSelector((state) => state.session.socket);
+  const { can } = useCurrentRole();
   const selected = (item) =>
     item.href === "/"
       ? location.pathname === "/"
@@ -141,32 +143,34 @@ const SideNav = () => {
         <img className={classes.logo} src={logo} alt="VigilaTeh" />
       </div>
       <div className={classes.items}>
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Tooltip key={item.value} title={t(item.label)} placement="right">
-              <IconButton
-                className={`${classes.item} ${selected(item) ? classes.active : ""}`}
-                onClick={() => navigate(item.href)}
-              >
-                {item.value === "map" ? (
-                  <Badge
-                    color="error"
-                    variant="dot"
-                    invisible={socket !== false}
-                  >
+        {navigationItems
+          .filter((item) => can(item.value))
+          .map((item) => {
+            const Icon = item.icon;
+            return (
+              <Tooltip key={item.value} title={t(item.label)} placement="right">
+                <IconButton
+                  className={`${classes.item} ${selected(item) ? classes.active : ""}`}
+                  onClick={() => navigate(item.href)}
+                >
+                  {item.value === "map" ? (
+                    <Badge
+                      color="error"
+                      variant="dot"
+                      invisible={socket !== false}
+                    >
+                      <Icon fontSize="small" />
+                    </Badge>
+                  ) : (
                     <Icon fontSize="small" />
-                  </Badge>
-                ) : (
-                  <Icon fontSize="small" />
-                )}
-                <Typography component="span" className={classes.label}>
-                  {t(item.label)}
-                </Typography>
-              </IconButton>
-            </Tooltip>
-          );
-        })}
+                  )}
+                  <Typography component="span" className={classes.label}>
+                    {t(item.label)}
+                  </Typography>
+                </IconButton>
+              </Tooltip>
+            );
+          })}
       </div>
       <Tooltip title={t("loginLogout")} placement="right">
         <IconButton

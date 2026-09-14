@@ -4,6 +4,7 @@ import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useTranslation } from "./LocalizationProvider";
 import { logout, navigationItems } from "./SideNav";
+import useCurrentRole from "../auth/useCurrentRole";
 
 const BottomMenu = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const BottomMenu = () => {
   const dispatch = useDispatch();
   const t = useTranslation();
   const user = useSelector((state) => state.session.user);
+  const { can } = useCurrentRole();
   const current = navigationItems.find((item) =>
     item.href === "/"
       ? location.pathname === "/"
@@ -30,18 +32,20 @@ const BottomMenu = () => {
           },
         }}
       >
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <BottomNavigationAction
-              key={item.value}
-              value={item.value}
-              label={t(item.label)}
-              icon={<Icon />}
-              onClick={() => navigate(item.href)}
-            />
-          );
-        })}
+        {navigationItems
+          .filter((item) => can(item.value))
+          .map((item) => {
+            const Icon = item.icon;
+            return (
+              <BottomNavigationAction
+                key={item.value}
+                value={item.value}
+                label={t(item.label)}
+                icon={<Icon />}
+                onClick={() => navigate(item.href)}
+              />
+            );
+          })}
         <BottomNavigationAction
           value="logout"
           label={t("loginLogout")}
