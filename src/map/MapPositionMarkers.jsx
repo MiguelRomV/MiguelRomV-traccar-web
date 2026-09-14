@@ -83,6 +83,7 @@ const MapPositionMarkers = ({
       title: titles[titleField || "name"],
       rotation: position.course,
       direction: showDirection,
+      opacity: position.markerOpacity ?? 1,
     };
   };
 

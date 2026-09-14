@@ -67,9 +67,16 @@ const MapMarkers = ({
             "icon-allow-overlap": true,
             "symbol-sort-key": ["get", "id"],
           },
-      ...(showTitles
-        ? { paint: { "text-halo-color": "white", "text-halo-width": 1 } }
-        : {}),
+      paint: {
+        "icon-opacity": ["get", "opacity"],
+        ...(showTitles
+          ? {
+              "text-opacity": ["get", "opacity"],
+              "text-halo-color": "white",
+              "text-halo-width": 1,
+            }
+          : {}),
+      },
       ...(onClick
         ? {
             on: {
