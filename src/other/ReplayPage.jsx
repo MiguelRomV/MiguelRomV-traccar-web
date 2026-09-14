@@ -70,7 +70,7 @@ const ReplayPage = () => {
     try {
       const [positionsResponse, eventsResponse] = await Promise.all([
         fetchOrThrow(`/api/positions?${query}`),
-        fetchOrThrow(`/api/events?${query}`),
+        fetchOrThrow(`/api/reports/events?${query}`),
       ]);
       setPositions(await positionsResponse.json());
       setEvents(await eventsResponse.json());
