@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Badge, IconButton, Tooltip, Typography } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
@@ -18,6 +19,12 @@ import useCurrentRole from "../auth/useCurrentRole";
 
 export const navigationItems = [
   { value: "map", href: "/", label: "mapTitle", icon: MapOutlinedIcon },
+  {
+    value: "dashboard",
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: DashboardOutlinedIcon,
+  },
   {
     value: "settings",
     href: "/settings/preferences",

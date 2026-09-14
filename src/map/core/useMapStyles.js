@@ -21,7 +21,7 @@ const styleCustom = ({ tiles, minZoom, maxZoom, attribution, scheme }) => {
     sources: {
       custom: source,
     },
-    glyphs: "https://cdn.traccar.com/map/fonts/{fontstack}/{range}.pbf",
+    glyphs: "/map/fonts/{fontstack}/{range}.pbf",
     layers: [
       {
         id: "custom",
