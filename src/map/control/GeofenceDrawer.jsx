@@ -12,6 +12,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { map } from "../core/MapView";
@@ -34,6 +35,8 @@ const GeofenceDrawer = ({ active, onClose }) => {
   const [color, setColor] = useState("#0A76C4");
   const [groupId, setGroupId] = useState("");
   const [saving, setSaving] = useState(false);
+  const [circleCenter, setCircleCenter] = useState(null);
+  const [circleMode, setCircleMode] = useState(false);
   const draw = useMemo(
     () =>
       new MapboxDraw({
@@ -47,6 +50,8 @@ const GeofenceDrawer = ({ active, onClose }) => {
     draw.deleteAll();
     setFeature(null);
     setName("");
+    setCircleCenter(null);
+    setCircleMode(false);
     onClose();
   };
 
@@ -63,6 +68,75 @@ const GeofenceDrawer = ({ active, onClose }) => {
       setFeature(null);
     }
   }, [active, draw, feature]);
+
+  useEffect(() => {
+    const sourceId = "vigilateh-circle-preview";
+    const layerId = `${sourceId}-layer`;
+    const circle = (center, edge) => {
+      const radius = Math.hypot(edge.lng - center.lng, edge.lat - center.lat);
+      return Array.from({ length: 65 }, (_, index) => {
+        const angle = (index / 64) * Math.PI * 2;
+        return [
+          center.lng + Math.cos(angle) * radius,
+          center.lat + Math.sin(angle) * radius,
+        ];
+      });
+    };
+    const update = (coordinates) => {
+      const data = {
+        type: "Feature",
+        properties: {},
+        geometry: { type: "Polygon", coordinates: [coordinates] },
+      };
+      if (map.getSource(sourceId)) map.getSource(sourceId).setData(data);
+      else {
+        map.addSource(sourceId, { type: "geojson", data });
+        map.addLayer({
+          id: layerId,
+          type: "fill",
+          source: sourceId,
+          paint: {
+            "fill-color": "#0A76C4",
+            "fill-opacity": 0.2,
+            "fill-outline-color": "#0A76C4",
+          },
+        });
+      }
+    };
+    const clear = () => {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+    };
+    const click = (event) => {
+      if (!active || !circleMode || feature) return;
+      if (!circleCenter) {
+        setCircleCenter(event.lngLat);
+        return;
+      }
+      const id = draw.add({
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "Polygon",
+          coordinates: [circle(circleCenter, event.lngLat)],
+        },
+      });
+      setCircleCenter(null);
+      setCircleMode(false);
+      clear();
+      setFeature(draw.get(id[0]));
+    };
+    const move = (event) => {
+      if (circleCenter) update(circle(circleCenter, event.lngLat));
+    };
+    map.on("click", click);
+    map.on("mousemove", move);
+    return () => {
+      map.off("click", click);
+      map.off("mousemove", move);
+      clear();
+    };
+  }, [active, circleCenter, circleMode, draw, feature]);
 
   useEffect(() => {
     const listener = (event) => setFeature(event.features[0]);
@@ -117,14 +191,28 @@ const GeofenceDrawer = ({ active, onClose }) => {
   return (
     <>
       {active && !feature && (
-        <Button
-          variant="contained"
-          color="error"
-          onClick={cancel}
-          sx={{ position: "fixed", right: 56, top: 88, zIndex: 3 }}
-        >
-          {t("sharedCancel")}
-        </Button>
+        <>
+          <Button
+            variant={circleMode ? "contained" : "outlined"}
+            startIcon={<CircleOutlinedIcon />}
+            onClick={() => {
+              setCircleMode((value) => !value);
+              setCircleCenter(null);
+              draw.changeMode("simple_select");
+            }}
+            sx={{ position: "fixed", right: 56, top: 40, zIndex: 3 }}
+          >
+            Círculo
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={cancel}
+            sx={{ position: "fixed", right: 56, top: 88, zIndex: 3 }}
+          >
+            {t("sharedCancel")}
+          </Button>
+        </>
       )}
       <Dialog open={Boolean(feature)} onClose={cancel} fullWidth maxWidth="xs">
         <DialogTitle>{t("mapGeofenceDetails")}</DialogTitle>
