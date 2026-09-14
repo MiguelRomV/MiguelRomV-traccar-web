@@ -1,286 +1,343 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { IconButton, Paper, Slider, Toolbar, Typography } from "@mui/material";
-import { makeStyles } from "tss-react/mui";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogContent,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import TuneIcon from "@mui/icons-material/Tune";
-import DownloadIcon from "@mui/icons-material/Download";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
-import FastForwardIcon from "@mui/icons-material/FastForward";
-import FastRewindIcon from "@mui/icons-material/FastRewind";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import StopIcon from "@mui/icons-material/Stop";
+import { useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import dayjs from "dayjs";
 import MapView from "../map/core/MapView";
 import MapRoutePath from "../map/MapRoutePath";
-import MapRoutePoints from "../map/MapRoutePoints";
 import MapPositionMarkers from "../map/MapPositionMarkers";
-import { formatTime } from "../common/util/formatter";
-import ReportFilter from "../reports/components/ReportFilter";
-import { useTranslation } from "../common/components/LocalizationProvider";
-import { useCatchCallback } from "../reactHelper";
 import MapCamera from "../map/MapCamera";
 import MapGeofence from "../map/MapGeofence";
-import StatusCard from "../common/components/StatusCard";
 import MapScale from "../map/MapScale";
-import BackIcon from "../common/components/BackIcon";
-import fetchOrThrow from "../common/util/fetchOrThrow";
 import MapOverlay from "../map/overlay/MapOverlay";
-
-const useStyles = makeStyles()((theme) => ({
-  root: {
-    height: "100%",
-  },
-  sidebar: {
-    display: "flex",
-    flexDirection: "column",
-    position: "fixed",
-    zIndex: 3,
-    left: 0,
-    top: 0,
-    margin: theme.spacing(1.5),
-    width: theme.dimensions.drawerWidthDesktop,
-    [theme.breakpoints.down("md")]: {
-      width: "100%",
-      margin: 0,
-    },
-  },
-  title: {
-    flexGrow: 1,
-  },
-  slider: {
-    width: "100%",
-  },
-  controls: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  formControlLabel: {
-    height: "100%",
-    width: "100%",
-    paddingRight: theme.spacing(1),
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  content: {
-    display: "flex",
-    flexDirection: "column",
-    padding: theme.spacing(2),
-    [theme.breakpoints.down("md")]: {
-      margin: theme.spacing(1),
-    },
-    [theme.breakpoints.up("md")]: {
-      marginTop: theme.spacing(1),
-    },
-  },
-}));
+import ReportFilter from "../reports/components/ReportFilter";
+import fetchOrThrow from "../common/util/fetchOrThrow";
+import { useCatchCallback } from "../reactHelper";
+import ReplayTimeline from "./replay/ReplayTimeline";
+import ReplayChart from "./replay/ReplayChart";
+import ReplayMarkers from "./replay/ReplayMarkers";
+import ReplayDrawToolbar from "./replay/ReplayDrawToolbar";
 
 const ReplayPage = () => {
-  const t = useTranslation();
-  const { classes } = useStyles();
-  const navigate = useNavigate();
   const timerRef = useRef();
-
-  const [searchParams] = useSearchParams();
-
-  const defaultDeviceId = useSelector((state) => state.devices.selectedId);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  const devices = useSelector((state) => state.devices.items);
+  const livePositions = useSelector((state) => state.session.positions);
+  const selectedStoreId = useSelector((state) => state.devices.selectedId);
+  const defaultDeviceId =
+    Number(searchParams.get("deviceId")) || selectedStoreId;
+  const [selectedDeviceId, setSelectedDeviceId] = useState(
+    defaultDeviceId || "",
+  );
+  const [period, setPeriod] = useState("today");
   const [positions, setPositions] = useState([]);
+  const [events, setEvents] = useState([]);
   const [index, setIndex] = useState(0);
-  const [selectedDeviceId, setSelectedDeviceId] = useState(defaultDeviceId);
-  const [showCard, setShowCard] = useState(false);
-  const from = searchParams.get("from");
-  const to = searchParams.get("to");
   const [playing, setPlaying] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [tab, setTab] = useState("chart");
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const from = searchParams.get("from");
+  const to = searchParams.get("to");
 
-  const loaded = Boolean(from && to && !loading && positions.length);
-
-  const deviceName = useSelector((state) => {
-    if (selectedDeviceId) {
-      const device = state.devices.items[selectedDeviceId];
-      if (device) {
-        return device.name;
-      }
-    }
-    return null;
-  });
-
-  useEffect(() => {
-    if (!from && !to) {
-      setPositions([]);
-    }
-  }, [from, to, setPositions]);
-
-  useEffect(() => {
-    if (playing && positions.length > 0) {
-      timerRef.current = setInterval(() => {
-        setIndex((index) => index + 1);
-      }, 500);
-    } else {
-      clearInterval(timerRef.current);
-    }
-
-    return () => clearInterval(timerRef.current);
-  }, [playing, positions]);
-
-  useEffect(() => {
-    if (index >= positions.length - 1) {
-      clearInterval(timerRef.current);
+  const load = useCatchCallback(async ({ deviceIds, from: start, to: end }) => {
+    const deviceId = Number(deviceIds[0]);
+    if (!deviceId || !start || !end) return;
+    setLoading(true);
+    setSelectedDeviceId(deviceId);
+    const query = new URLSearchParams({ deviceId, from: start, to: end });
+    try {
+      const [positionsResponse, eventsResponse] = await Promise.all([
+        fetchOrThrow(`/api/positions?${query}`),
+        fetchOrThrow(`/api/events?${query}`),
+      ]);
+      setPositions(await positionsResponse.json());
+      setEvents(await eventsResponse.json());
+      setIndex(0);
       setPlaying(false);
+    } finally {
+      setLoading(false);
     }
-  }, [index, positions]);
+  }, []);
 
-  const onPointClick = useCallback(
-    (_, index) => {
-      setIndex(index);
-    },
-    [setIndex],
-  );
+  useEffect(() => {
+    if (selectedDeviceId && from && to)
+      load({ deviceIds: [selectedDeviceId], from, to });
+  }, [from, load, selectedDeviceId, to]);
 
-  const onMarkerClick = useCallback(
-    (positionId) => {
-      setShowCard(!!positionId);
-    },
-    [setShowCard],
-  );
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    if (playing && index < positions.length - 1) {
+      timerRef.current = setInterval(
+        () => setIndex((value) => Math.min(value + 1, positions.length - 1)),
+        500 / playbackRate,
+      );
+    }
+    return () => clearInterval(timerRef.current);
+  }, [index, playbackRate, playing, positions.length]);
 
-  const onShow = useCatchCallback(
-    async ({ deviceIds, from, to }) => {
-      const deviceId = deviceIds.find(() => true);
-      setLoading(true);
-      setSelectedDeviceId(deviceId);
-      const query = new URLSearchParams({ deviceId, from, to });
-      try {
-        const response = await fetchOrThrow(
-          `/api/positions?${query.toString()}`,
-        );
-        setIndex(0);
-        const positions = await response.json();
-        setPositions(positions);
-        if (!positions.length) {
-          throw Error(t("sharedNoData"));
-        }
-        setFilterOpen(false);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [t],
-  );
+  useEffect(() => {
+    if (index >= positions.length - 1) setPlaying(false);
+  }, [index, positions.length]);
 
-  const handleDownload = () => {
-    const query = new URLSearchParams({ deviceId: selectedDeviceId, from, to });
-    window.location.assign(`/api/positions/kml?${query.toString()}`);
+  const show = () => {
+    const newParams = new URLSearchParams(searchParams);
+    const start =
+      period === "today"
+        ? dayjs().startOf("day")
+        : dayjs().subtract(1, "day").startOf("day");
+    const end =
+      period === "today"
+        ? dayjs().endOf("day")
+        : dayjs().subtract(1, "day").endOf("day");
+    newParams.set("deviceId", selectedDeviceId);
+    newParams.set("from", start.toISOString());
+    newParams.set("to", end.toISOString());
+    setSearchParams(newParams, { replace: true });
   };
 
+  const otherPositions = useMemo(
+    () =>
+      Object.values(livePositions)
+        .filter((position) => position.deviceId !== Number(selectedDeviceId))
+        .map((position) => ({
+          ...position,
+          markerOpacity:
+            Date.now() - Date.parse(position.fixTime) < 300000 ? 1 : 0.5,
+        })),
+    [livePositions, selectedDeviceId],
+  );
+  const current = positions[index];
+
   return (
-    <div className={classes.root}>
+    <Box sx={{ height: "100%", bgcolor: "#F4F6F8" }}>
       <MapView>
         <MapOverlay />
         <MapGeofence />
-        <MapRoutePath positions={positions} />
-        <MapRoutePoints
-          positions={positions}
-          onClick={onPointClick}
-          showSpeedControl
+        <MapRoutePath positions={positions} color="#E53935" width={5} />
+        <ReplayMarkers positions={positions} events={events} />
+        <MapPositionMarkers
+          positions={otherPositions}
+          showStatus
+          showTitles
+          titleField="speed"
         />
-        {index < positions.length && (
-          <MapPositionMarkers
-            positions={[positions[index]]}
-            onMarkerClick={onMarkerClick}
-            titleField="fixTime"
-          />
+        {current && (
+          <MapPositionMarkers positions={[current]} titleField="fixTime" />
         )}
+        <MapCamera positions={positions} />
       </MapView>
       <MapScale />
-      <MapCamera positions={positions} />
-      <div className={classes.sidebar}>
-        <Paper elevation={3} square>
-          <Toolbar>
-            <IconButton
-              edge="start"
-              sx={{ mr: 2 }}
-              onClick={() => navigate(-1)}
+      <ReplayDrawToolbar />
+
+      <Paper
+        elevation={4}
+        sx={{
+          position: "fixed",
+          left: 12,
+          top: 12,
+          bottom: 12,
+          width: 320,
+          zIndex: 3,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
+        >
+          <Tabs value="history" sx={{ flex: 1 }}>
+            <Tab value="history" label="Historial" />
+          </Tabs>
+          <Button
+            size="small"
+            startIcon={<TuneIcon />}
+            onClick={() => setFilterOpen(true)}
+          >
+            Filtro extendido
+          </Button>
+        </Box>
+        <Box sx={{ p: 1.5, display: "grid", gap: 1 }}>
+          <FormControl size="small">
+            <InputLabel>GPS</InputLabel>
+            <Select
+              label="GPS"
+              value={selectedDeviceId}
+              onChange={(event) => setSelectedDeviceId(event.target.value)}
             >
-              <BackIcon />
-            </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              {t("reportReplay")}
-            </Typography>
-            {loaded && (
-              <>
-                <IconButton onClick={handleDownload}>
-                  <DownloadIcon />
-                </IconButton>
-                <IconButton
-                  edge="end"
-                  onClick={() => setFilterOpen((open) => !open)}
-                >
-                  <TuneIcon />
-                </IconButton>
-              </>
-            )}
-          </Toolbar>
-        </Paper>
-        <Paper className={classes.content} square>
-          {loaded && !filterOpen && (
+              {Object.values(devices).map((device) => (
+                <MenuItem key={device.id} value={device.id}>
+                  {device.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl size="small">
+            <InputLabel>Filtro</InputLabel>
+            <Select
+              label="Filtro"
+              value={period}
+              onChange={(event) => setPeriod(event.target.value)}
+            >
+              <MenuItem value="today">Hoy</MenuItem>
+              <MenuItem value="yesterday">Ayer</MenuItem>
+            </Select>
+          </FormControl>
+          <Button
+            variant="contained"
+            startIcon={<VisibilityIcon />}
+            disabled={!selectedDeviceId || loading}
+            onClick={show}
+          >
+            Mostrar
+          </Button>
+        </Box>
+        <ReplayTimeline positions={positions} onSelect={setIndex} />
+      </Paper>
+
+      <Paper
+        elevation={5}
+        sx={{
+          position: "fixed",
+          left: 344,
+          right: 12,
+          bottom: 12,
+          zIndex: 3,
+          minHeight: 285,
+          maxHeight: "42vh",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
+        >
+          <Tabs
+            value={tab}
+            onChange={(_, value) => setTab(value)}
+            sx={{ flex: 1 }}
+          >
+            <Tab value="data" label="Datos" />
+            <Tab value="chart" label="Gráfico" />
+            <Tab value="messages" label="Mensajes" />
+          </Tabs>
+          {tab === "chart" && (
             <>
-              <Typography variant="subtitle1" align="center">
-                {deviceName}
-              </Typography>
-              <Slider
-                className={classes.slider}
-                max={positions.length - 1}
-                step={null}
-                marks={positions.map((_, index) => ({ value: index }))}
-                value={index}
-                onChange={(_, index) => setIndex(index)}
-              />
-              <div className={classes.controls}>
-                <Typography variant="caption">{`${index + 1}/${positions.length}`}</Typography>
-                <IconButton
-                  onClick={() => setIndex((index) => index - 1)}
-                  disabled={playing || index <= 0}
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Variable</InputLabel>
+                <Select label="Variable" value="speed">
+                  <MenuItem value="speed">Velocidad</MenuItem>
+                </Select>
+              </FormControl>
+              <IconButton
+                onClick={() => setPlaying(true)}
+                disabled={!positions.length}
+              >
+                <PlayArrowIcon />
+              </IconButton>
+              <IconButton onClick={() => setPlaying(false)}>
+                <PauseIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setPlaying(false);
+                  setIndex(0);
+                }}
+              >
+                <StopIcon />
+              </IconButton>
+              <FormControl size="small" sx={{ width: 72, mr: 1 }}>
+                <Select
+                  value={playbackRate}
+                  onChange={(event) => setPlaybackRate(event.target.value)}
                 >
-                  <FastRewindIcon />
-                </IconButton>
-                <IconButton
-                  onClick={() => setPlaying(!playing)}
-                  disabled={index >= positions.length - 1}
-                >
-                  {playing ? <PauseIcon /> : <PlayArrowIcon />}
-                </IconButton>
-                <IconButton
-                  onClick={() => setIndex((index) => index + 1)}
-                  disabled={playing || index >= positions.length - 1}
-                >
-                  <FastForwardIcon />
-                </IconButton>
-                <Typography variant="caption">
-                  {formatTime(positions[index].fixTime, "seconds")}
-                </Typography>
-              </div>
+                  {[1, 2, 4, 8].map((rate) => (
+                    <MenuItem key={rate} value={rate}>
+                      x{rate}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </>
           )}
-          <div style={{ display: loaded && !filterOpen ? "none" : "block" }}>
-            <ReportFilter
-              onShow={onShow}
-              deviceType="single"
-              loading={loading}
-            />
-          </div>
-        </Paper>
-      </div>
-      {showCard && index < positions.length && (
-        <StatusCard
-          deviceId={selectedDeviceId}
-          position={positions[index]}
-          onClose={() => setShowCard(false)}
-          disableActions
-        />
-      )}
-    </div>
+        </Box>
+        {tab === "chart" && <ReplayChart positions={positions} index={index} />}
+        {tab === "data" && (
+          <Box sx={{ p: 2 }}>
+            {current ? (
+              <>
+                <Typography>
+                  {new Date(current.fixTime).toLocaleString()}
+                </Typography>
+                <Typography color="text.secondary">
+                  {current.latitude.toFixed(5)}, {current.longitude.toFixed(5)}
+                </Typography>
+              </>
+            ) : (
+              <Typography color="text.secondary">Sin datos</Typography>
+            )}
+          </Box>
+        )}
+        {tab === "messages" && (
+          <Box sx={{ p: 2, overflowY: "auto", maxHeight: 220 }}>
+            {events.map((event) => (
+              <Typography key={event.id} variant="body2">
+                {event.type} ·{" "}
+                {new Date(event.eventTime || event.serverTime).toLocaleString()}
+              </Typography>
+            ))}
+          </Box>
+        )}
+      </Paper>
+
+      <Dialog
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogContent>
+          <ReportFilter
+            onShow={(values) => {
+              load(values);
+              setFilterOpen(false);
+            }}
+            deviceType="single"
+            loading={loading}
+          />
+        </DialogContent>
+      </Dialog>
+    </Box>
   );
 };
 
