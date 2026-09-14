@@ -23,6 +23,8 @@ import StopIcon from "@mui/icons-material/Stop";
 import { useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import MapView from "../map/core/MapView";
 import MapRoutePath from "../map/MapRoutePath";
 import MapPositionMarkers from "../map/MapPositionMarkers";
@@ -39,6 +41,8 @@ import ReplayMarkers from "./replay/ReplayMarkers";
 import ReplayDrawToolbar from "./replay/ReplayDrawToolbar";
 
 const ReplayPage = () => {
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up("md"));
   const timerRef = useRef();
   const [searchParams, setSearchParams] = useSearchParams();
   const devices = useSelector((state) => state.devices.items);
@@ -155,10 +159,10 @@ const ReplayPage = () => {
         elevation={4}
         sx={{
           position: "fixed",
-          left: 12,
+          left: desktop ? `calc(${theme.dimensions.sideNavWidth} + 12px)` : 0,
           top: 12,
-          bottom: 12,
-          width: 320,
+          bottom: desktop ? 12 : 0,
+          width: desktop ? 320 : "100%",
           zIndex: 3,
           display: "flex",
           flexDirection: "column",
@@ -226,13 +230,14 @@ const ReplayPage = () => {
         elevation={5}
         sx={{
           position: "fixed",
-          left: 344,
+          left: `calc(${theme.dimensions.sideNavWidth} + 344px)`,
           right: 12,
           bottom: 12,
           zIndex: 3,
           minHeight: 285,
           maxHeight: "42vh",
           overflow: "hidden",
+          display: desktop ? "block" : "none",
         }}
       >
         <Box
