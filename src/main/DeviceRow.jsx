@@ -174,6 +174,11 @@ const DeviceRow = ({ devices, index, device, style }) => {
                 "vigilateh_vehicle_colors",
                 JSON.stringify({ ...savedColors, [item.id]: value }),
               );
+              window.dispatchEvent(
+                new CustomEvent("vigilateh:colorChanged", {
+                  detail: { deviceId: item.id, color: value },
+                }),
+              );
               setMenu(null);
             }}
           >

@@ -9,6 +9,15 @@ import {
   Switch,
   TableFooter,
   FormControlLabel,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Select,
+  MenuItem,
+  Snackbar,
 } from "@mui/material";
 import LoginIcon from "@mui/icons-material/Login";
 import LinkIcon from "@mui/icons-material/Link";
@@ -30,6 +39,7 @@ import SearchHeader from "./components/SearchHeader";
 import useSettingsStyles from "./common/useSettingsStyles";
 import fetchOrThrow from "../common/util/fetchOrThrow";
 import UserDevicesValue from "./components/UserDevicesValue";
+import useCurrentRole from "../common/auth/useCurrentRole";
 
 const UsersPage = () => {
   const { classes } = useSettingsStyles();
@@ -37,6 +47,9 @@ const UsersPage = () => {
   const t = useTranslation();
 
   const manager = useManager();
+  const { role } = useCurrentRole();
+  const [editor, setEditor] = useState(null);
+  const [toast, setToast] = useState("");
 
   const [reloadKey, reload] = useReducer((k) => k + 1, 0);
   const [items, setItems] = useState([]);
@@ -84,6 +97,27 @@ const UsersPage = () => {
   );
 
   const sentinelRef = useScrollToLoad(() => loadItems(items.length));
+  const saveUser = async (user, method = "PUT") => {
+    try {
+      await fetchOrThrow(
+        method === "POST" ? "/api/users" : `/api/users/${user.id}`,
+        {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(user),
+        },
+      );
+      setEditor(null);
+      reload();
+    } catch (error) {
+      setToast(error.message);
+    }
+  };
+  const changeRole = (item, nextRole) =>
+    saveUser({
+      ...item,
+      attributes: { ...(item.attributes || {}), role: nextRole },
+    });
 
   useAsyncTask(
     async ({ signal }) => {
@@ -100,12 +134,22 @@ const UsersPage = () => {
       breadcrumbs={["settingsTitle", "settingsUsers"]}
     >
       <SearchHeader keyword={searchKeyword} setKeyword={setSearchKeyword} />
+      {role === "ADMIN" && (
+        <Button
+          variant="contained"
+          sx={{ m: 1 }}
+          onClick={() => setEditor({ attributes: { role: "VIEWER" } })}
+        >
+          Nuevo usuario
+        </Button>
+      )}
       <Table className={classes.table}>
         <TableHead>
           <TableRow>
             <TableCell>{t("sharedName")}</TableCell>
             <TableCell>{t("userEmail")}</TableCell>
             <TableCell>{t("userAdmin")}</TableCell>
+            <TableCell>Rol</TableCell>
             <TableCell>{t("sharedDisabled")}</TableCell>
             <TableCell>{t("userExpirationTime")}</TableCell>
             <TableCell>{t("deviceTitle")}</TableCell>
@@ -120,6 +164,17 @@ const UsersPage = () => {
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.email}</TableCell>
                 <TableCell>{formatBoolean(item.administrator, t)}</TableCell>
+                <TableCell>
+                  <Select
+                    size="small"
+                    value={item.attributes?.role || "ADMIN"}
+                    onChange={(event) => changeRole(item, event.target.value)}
+                  >
+                    <MenuItem value="ADMIN">Administrador</MenuItem>
+                    <MenuItem value="MANAGER">Gestor</MenuItem>
+                    <MenuItem value="VIEWER">Solo lectura</MenuItem>
+                  </Select>
+                </TableCell>
                 <TableCell>{formatBoolean(item.disabled, t)}</TableCell>
                 <TableCell>{formatTime(item.expirationTime, "date")}</TableCell>
                 <TableCell>
@@ -137,6 +192,17 @@ const UsersPage = () => {
                         : [actionConnections]
                     }
                   />
+                  <Button size="small" onClick={() => setEditor(item)}>
+                    Editar
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() =>
+                      saveUser({ ...item, disabled: !item.disabled })
+                    }
+                  >
+                    {item.disabled ? "Reactivar" : "Desactivar"}
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -167,6 +233,49 @@ const UsersPage = () => {
         </TableFooter>
       </Table>
       <CollectionFab editPath="/settings/user" />
+      <Dialog
+        open={Boolean(editor)}
+        onClose={() => setEditor(null)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>
+          {editor?.id ? "Editar usuario" : "Nuevo usuario"}
+        </DialogTitle>
+        <DialogContent sx={{ display: "grid", gap: 2, pt: 1 }}>
+          <TextField
+            label="Nombre"
+            value={editor?.name || ""}
+            onChange={(e) => setEditor({ ...editor, name: e.target.value })}
+          />
+          <TextField
+            label="Email"
+            value={editor?.email || ""}
+            onChange={(e) => setEditor({ ...editor, email: e.target.value })}
+          />
+          {!editor?.id && (
+            <TextField
+              label="Contraseña"
+              type="password"
+              onChange={(e) =>
+                setEditor({ ...editor, password: e.target.value })
+              }
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditor(null)}>Cancelar</Button>
+          <Button onClick={() => saveUser(editor, editor.id ? "PUT" : "POST")}>
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={Boolean(toast)}
+        message={toast}
+        autoHideDuration={5000}
+        onClose={() => setToast("")}
+      />
     </PageLayout>
   );
 };
