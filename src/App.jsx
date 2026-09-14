@@ -13,6 +13,7 @@ import MotionController from "./main/MotionController";
 import TermsDialog from "./common/components/TermsDialog";
 import Loader from "./common/components/Loader";
 import fetchOrThrow from "./common/util/fetchOrThrow";
+import FloatingMenu from "./common/components/FloatingMenu";
 
 const useStyles = makeStyles()((theme) => ({
   page: {
@@ -92,6 +93,7 @@ const App = () => {
       <UpdateController />
       <MotionController />
       {desktop && <SideNav />}
+      {desktop && <FloatingMenu />}
       <div className={classes.page}>
         <Outlet />
       </div>
