@@ -10,6 +10,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Slider,
   Tab,
   Tabs,
   Typography,
@@ -291,6 +292,16 @@ const ReplayPage = () => {
             </>
           )}
         </Box>
+        {tab === "chart" && positions.length > 0 && (
+          <Slider
+            size="small"
+            min={0}
+            max={positions.length - 1}
+            value={index}
+            onChange={(_, value) => setIndex(value)}
+            sx={{ mx: 2, width: "calc(100% - 32px)", mb: -1 }}
+          />
+        )}
         {tab === "chart" && <ReplayChart positions={positions} index={index} />}
         {tab === "data" && (
           <Box sx={{ p: 2 }}>
