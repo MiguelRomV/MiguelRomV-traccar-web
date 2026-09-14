@@ -87,8 +87,8 @@ const DeviceRow = ({ devices, index, device, style }) => {
   const connected = item.status === "online" && Boolean(position);
   const moving = (position?.speed || 0) > 0;
   const category = mapIconKey(item.category);
-  const savedColors = JSON.parse(
-    localStorage.getItem("vigilateh_vehicle_colors") || "{}",
+  const [savedColors, setSavedColors] = useState(() =>
+    JSON.parse(localStorage.getItem("vigilateh_vehicle_colors") || "{}"),
   );
   const color = savedColors[item.id] || categoryColors[category] || "#0A76C4";
   const jammerActive = isJammerActive(position);
@@ -170,10 +170,12 @@ const DeviceRow = ({ devices, index, device, style }) => {
           <MenuItem
             key={value}
             onClick={() => {
+              const nextColors = { ...savedColors, [item.id]: value };
               localStorage.setItem(
                 "vigilateh_vehicle_colors",
-                JSON.stringify({ ...savedColors, [item.id]: value }),
+                JSON.stringify(nextColors),
               );
+              setSavedColors(nextColors);
               window.dispatchEvent(
                 new CustomEvent("vigilateh:colorChanged", {
                   detail: { deviceId: item.id, color: value },

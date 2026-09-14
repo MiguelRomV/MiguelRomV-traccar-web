@@ -26,11 +26,17 @@ const MapPositionMarkers = ({
   const t = useTranslation();
   const devices = useSelector((state) => state.devices.items);
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
-  const [, setColorVersion] = useState(0);
+  const [vehicleColors, setVehicleColors] = useState(() =>
+    JSON.parse(localStorage.getItem("vigilateh_vehicle_colors") || "{}"),
+  );
   useVehicleImages(map);
 
   useEffect(() => {
-    const listener = () => setColorVersion((value) => value + 1);
+    const listener = ({ detail }) =>
+      setVehicleColors((colors) => ({
+        ...colors,
+        [detail.deviceId]: detail.color,
+      }));
     window.addEventListener("vigilateh:colorChanged", listener);
     return () => window.removeEventListener("vigilateh:colorChanged", listener);
   }, []);
@@ -72,10 +78,7 @@ const MapPositionMarkers = ({
           selectedPosition?.id === position.id && position.course > 0;
         break;
     }
-    const colors = JSON.parse(
-      localStorage.getItem("vigilateh_vehicle_colors") || "{}",
-    );
-    const vehicleColor = colors[position.deviceId] || "#0A76C4";
+    const vehicleColor = vehicleColors[position.deviceId] || "#0A76C4";
     const titles = {
       name: device.name,
       fixTime: formatTime(position.fixTime, "seconds"),
