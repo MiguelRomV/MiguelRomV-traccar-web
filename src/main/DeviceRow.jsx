@@ -1,6 +1,14 @@
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { makeStyles } from "tss-react/mui";
-import { Checkbox, ListItemButton, Tooltip, Typography } from "@mui/material";
+import {
+  Checkbox,
+  ListItemButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import SatelliteAltOutlinedIcon from "@mui/icons-material/SatelliteAltOutlined";
 import SignalCellularAltIcon from "@mui/icons-material/SignalCellularAlt";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
@@ -8,10 +16,12 @@ import dayjs from "dayjs";
 import { devicesActions } from "../store";
 import { formatAlarm, formatSpeed } from "../common/util/formatter";
 import { useTranslation } from "../common/components/LocalizationProvider";
-import { mapIconKey, mapIcons } from "../map/core/preloadImages";
+import { mapIconKey } from "../map/core/preloadImages";
 import { useAdministrator } from "../common/util/permissions";
 import { useAttributePreference } from "../common/util/preferences";
 import { isJammerActive } from "../common/util/jammer";
+import VehicleIcon3D from "../common/components/VehicleIcon3D";
+import WhatsAppDialog from "../common/components/WhatsAppDialog";
 
 const categoryColors = {
   car: "#E53935",
@@ -33,17 +43,7 @@ const useStyles = makeStyles()((theme) => ({
     },
   },
   checkbox: { padding: theme.spacing(0.5), marginRight: theme.spacing(0.75) },
-  vehicleIcon: {
-    width: 28,
-    height: 28,
-    flexShrink: 0,
-    marginRight: theme.spacing(1),
-    backgroundColor: "var(--vehicle-color)",
-    maskImage: "var(--vehicle-icon)",
-    maskRepeat: "no-repeat",
-    maskPosition: "center",
-    maskSize: "contain",
-  },
+  vehicleIcon: { marginRight: theme.spacing(1), display: "flex" },
   identity: { minWidth: 0, flex: 1 },
   name: {
     color: theme.palette.text.primary,
@@ -78,6 +78,8 @@ const DeviceRow = ({ devices, index, device, style }) => {
   const admin = useAdministrator();
   const speedUnit = useAttributePreference("speedUnit", "kmh");
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
+  const [menu, setMenu] = useState(null);
+  const [whatsAppOpen, setWhatsAppOpen] = useState(false);
 
   const item = device || devices[index];
   const position = useSelector((state) => state.session.positions[item.id]);
@@ -85,7 +87,10 @@ const DeviceRow = ({ devices, index, device, style }) => {
   const connected = item.status === "online" && Boolean(position);
   const moving = (position?.speed || 0) > 0;
   const category = mapIconKey(item.category);
-  const color = categoryColors[category] || "#8A8F98";
+  const savedColors = JSON.parse(
+    localStorage.getItem("vigilateh_vehicle_colors") || "{}",
+  );
+  const color = savedColors[item.id] || categoryColors[category] || "#0A76C4";
   const jammerActive = isJammerActive(position);
 
   const select = () => dispatch(devicesActions.selectId(item.id));
@@ -108,11 +113,14 @@ const DeviceRow = ({ devices, index, device, style }) => {
         />
         <span
           className={classes.vehicleIcon}
-          style={{
-            "--vehicle-color": color,
-            "--vehicle-icon": `url(${mapIcons[category]})`,
+          onContextMenu={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setMenu(event.currentTarget);
           }}
-        />
+        >
+          <VehicleIcon3D type={category} color={color} size={30} />
+        </span>
         <div className={classes.identity}>
           <Typography noWrap className={classes.name}>
             {item.name}
@@ -149,6 +157,44 @@ const DeviceRow = ({ devices, index, device, style }) => {
           </Typography>
         </div>
       </ListItemButton>
+      <Menu anchorEl={menu} open={Boolean(menu)} onClose={() => setMenu(null)}>
+        {[
+          "#0A76C4",
+          "#E53935",
+          "#43A047",
+          "#FB8C00",
+          "#8E24AA",
+          "#212121",
+          "#FFFFFF",
+        ].map((value) => (
+          <MenuItem
+            key={value}
+            onClick={() => {
+              localStorage.setItem(
+                "vigilateh_vehicle_colors",
+                JSON.stringify({ ...savedColors, [item.id]: value }),
+              );
+              setMenu(null);
+            }}
+          >
+            Color: {value}
+          </MenuItem>
+        ))}
+        <MenuItem
+          onClick={() => {
+            setMenu(null);
+            setWhatsAppOpen(true);
+          }}
+        >
+          Enviar WhatsApp
+        </MenuItem>
+      </Menu>
+      <WhatsAppDialog
+        open={whatsAppOpen}
+        onClose={() => setWhatsAppOpen(false)}
+        deviceId={item.id}
+        deviceName={item.name}
+      />
     </div>
   );
 };
