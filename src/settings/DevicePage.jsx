@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Accordion,
@@ -25,6 +25,7 @@ import { useCatch } from "../reactHelper";
 import useSettingsStyles from "./common/useSettingsStyles";
 import QrCodeDialog from "../common/components/QrCodeDialog";
 import fetchOrThrow from "../common/util/fetchOrThrow";
+import VehicleTypeSelector from "./components/VehicleTypeSelector";
 
 const DevicePage = () => {
   const { classes } = useSettingsStyles();
@@ -41,6 +42,23 @@ const DevicePage = () => {
   const [item, setItem] = useState(uniqueId ? { uniqueId } : null);
   const [showQr, setShowQr] = useState(false);
   const [imageFile, setImageFile] = useState(null);
+
+  useEffect(() => {
+    if (item?.id && !item.attributes?.vehicleType) {
+      const meta = JSON.parse(
+        localStorage.getItem("vigilateh_vehicle_meta") || "{}",
+      )[item.id];
+      if (meta)
+        setItem((current) => ({
+          ...current,
+          attributes: {
+            ...(current.attributes || {}),
+            vehicleType: meta.type,
+            vehicleColor: meta.color,
+          },
+        }));
+    }
+  }, [item?.attributes?.vehicleType, item?.id]);
 
   const handleFileInput = useCatch(async (newFile) => {
     setImageFile(newFile);
@@ -62,12 +80,51 @@ const DevicePage = () => {
 
   const validate = () => item && item.name && item.uniqueId;
 
+  const updateVehicleMeta = ({ type, color }) => {
+    const nextItem = {
+      ...item,
+      attributes: {
+        ...(item.attributes || {}),
+        vehicleType: type,
+        vehicleColor: color,
+      },
+    };
+    setItem(nextItem);
+    if (item.id) {
+      const meta = JSON.parse(
+        localStorage.getItem("vigilateh_vehicle_meta") || "{}",
+      );
+      localStorage.setItem(
+        "vigilateh_vehicle_meta",
+        JSON.stringify({ ...meta, [item.id]: { type, color } }),
+      );
+      window.dispatchEvent(
+        new CustomEvent("vigilateh:vehicleMetaChanged", {
+          detail: { deviceId: item.id, type, color },
+        }),
+      );
+    }
+  };
+
+  const handleSaved = (saved) => {
+    const type = saved.attributes?.vehicleType || "sedan";
+    const color = saved.attributes?.vehicleColor || "#0A76C4";
+    const meta = JSON.parse(
+      localStorage.getItem("vigilateh_vehicle_meta") || "{}",
+    );
+    localStorage.setItem(
+      "vigilateh_vehicle_meta",
+      JSON.stringify({ ...meta, [saved.id]: { type, color } }),
+    );
+  };
+
   return (
     <EditItemView
       endpoint="devices"
       item={item}
       setItem={setItem}
       validate={validate}
+      onItemSaved={handleSaved}
       menu={<SettingsMenu />}
       breadcrumbs={["settingsTitle", "sharedDevice"]}
     >
@@ -144,6 +201,11 @@ const DevicePage = () => {
                   }))
                   .sort((a, b) => a.name.localeCompare(b.name))}
                 label={t("deviceCategory")}
+              />
+              <VehicleTypeSelector
+                value={item.attributes?.vehicleType || "sedan"}
+                color={item.attributes?.vehicleColor || "#0A76C4"}
+                onChange={updateVehicleMeta}
               />
               <SelectField
                 value={item.calendarId}

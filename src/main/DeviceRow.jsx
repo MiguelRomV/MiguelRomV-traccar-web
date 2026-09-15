@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { makeStyles } from "tss-react/mui";
 import {
@@ -90,8 +90,28 @@ const DeviceRow = ({ devices, index, device, style }) => {
   const [savedColors, setSavedColors] = useState(() =>
     JSON.parse(localStorage.getItem("vigilateh_vehicle_colors") || "{}"),
   );
-  const color = savedColors[item.id] || categoryColors[category] || "#0A76C4";
+  const [vehicleMeta, setVehicleMeta] = useState(() =>
+    JSON.parse(localStorage.getItem("vigilateh_vehicle_meta") || "{}"),
+  );
+  const meta = vehicleMeta[item.id] || {};
+  const type = meta.type || item.attributes?.vehicleType || category || "sedan";
+  const color =
+    meta.color ||
+    item.attributes?.vehicleColor ||
+    savedColors[item.id] ||
+    categoryColors[category] ||
+    "#0A76C4";
   const jammerActive = isJammerActive(position);
+
+  useEffect(() => {
+    const listener = ({ detail }) => {
+      if (detail.deviceId === item.id)
+        setVehicleMeta((current) => ({ ...current, [item.id]: detail }));
+    };
+    window.addEventListener("vigilateh:vehicleMetaChanged", listener);
+    return () =>
+      window.removeEventListener("vigilateh:vehicleMetaChanged", listener);
+  }, [item.id]);
 
   const select = () => dispatch(devicesActions.selectId(item.id));
 
@@ -119,7 +139,7 @@ const DeviceRow = ({ devices, index, device, style }) => {
             setMenu(event.currentTarget);
           }}
         >
-          <VehicleIcon3D type={category} color={color} size={30} />
+          <VehicleIcon3D type={type} color={color} size={30} />
         </span>
         <div className={classes.identity}>
           <Typography noWrap className={classes.name}>
