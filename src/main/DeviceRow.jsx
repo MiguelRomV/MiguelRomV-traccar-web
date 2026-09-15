@@ -139,7 +139,7 @@ const DeviceRow = ({ devices, index, device, style }) => {
             setMenu(event.currentTarget);
           }}
         >
-          <VehicleIcon3D type={type} color={color} size={30} />
+          <VehicleIcon3D type={type} color={color} size={40} />
         </span>
         <div className={classes.identity}>
           <Typography noWrap className={classes.name}>

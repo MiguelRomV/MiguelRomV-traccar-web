@@ -12,13 +12,11 @@ import person from "../../common/assets/vehicles3d/person.svg?raw";
 
 const svgs = {
   sedan,
-  car: sedan,
   suv,
   pickup,
   van,
   truck_light: truckLight,
   truck_heavy: truckHeavy,
-  truck: truckLight,
   bus,
   motorcycle,
   bicycle,
@@ -33,24 +31,40 @@ export const vehicleColors = [
   "#212121",
   "#FFFFFF",
 ];
-export const svgToDataUrl = (svg, color) =>
-  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.replace("<svg ", '<svg width="64" height="64" ').replaceAll("currentColor", color || "#0A76C4"))}`;
+export const normalizeVehicleColor = (color = "#0A76C4") =>
+  color.startsWith("#") ? color : `#${color}`;
+export const vehicleColorSafe = (color) =>
+  normalizeVehicleColor(color).slice(1).toUpperCase();
+export const svgToDataUrl = (svg, color) => {
+  const normalized = normalizeVehicleColor(color);
+  const sized = /<svg[^>]*\bwidth=/.test(svg)
+    ? svg
+    : svg.replace("<svg ", '<svg width="64" height="64" ');
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(sized.replaceAll("currentColor", normalized))}`;
+};
 
 export default (map) => {
   useEffect(() => {
     const register = () =>
       Object.entries(svgs).forEach(([type, svg]) =>
         vehicleColors.forEach((color) => {
-          const id = `vehicle-${type}-${color}`;
+          const colorSafe = vehicleColorSafe(color);
+          const id = `vehicle-${type}-${colorSafe}`;
           if (map.hasImage(id)) return;
-          const image = new Image(40, 40);
+          const dataURL = svgToDataUrl(svg, color);
+          const image = new Image(64, 64);
           image.onload = () => {
             if (!map.hasImage(id)) {
               map.addImage(id, image, { sdf: false });
-              console.log(`Registrado: ${id}`);
+              console.log(
+                "SVG registrado:",
+                id,
+                "dataURL len:",
+                dataURL.length,
+              );
             }
           };
-          image.src = svgToDataUrl(svg, color);
+          image.src = dataURL;
         }),
       );
     map.on("style.load", register);

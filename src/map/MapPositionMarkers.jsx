@@ -11,17 +11,15 @@ import { mapIconKey } from "./core/preloadImages";
 import { useAttributePreference } from "../common/util/preferences";
 import { fromMapCoordinates } from "./core/mapUtil";
 import { useTranslation } from "../common/components/LocalizationProvider";
-import useVehicleImages from "./core/useVehicleImages";
+import useVehicleImages, { vehicleColorSafe } from "./core/useVehicleImages";
 
 const vehicleTypes = new Set([
   "sedan",
-  "car",
   "suv",
   "pickup",
   "van",
   "truck_light",
   "truck_heavy",
-  "truck",
   "bus",
   "motorcycle",
   "bicycle",
@@ -108,17 +106,20 @@ const MapPositionMarkers = ({
       device.attributes?.vehicleColor ||
       vehicleColors[position.deviceId] ||
       "#0A76C4";
-    const requestedVehicleType =
+    let requestedVehicleType =
       meta.type ||
       device.attributes?.vehicleType ||
       device.attributes?.iconType ||
       mapIconKey(device.category);
+    if (requestedVehicleType === "car") requestedVehicleType = "sedan";
+    if (requestedVehicleType === "truck") requestedVehicleType = "truck_light";
     const vehicleType = vehicleTypes.has(requestedVehicleType)
       ? requestedVehicleType
       : "sedan";
+    const colorSafe = vehicleColorSafe(vehicleColor);
     console.log(
       "Icon-image resuelto para device:",
-      `vehicle-${vehicleType}-${vehicleColor}`,
+      `vehicle-${vehicleType}-${colorSafe}`,
     );
     const titles = {
       name: device.name,
@@ -136,6 +137,7 @@ const MapPositionMarkers = ({
       image: `${mapIconKey(device.category)}-${showStatus ? position.attributes.color || getStatusColor(device.status) : "neutral"}`,
       vehicleType,
       vehicleColor,
+      vehicleColorSafe: colorSafe,
       title: titles[titleField || "name"],
       rotation: position.course,
       direction: showDirection,
