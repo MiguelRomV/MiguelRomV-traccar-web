@@ -51,20 +51,13 @@ const MapMarkers = ({
       layout: showTitles
         ? {
             "icon-image": [
-              "coalesce",
-              [
-                "image",
-                [
-                  "concat",
-                  "vehicle-",
-                  ["coalesce", ["get", "vehicleType"], "sedan"],
-                  "-",
-                  ["coalesce", ["get", "vehicleColor"], "#0A76C4"],
-                ],
-              ],
-              ["image", ["get", "image"]],
+              "concat",
+              "vehicle-",
+              ["coalesce", ["get", "vehicleType"], "sedan"],
+              "-",
+              ["coalesce", ["get", "vehicleColor"], "#0A76C4"],
             ],
-            "icon-size": iconScale * 0.8,
+            "icon-size": 0.625,
             "icon-allow-overlap": true,
             "text-field": "{title}",
             "text-allow-overlap": true,
@@ -76,20 +69,13 @@ const MapMarkers = ({
           }
         : {
             "icon-image": [
-              "coalesce",
-              [
-                "image",
-                [
-                  "concat",
-                  "vehicle-",
-                  ["coalesce", ["get", "vehicleType"], "sedan"],
-                  "-",
-                  ["coalesce", ["get", "vehicleColor"], "#0A76C4"],
-                ],
-              ],
-              ["image", ["get", "image"]],
+              "concat",
+              "vehicle-",
+              ["coalesce", ["get", "vehicleType"], "sedan"],
+              "-",
+              ["coalesce", ["get", "vehicleColor"], "#0A76C4"],
             ],
-            "icon-size": iconScale * 0.8,
+            "icon-size": 0.625,
             "icon-allow-overlap": true,
             "symbol-sort-key": ["get", "id"],
           },

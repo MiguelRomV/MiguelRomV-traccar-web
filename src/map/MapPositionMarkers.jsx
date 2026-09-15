@@ -13,6 +13,21 @@ import { fromMapCoordinates } from "./core/mapUtil";
 import { useTranslation } from "../common/components/LocalizationProvider";
 import useVehicleImages from "./core/useVehicleImages";
 
+const vehicleTypes = new Set([
+  "sedan",
+  "car",
+  "suv",
+  "pickup",
+  "van",
+  "truck_light",
+  "truck_heavy",
+  "truck",
+  "bus",
+  "motorcycle",
+  "bicycle",
+  "person",
+]);
+
 const MapPositionMarkers = ({
   positions,
   onMapClick,
@@ -29,6 +44,9 @@ const MapPositionMarkers = ({
   const [vehicleColors, setVehicleColors] = useState(() =>
     JSON.parse(localStorage.getItem("vigilateh_vehicle_colors") || "{}"),
   );
+  const [vehicleMeta, setVehicleMeta] = useState(() =>
+    JSON.parse(localStorage.getItem("vigilateh_vehicle_meta") || "{}"),
+  );
   useVehicleImages(map);
 
   useEffect(() => {
@@ -38,7 +56,13 @@ const MapPositionMarkers = ({
         [detail.deviceId]: detail.color,
       }));
     window.addEventListener("vigilateh:colorChanged", listener);
-    return () => window.removeEventListener("vigilateh:colorChanged", listener);
+    const metaListener = ({ detail }) =>
+      setVehicleMeta((current) => ({ ...current, [detail.deviceId]: detail }));
+    window.addEventListener("vigilateh:vehicleMetaChanged", metaListener);
+    return () => {
+      window.removeEventListener("vigilateh:colorChanged", listener);
+      window.removeEventListener("vigilateh:vehicleMetaChanged", metaListener);
+    };
   }, []);
 
   const mapCluster = useAttributePreference("mapCluster", true);
@@ -78,7 +102,24 @@ const MapPositionMarkers = ({
           selectedPosition?.id === position.id && position.course > 0;
         break;
     }
-    const vehicleColor = vehicleColors[position.deviceId] || "#0A76C4";
+    const meta = vehicleMeta[position.deviceId] || {};
+    const vehicleColor =
+      meta.color ||
+      device.attributes?.vehicleColor ||
+      vehicleColors[position.deviceId] ||
+      "#0A76C4";
+    const requestedVehicleType =
+      meta.type ||
+      device.attributes?.vehicleType ||
+      device.attributes?.iconType ||
+      mapIconKey(device.category);
+    const vehicleType = vehicleTypes.has(requestedVehicleType)
+      ? requestedVehicleType
+      : "sedan";
+    console.log(
+      "Icon-image resuelto para device:",
+      `vehicle-${vehicleType}-${vehicleColor}`,
+    );
     const titles = {
       name: device.name,
       fixTime: formatTime(position.fixTime, "seconds"),
@@ -93,11 +134,7 @@ const MapPositionMarkers = ({
       latitude: position.latitude,
       longitude: position.longitude,
       image: `${mapIconKey(device.category)}-${showStatus ? position.attributes.color || getStatusColor(device.status) : "neutral"}`,
-      vehicleType:
-        device.attributes?.vehicleType ||
-        device.attributes?.iconType ||
-        mapIconKey(device.category) ||
-        "sedan",
+      vehicleType,
       vehicleColor,
       title: titles[titleField || "name"],
       rotation: position.course,

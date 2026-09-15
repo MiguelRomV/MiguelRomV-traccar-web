@@ -34,7 +34,7 @@ export const vehicleColors = [
   "#FFFFFF",
 ];
 export const svgToDataUrl = (svg, color) =>
-  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.replaceAll("currentColor", color))}`;
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.replace("<svg ", '<svg width="64" height="64" ').replaceAll("currentColor", color || "#0A76C4"))}`;
 
 export default (map) => {
   useEffect(() => {
@@ -45,7 +45,10 @@ export default (map) => {
           if (map.hasImage(id)) return;
           const image = new Image(40, 40);
           image.onload = () => {
-            if (!map.hasImage(id)) map.addImage(id, image, { sdf: false });
+            if (!map.hasImage(id)) {
+              map.addImage(id, image, { sdf: false });
+              console.log(`Registrado: ${id}`);
+            }
           };
           image.src = svgToDataUrl(svg, color);
         }),
