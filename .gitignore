@@ -23,3 +23,5 @@ yarn-error.log*
 # Backups locales VigilaTeh
 *.bak
 .backup-original/
+.env.local~
+vigilateh-build.tar.gz
