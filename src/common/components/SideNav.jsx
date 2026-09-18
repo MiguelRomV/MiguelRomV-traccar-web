@@ -38,6 +38,12 @@ export const navigationItems = [
     icon: NotificationsNoneOutlinedIcon,
   },
   {
+    value: "notifications",
+    href: "/notifications",
+    label: "vehicleNotificationsTitle",
+    icon: NotificationsNoneOutlinedIcon,
+  },
+  {
     value: "commands",
     href: "/commands",
     label: "navigationCommands",

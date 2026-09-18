@@ -17,6 +17,7 @@ export const rolePermissions = {
     "video",
     "chat",
     "help",
+    "notifications",
   ],
-  [VIEWER]: ["map", "events", "reports", "help"],
+  [VIEWER]: ["map", "events", "reports", "help", "notifications"],
 };

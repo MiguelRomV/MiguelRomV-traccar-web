@@ -85,6 +85,10 @@ const PhotosPage = lazy(() => import("./photos/PhotosPage"));
 const VideoPage = lazy(() => import("./video/VideoPage"));
 const ChatPage = lazy(() => import("./chat/ChatPage"));
 const HelpPage = lazy(() => import("./help/HelpPage"));
+const VehicleNotificationsPage = lazy(
+  () => import("./notifications/NotificationsPage"),
+);
+const WhatsAppConfig = lazy(() => import("./notifications/WhatsAppConfig"));
 
 const RoleRoute = ({ roles, children }) => {
   const { role } = useCurrentRole();
@@ -233,6 +237,8 @@ const Navigation = () => {
           <Route path="commands" element={<NavigationCommandsPage />} />
           <Route path="billing" element={<BillingPage />} />
           <Route path="language" element={<LanguagePage />} />
+          <Route path="notifications" element={<VehicleNotificationsPage />} />
+          <Route path="notifications/whatsapp" element={<WhatsAppConfig />} />
 
           <Route path="settings">
             <Route path=":type/:id/share" element={<SharePage />} />
