@@ -36,6 +36,23 @@ const eventTypes = [
 const isOwnedNotification = (notification) =>
   notification.attributes?.vigilateh === "true";
 
+const parseDeviceIds = (raw) => {
+  if (Array.isArray(raw)) {
+    return raw.map(Number).filter(Number.isFinite);
+  }
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed)
+        ? parsed.map(Number).filter(Number.isFinite)
+        : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
 const notificationMap = (notifications) => {
   const result = new Map();
   [...notifications]
@@ -63,7 +80,6 @@ const NotificationsPage = () => {
   const deviceList = useMemo(() => Object.values(devices), [devices]);
   const [ownedNotifications, setOwnedNotifications] = useState([]);
   const [notificationTotal, setNotificationTotal] = useState(0);
-  const [permissions, setPermissions] = useState([]);
   const [selected, setSelected] = useState({});
   const [persistedSelected, setPersistedSelected] = useState({});
   const [loading, setLoading] = useState(true);
@@ -76,49 +92,34 @@ const NotificationsPage = () => {
       if (!userId) return;
       setLoading(true);
       try {
-        const [notificationsResponse, permissionsResponse] = await Promise.all([
-          fetchOrThrow("/api/notifications", { signal }),
-          fetchOrThrow(`/api/permissions?userId=${userId}`, { signal }),
-        ]);
+        const notificationsResponse = await fetchOrThrow("/api/notifications", {
+          signal,
+        });
         const allNotifications = await notificationsResponse.json();
         const own = allNotifications.filter(isOwnedNotification);
         const typeMap = notificationMap(own);
-        const canonicalById = new Map(
-          [...typeMap.values()].map((notification) => [
-            notification.id,
-            notification,
-          ]),
-        );
-        const allPermissions = await permissionsResponse.json();
-        const devicePermissions = allPermissions.filter(
-          (permission) => permission.notificationId && permission.deviceId,
-        );
         const matrix = Object.fromEntries(
           deviceList.map((device) => [device.id, {}]),
         );
         let activeCount = 0;
-        devicePermissions.forEach((permission) => {
-          const notification = canonicalById.get(permission.notificationId);
-          if (
-            matrix[permission.deviceId] &&
-            eventTypes.includes(notification?.type)
-          ) {
-            matrix[permission.deviceId][notification.type] = true;
-            activeCount += 1;
-          }
+        typeMap.forEach((notification) => {
+          parseDeviceIds(notification.attributes?.deviceIds).forEach(
+            (deviceId) => {
+              if (matrix[deviceId] && eventTypes.includes(notification.type)) {
+                matrix[deviceId][notification.type] = true;
+                activeCount += 1;
+              }
+            },
+          );
         });
         console.log(
           `[VigilaTeh] GET notifications → ${own.length} propias / ${allNotifications.length} totales`,
         );
         console.log(
-          `[VigilaTeh] GET permissions?userId=${userId} → ${devicePermissions.length} permisos`,
-        );
-        console.log(
-          `[VigilaTeh] Matriz reconstruida: ${deviceList.length} dispositivos, ${activeCount} eventos activos`,
+          `[VigilaTeh] Matriz reconstruida desde attributes.deviceIds: ${deviceList.length} dispositivos, ${activeCount} eventos activos`,
         );
         setOwnedNotifications(own);
         setNotificationTotal(allNotifications.length);
-        setPermissions(devicePermissions);
         setSelected(matrix);
         setPersistedSelected(matrix);
       } catch (error) {
@@ -156,7 +157,6 @@ const NotificationsPage = () => {
     setSavingId(deviceId);
     try {
       const typeMap = notificationMap(ownedNotifications);
-      const knownPermissions = [...permissions];
       for (const type of eventTypes) {
         const enabled = Boolean(selected[deviceId]?.[type]);
         const existed = Boolean(persistedSelected[deviceId]?.[type]);
@@ -173,7 +173,7 @@ const NotificationsPage = () => {
                 type,
                 always: false,
                 notificators: "web",
-                attributes: { vigilateh: "true" },
+                attributes: { vigilateh: "true", deviceIds: [deviceId] },
               }),
             });
             notification = await response.json();
@@ -185,50 +185,78 @@ const NotificationsPage = () => {
             console.log(
               `[VigilaTeh] Reutilizando notification id=${notification.id} type=${type}`,
             );
-          }
-          const exists = knownPermissions.some(
-            (permission) =>
-              permission.deviceId === deviceId &&
-              permission.notificationId === notification.id,
-          );
-          if (!exists) {
-            const permission = { deviceId, notificationId: notification.id };
-            console.log(
-              `[VigilaTeh] Creando permission deviceId=${deviceId} notificationId=${notification.id}`,
+            const deviceIds = parseDeviceIds(
+              notification.attributes?.deviceIds,
             );
-            try {
-              await fetchOrThrow("/api/permissions", {
-                method: "POST",
+            if (!deviceIds.includes(deviceId)) {
+              const updatedDeviceIds = [...deviceIds, deviceId];
+              notification = {
+                ...notification,
+                attributes: {
+                  ...notification.attributes,
+                  deviceIds: updatedDeviceIds,
+                },
+              };
+              console.log(
+                `[VigilaTeh] PUT notification id=${notification.id} deviceIds=${JSON.stringify(updatedDeviceIds)}`,
+              );
+              await fetchOrThrow(`/api/notifications/${notification.id}`, {
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(permission),
+                body: JSON.stringify(notification),
               });
-            } catch (error) {
-              if (![400, 409].includes(error.status)) throw error;
+              typeMap.set(type, notification);
             }
-            knownPermissions.push(permission);
-            console.log("[VigilaTeh] Permission creado");
           }
+          const permission = { deviceId, notificationId: notification.id };
+          console.log(
+            `[VigilaTeh] Creando permission deviceId=${deviceId} notificationId=${notification.id}`,
+          );
+          try {
+            await fetchOrThrow("/api/permissions", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(permission),
+            });
+          } catch (error) {
+            if (![400, 409].includes(error.status)) throw error;
+          }
+          console.log(
+            `[VigilaTeh] Permission creado deviceId=${deviceId} notificationId=${notification.id}`,
+          );
         } else if (notification) {
-          const permissionIndex = knownPermissions.findIndex(
-            (permission) =>
-              permission.deviceId === deviceId &&
-              permission.notificationId === notification.id,
-          );
-          if (permissionIndex >= 0) {
-            const permission = knownPermissions[permissionIndex];
+          const deviceIds = parseDeviceIds(notification.attributes?.deviceIds);
+          const updatedDeviceIds = deviceIds.filter((id) => id !== deviceId);
+          if (updatedDeviceIds.length !== deviceIds.length) {
+            notification = {
+              ...notification,
+              attributes: {
+                ...notification.attributes,
+                deviceIds: updatedDeviceIds,
+              },
+            };
             console.log(
-              `[VigilaTeh] DELETE permission deviceId=${deviceId} notificationId=${notification.id}`,
+              `[VigilaTeh] PUT notification id=${notification.id} deviceIds=${JSON.stringify(updatedDeviceIds)}`,
             );
-            try {
-              await fetchOrThrow("/api/permissions", {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(permission),
-              });
-            } catch (error) {
-              if (error.status !== 404) throw error;
-            }
-            knownPermissions.splice(permissionIndex, 1);
+            await fetchOrThrow(`/api/notifications/${notification.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(notification),
+            });
+            typeMap.set(type, notification);
+          }
+          const permission = { deviceId, notificationId: notification.id };
+          console.log(
+            `[VigilaTeh] DELETE permission deviceId=${deviceId} notificationId=${notification.id}`,
+          );
+          try {
+            await fetchOrThrow("/api/permissions", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(permission),
+            });
+          } catch (error) {
+            if (error.status !== 404) throw error;
           }
         }
       }
@@ -247,12 +275,10 @@ const NotificationsPage = () => {
     }
   };
 
-  const debugPermissions = permissions.map((permission) => ({
-    deviceId: permission.deviceId,
-    notificationId: permission.notificationId,
-    type: ownedNotifications.find(
-      (notification) => notification.id === permission.notificationId,
-    )?.type,
+  const debugNotifications = ownedNotifications.map((notification) => ({
+    id: notification.id,
+    type: notification.type,
+    deviceIds: parseDeviceIds(notification.attributes?.deviceIds),
   }));
 
   return (
@@ -326,10 +352,20 @@ const NotificationsPage = () => {
             <Typography>
               {ownedNotifications.length} / {notificationTotal}
             </Typography>
-            <pre>{JSON.stringify(ownedNotifications, null, 2)}</pre>
-            <pre>{JSON.stringify(debugPermissions, null, 2)}</pre>
+            <pre>{JSON.stringify(debugNotifications, null, 2)}</pre>
+            <pre>{JSON.stringify(selected, null, 2)}</pre>
             <Button onClick={() => loadData()}>
               {t("vehicleNotificationsRefresh")}
+            </Button>
+            <Button
+              onClick={() =>
+                setFeedback({
+                  severity: "info",
+                  message: `${t("vehicleNotificationsUserId")}: ${userId}`,
+                })
+              }
+            >
+              {t("vehicleNotificationsUserId")}
             </Button>
             {deviceList.map((device) => (
               <Button
