@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -14,6 +17,7 @@ import {
   Snackbar,
   Typography,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../common/components/LocalizationProvider";
 import fetchOrThrow from "../common/util/fetchOrThrow";
@@ -29,67 +33,112 @@ const eventTypes = [
   "commandResult",
 ];
 
+const isOwnedNotification = (notification) =>
+  notification.attributes?.vigilateh === "true";
+
+const notificationMap = (notifications) => {
+  const result = new Map();
+  [...notifications]
+    .sort((first, second) => first.id - second.id)
+    .forEach((notification) => {
+      if (!result.has(notification.type)) {
+        result.set(notification.type, notification);
+      }
+    });
+  return result;
+};
+
+const errorMessage = (error) => {
+  if (error?.status) {
+    return `${error.status} — ${error.body || error.statusText}`;
+  }
+  return error?.message || String(error);
+};
+
 const NotificationsPage = () => {
   const t = useTranslation();
   const navigate = useNavigate();
   const devices = useSelector((state) => state.devices.items);
   const deviceList = useMemo(() => Object.values(devices), [devices]);
-  const [notifications, setNotifications] = useState([]);
+  const [ownedNotifications, setOwnedNotifications] = useState([]);
+  const [notificationTotal, setNotificationTotal] = useState(0);
   const [permissions, setPermissions] = useState([]);
   const [selected, setSelected] = useState({});
+  const [persistedSelected, setPersistedSelected] = useState({});
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState();
   const [feedback, setFeedback] = useState();
+  const debugEnabled = window.localStorage.getItem("vigilatehDebug") === "1";
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const load = async () => {
+  const loadData = useCallback(
+    async (signal) => {
       setLoading(true);
       try {
         const [notificationsResponse, permissionsResponse] = await Promise.all([
-          fetchOrThrow("/api/notifications", { signal: controller.signal }),
-          fetchOrThrow("/api/permissions", { signal: controller.signal }),
+          fetchOrThrow("/api/notifications", { signal }),
+          fetchOrThrow("/api/permissions", { signal }),
         ]);
-        const loadedNotifications = await notificationsResponse.json();
-        const loadedPermissions = (await permissionsResponse.json()).filter(
-          (permission) => permission.notificationId,
-        );
-        const notificationsById = new Map(
-          loadedNotifications.map((notification) => [
+        const allNotifications = await notificationsResponse.json();
+        const own = allNotifications.filter(isOwnedNotification);
+        const typeMap = notificationMap(own);
+        const canonicalById = new Map(
+          [...typeMap.values()].map((notification) => [
             notification.id,
             notification,
           ]),
         );
-        const matrix = {};
-        deviceList.forEach((device) => {
-          matrix[device.id] = {};
-        });
-        loadedPermissions.forEach((permission) => {
-          const notification = notificationsById.get(permission.notificationId);
+        const allPermissions = await permissionsResponse.json();
+        const devicePermissions = allPermissions.filter(
+          (permission) => permission.notificationId && permission.deviceId,
+        );
+        const matrix = Object.fromEntries(
+          deviceList.map((device) => [device.id, {}]),
+        );
+        let activeCount = 0;
+        devicePermissions.forEach((permission) => {
+          const notification = canonicalById.get(permission.notificationId);
           if (
             matrix[permission.deviceId] &&
             eventTypes.includes(notification?.type)
           ) {
             matrix[permission.deviceId][notification.type] = true;
+            activeCount += 1;
           }
         });
-        setNotifications(loadedNotifications);
-        setPermissions(loadedPermissions);
+        console.log(
+          `[VigilaTeh] GET notifications → ${own.length} propias / ${allNotifications.length} totales`,
+        );
+        console.log(
+          `[VigilaTeh] GET permissions → ${devicePermissions.length} permisos`,
+        );
+        console.log(
+          `[VigilaTeh] Matriz reconstruida: ${deviceList.length} dispositivos, ${activeCount} eventos activos`,
+        );
+        setOwnedNotifications(own);
+        setNotificationTotal(allNotifications.length);
+        setPermissions(devicePermissions);
         setSelected(matrix);
+        setPersistedSelected(matrix);
       } catch (error) {
         if (error.name !== "AbortError") {
           setFeedback({
             severity: "error",
-            message: t("vehicleNotificationsLoadError"),
+            message: `${t("vehicleNotificationsLoadError")}: ${errorMessage(error)}`,
           });
         }
+        throw error;
       } finally {
         setLoading(false);
       }
-    };
-    load();
+    },
+    [deviceList, t],
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadData(controller.signal).catch(() => {});
     return () => controller.abort();
-  }, [deviceList, t]);
+  }, [loadData]);
 
   const toggle = (deviceId, type) => {
     setSelected((current) => ({
@@ -101,68 +150,108 @@ const NotificationsPage = () => {
     }));
   };
 
-  const saveDevice = async (deviceId) => {
+  const saveDevice = async (deviceId, force = false) => {
     setSavingId(deviceId);
     try {
-      const nextNotifications = [...notifications];
-      const nextPermissions = [...permissions];
+      const typeMap = notificationMap(ownedNotifications);
+      const knownPermissions = [...permissions];
       for (const type of eventTypes) {
-        let notification = nextNotifications.find((item) => item.type === type);
         const enabled = Boolean(selected[deviceId]?.[type]);
-        if (enabled && !notification) {
-          const response = await fetchOrThrow("/api/notifications", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type,
-              always: true,
-              notificators: "web",
-              calendarId: 0,
-              attributes: {},
-            }),
-          });
-          notification = await response.json();
-          nextNotifications.push(notification);
-        }
-        if (!notification) continue;
-        const permissionIndex = nextPermissions.findIndex(
-          (permission) =>
-            permission.deviceId === deviceId &&
-            permission.notificationId === notification.id,
-        );
-        if (enabled && permissionIndex < 0) {
-          const permission = { deviceId, notificationId: notification.id };
-          await fetchOrThrow("/api/permissions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(permission),
-          });
-          nextPermissions.push(permission);
-        } else if (!enabled && permissionIndex >= 0) {
-          const permission = nextPermissions[permissionIndex];
-          await fetchOrThrow("/api/permissions", {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(permission),
-          });
-          nextPermissions.splice(permissionIndex, 1);
+        const existed = Boolean(persistedSelected[deviceId]?.[type]);
+        if (!force && enabled === existed) continue;
+
+        let notification = typeMap.get(type);
+        if (enabled) {
+          if (!notification) {
+            console.log(`[VigilaTeh] Creando notification type=${type}`);
+            const response = await fetchOrThrow("/api/notifications", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type,
+                always: false,
+                notificators: "web",
+                attributes: { vigilateh: "true" },
+              }),
+            });
+            notification = await response.json();
+            typeMap.set(type, notification);
+            console.log(
+              `[VigilaTeh] Notification creada id=${notification.id}`,
+            );
+          } else {
+            console.log(
+              `[VigilaTeh] Reutilizando notification id=${notification.id} type=${type}`,
+            );
+          }
+          const exists = knownPermissions.some(
+            (permission) =>
+              permission.deviceId === deviceId &&
+              permission.notificationId === notification.id,
+          );
+          if (!exists) {
+            const permission = { deviceId, notificationId: notification.id };
+            console.log(
+              `[VigilaTeh] Creando permission deviceId=${deviceId} notificationId=${notification.id}`,
+            );
+            try {
+              await fetchOrThrow("/api/permissions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(permission),
+              });
+            } catch (error) {
+              if (![400, 409].includes(error.status)) throw error;
+            }
+            knownPermissions.push(permission);
+            console.log("[VigilaTeh] Permission creado");
+          }
+        } else if (notification) {
+          const permissionIndex = knownPermissions.findIndex(
+            (permission) =>
+              permission.deviceId === deviceId &&
+              permission.notificationId === notification.id,
+          );
+          if (permissionIndex >= 0) {
+            const permission = knownPermissions[permissionIndex];
+            console.log(
+              `[VigilaTeh] DELETE permission deviceId=${deviceId} notificationId=${notification.id}`,
+            );
+            try {
+              await fetchOrThrow("/api/permissions", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(permission),
+              });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            knownPermissions.splice(permissionIndex, 1);
+          }
         }
       }
-      setNotifications(nextNotifications);
-      setPermissions(nextPermissions);
+      await loadData();
       setFeedback({
         severity: "success",
         message: t("vehicleNotificationsSaveSuccess"),
       });
-    } catch {
+    } catch (error) {
       setFeedback({
         severity: "error",
-        message: t("vehicleNotificationsSaveError"),
+        message: `${t("vehicleNotificationsSaveError")}: ${errorMessage(error)}`,
       });
     } finally {
       setSavingId(undefined);
     }
   };
+
+  const debugPermissions = permissions.map((permission) => ({
+    deviceId: permission.deviceId,
+    notificationId: permission.notificationId,
+    type: ownedNotifications.find(
+      (notification) => notification.id === permission.notificationId,
+    )?.type,
+  }));
 
   return (
     <Container sx={{ py: 4, maxWidth: 900 }}>
@@ -226,9 +315,34 @@ const NotificationsPage = () => {
           ))}
         </Box>
       )}
+      {debugEnabled && (
+        <Accordion sx={{ mt: 3 }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>{t("vehicleNotificationsDebug")}</Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ display: "grid", gap: 2 }}>
+            <Typography>
+              {ownedNotifications.length} / {notificationTotal}
+            </Typography>
+            <pre>{JSON.stringify(ownedNotifications, null, 2)}</pre>
+            <pre>{JSON.stringify(debugPermissions, null, 2)}</pre>
+            <Button onClick={() => loadData()}>
+              {t("vehicleNotificationsRefresh")}
+            </Button>
+            {deviceList.map((device) => (
+              <Button
+                key={device.id}
+                onClick={() => saveDevice(device.id, true)}
+              >
+                {t("vehicleNotificationsForceSave")} {device.name}
+              </Button>
+            ))}
+          </AccordionDetails>
+        </Accordion>
+      )}
       <Snackbar
         open={Boolean(feedback)}
-        autoHideDuration={4000}
+        autoHideDuration={6000}
         onClose={() => setFeedback(undefined)}
       >
         {feedback ? (

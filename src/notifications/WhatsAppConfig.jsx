@@ -1,3 +1,11 @@
+/**
+ * IMPORTANTE: Esta página solo guarda preferencias en user.attributes.
+ * El envío real de WhatsApp depende de:
+ *   1. Notificador "web" activo en traccar.xml del servidor (ya configurado).
+ *   2. notificator.web.url apuntando a n8n (pendiente).
+ *   3. n8n llamando a Evolution API para enviar el mensaje (pendiente).
+ * Sin esos tres pasos, los mensajes NO se envían.
+ */
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
