@@ -6,6 +6,17 @@ const WEBHOOK_WHATSAPP = import.meta.env.VITE_WEBHOOK_WHATSAPP || "";
 
 export const isWhatsAppEnabled = () => Boolean(WEBHOOK_WHATSAPP);
 
+export const buildWhatsAppPayload = (event, device, user) => ({
+  eventType: event.type,
+  deviceId: device.id,
+  deviceName: device.name,
+  userId: user.id,
+  userPhone: user.phone,
+  userEmail: user.email,
+  timestamp: event.serverTime,
+  extra: event.attributes || {},
+});
+
 export const notifyWhatsApp = async (payload) => {
   if (!isWhatsAppEnabled()) {
     console.warn("[VigilaTeh] WhatsApp webhook no configurado");
