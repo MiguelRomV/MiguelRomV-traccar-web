@@ -30,7 +30,12 @@ const WhatsAppDialog = ({ open, onClose, deviceId, deviceName }) => {
   const disable = async () => {
     const updatedUser = {
       ...user,
-      attributes: { ...user.attributes, whatsappEnabled: false },
+      attributes: {
+        ...user.attributes,
+        whatsappEnabled: false,
+        whatsappActivatedAt: null,
+        whatsappExpiresAt: null,
+      },
     };
     const response = await fetchOrThrow(`/api/users/${user.id}`, {
       method: "PUT",

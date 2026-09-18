@@ -1,0 +1,57 @@
+{
+  "name": "VigilaTeh - WhatsApp Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "traccar",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-node",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "traccar"
+    },
+    {
+      "parameters": {
+        "jsCode": "function unwrap(input) {\n  let obj = input;\n  for (let i = 0; i < 10; i++) {\n    if (Array.isArray(obj) && obj.length > 0) { obj = obj[0]; continue; }\n    if (obj && typeof obj === 'object' && obj.body !== undefined) {\n      const inner = obj.body;\n      if (Array.isArray(inner) || (inner && typeof inner === 'object')) { obj = inner; continue; }\n    }\n    break;\n  }\n  return obj;\n}\n\nconst payload = unwrap($input.first().json);\nconst event = payload.event || {};\nconst device = payload.device || {};\n\nconst eventType = event.type || 'unknown';\nconst deviceId = device.id || 0;\nconst deviceName = device.name || 'Vehículo desconocido';\nconst eventTime = event.eventTime || new Date().toISOString();\nconst eventAttrs = event.attributes || {};\n\nconst typeLabels = {\n  'ignitionOn': '🟢 Ignición encendida',\n  'ignitionOff': '🔴 Ignición apagada',\n  'deviceOnline': '📡 Dispositivo en línea',\n  'deviceOffline': '📴 Dispositivo fuera de línea',\n  'geofenceEnter': '📍 Entrada a geocerca',\n  'geofenceExit': '🚪 Salida de geocerca',\n  'alarm': '🚨 Alarma',\n  'driverChanged': '👤 Cambio de conductor',\n  'media': '📷 Multimedia',\n  'maintenance': '🔧 Mantenimiento'\n};\n\nlet label = typeLabels[eventType];\nif (eventType === 'commandResult') {\n  const result = (eventAttrs.result || '').toLowerCase();\n  if (result.includes('cut off')) label = '🛑 Paro de motor activado';\n  else if (result.includes('restore')) label = '✅ Motor restablecido';\n  else label = `⚙️ Comando: ${eventAttrs.result || 'sin detalle'}`;\n}\nif (!label) label = `Evento: ${eventType}`;\n\nlet timeStr = '';\ntry {\n  const date = new Date(eventTime);\n  timeStr = date.toLocaleString('es-MX', {\n    timeZone: 'America/Mexico_City',\n    day: '2-digit', month: '2-digit', year: 'numeric',\n    hour: '2-digit', minute: '2-digit'\n  });\n} catch { timeStr = eventTime; }\n\nconst message = `*VigilaTeh* 🚗\\n\\n${label}\\n\\n📱 ${deviceName}\\n🕐 ${timeStr}`;\n\nreturn [{ json: { eventType, deviceId, deviceName, eventTime, message } }];"
+      },
+      "id": "code-node",
+      "name": "Parse Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://evolution-api:8080/message/sendText/vigilateh",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.EVOLUTION_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $env.WHATSAPP_DEFAULT_NUMBER, text: $json.message }) }}",
+        "options": {}
+      },
+      "id": "http-node",
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Parse Event", "type": "main", "index": 0 }]] },
+    "Parse Event": { "main": [[{ "node": "Send WhatsApp", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}
