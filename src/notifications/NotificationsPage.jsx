@@ -59,6 +59,7 @@ const NotificationsPage = () => {
   const t = useTranslation();
   const navigate = useNavigate();
   const devices = useSelector((state) => state.devices.items);
+  const userId = useSelector((state) => state.session.user?.id);
   const deviceList = useMemo(() => Object.values(devices), [devices]);
   const [ownedNotifications, setOwnedNotifications] = useState([]);
   const [notificationTotal, setNotificationTotal] = useState(0);
@@ -72,11 +73,12 @@ const NotificationsPage = () => {
 
   const loadData = useCallback(
     async (signal) => {
+      if (!userId) return;
       setLoading(true);
       try {
         const [notificationsResponse, permissionsResponse] = await Promise.all([
           fetchOrThrow("/api/notifications", { signal }),
-          fetchOrThrow("/api/permissions", { signal }),
+          fetchOrThrow(`/api/permissions?userId=${userId}`, { signal }),
         ]);
         const allNotifications = await notificationsResponse.json();
         const own = allNotifications.filter(isOwnedNotification);
@@ -109,7 +111,7 @@ const NotificationsPage = () => {
           `[VigilaTeh] GET notifications → ${own.length} propias / ${allNotifications.length} totales`,
         );
         console.log(
-          `[VigilaTeh] GET permissions → ${devicePermissions.length} permisos`,
+          `[VigilaTeh] GET permissions?userId=${userId} → ${devicePermissions.length} permisos`,
         );
         console.log(
           `[VigilaTeh] Matriz reconstruida: ${deviceList.length} dispositivos, ${activeCount} eventos activos`,
@@ -131,7 +133,7 @@ const NotificationsPage = () => {
         setLoading(false);
       }
     },
-    [deviceList, t],
+    [deviceList, t, userId],
   );
 
   useEffect(() => {
