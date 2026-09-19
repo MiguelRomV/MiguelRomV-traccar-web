@@ -1,0 +1,97 @@
+{
+  "name": "cron-whatsapp-expire",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a3daaf72-2eb4-47cb-ba16-7dfa376bb092",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE tc_users\nSET attributes = jsonb_set(\n      attributes::jsonb,\n      '{whatsappEnabled}',\n      'false'::jsonb\n    )::text\nWHERE COALESCE((attributes::jsonb->>'whatsappEnabled')::boolean, false) = true\n  AND NULLIF(attributes::jsonb->>'whatsappExpiresAt','')::timestamptz < NOW()\nRETURNING id, email, phone;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "df52376c-7ebb-4343-be99-7e8aa5576a64",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "ohi5rP7QjP7wqddz",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filtrar el marcador {success: true} — solo nos interesan rows con id\nconst rows = $input.all().filter(r => r.json && r.json.id);\n\nif (rows.length === 0) {\n  console.log('cron-expire: 0 users expirados');\n} else {\n  rows.forEach(r => console.log('cron-expire: apagado', r.json.email, 'id=' + r.json.id));\n}\nreturn rows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "f9775794-e257-4747-9bf3-0715c9fcba76",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "86ebe097-5825-4426-88b3-8b3cf5151679",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b3a54ae2b119a8c6123ecbd2d8cf4aa7e7d92887030603df69305f504f2790df"
+  },
+  "nodeGroups": [],
+  "id": "wS5WxUEnnzvMkkkZ",
+  "tags": []
+}
