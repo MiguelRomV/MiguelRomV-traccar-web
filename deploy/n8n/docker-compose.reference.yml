@@ -1,0 +1,78 @@
+services:
+  evolution-postgres:
+    image: postgres:15-alpine
+    container_name: evolution-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=evolution
+      - POSTGRES_PASSWORD=EvoVigila2026Seguro!
+      - POSTGRES_DB=evolution
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - evolution-network
+
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.7
+    container_name: evolution-api
+    restart: unless-stopped
+    depends_on:
+      - evolution-postgres
+    ports:
+      - "127.0.0.1:8080:8080"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+      - net.ipv6.conf.default.disable_ipv6=1
+    environment:
+      - SERVER_URL=http://localhost:8080
+      - AUTHENTICATION_API_KEY=VigilaApiKey2026XyZ9
+      - MANAGER_AUTHENTICATION=true
+      - MANAGER_USER=admin
+      - MANAGER_PASS=VigilaManager2026!
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://evolution:EvoVigila2026Seguro!@evolution-postgres:5432/evolution?schema=public
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=false
+      - DATABASE_SAVE_DATA_CHATS=false
+      - DATABASE_SAVE_DATA_HISTORIC=false
+      - DATABASE_SAVE_DATA_LABELS=false
+      - CACHE_REDIS_ENABLED=false
+      - CACHE_LOCAL_ENABLED=true
+      - RABBITMQ_ENABLED=false
+      - S3_ENABLED=false
+      - LOG_LEVEL=ERROR
+      - LANGUAGE=es
+      - QRCODE_LIMIT=30
+      - QRCODE_COLOR=#0A76C4
+    volumes:
+      - ./evolution-instances:/evolution/instances
+    networks:
+      - evolution-network
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - N8N_HOST=127.0.0.1
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://127.0.0.1:5678/
+      - GENERIC_TIMEZONE=America/Mexico_City
+      - TZ=America/Mexico_City
+      - N8N_SECURE_COOKIE=false
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_PORT=5678
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - EVOLUTION_API_KEY=VigilaApiKey2026XyZ9
+      - WHATSAPP_DEFAULT_NUMBER=525612033478
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+
+networks:
+  evolution-network:
+    driver: bridge
