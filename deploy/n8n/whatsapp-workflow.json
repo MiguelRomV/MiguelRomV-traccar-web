@@ -17,13 +17,110 @@
     },
     {
       "parameters": {
-        "jsCode": "function unwrap(input) {\n  let obj = input;\n  for (let i = 0; i < 10; i++) {\n    if (Array.isArray(obj) && obj.length > 0) { obj = obj[0]; continue; }\n    if (obj && typeof obj === 'object' && obj.body !== undefined) {\n      const inner = obj.body;\n      if (Array.isArray(inner) || (inner && typeof inner === 'object')) { obj = inner; continue; }\n    }\n    break;\n  }\n  return obj;\n}\n\nconst payload = unwrap($input.first().json);\nconst event = payload.event || {};\nconst device = payload.device || {};\n\nconst eventType = event.type || 'unknown';\nconst deviceId = device.id || 0;\nconst deviceName = device.name || 'Vehículo desconocido';\nconst eventTime = event.eventTime || new Date().toISOString();\nconst eventAttrs = event.attributes || {};\n\nconst typeLabels = {\n  'ignitionOn': '🟢 Ignición encendida',\n  'ignitionOff': '🔴 Ignición apagada',\n  'deviceOnline': '📡 Dispositivo en línea',\n  'deviceOffline': '📴 Dispositivo fuera de línea',\n  'geofenceEnter': '📍 Entrada a geocerca',\n  'geofenceExit': '🚪 Salida de geocerca',\n  'alarm': '🚨 Alarma',\n  'driverChanged': '👤 Cambio de conductor',\n  'media': '📷 Multimedia',\n  'maintenance': '🔧 Mantenimiento'\n};\n\nlet label = typeLabels[eventType];\nif (eventType === 'commandResult') {\n  const result = (eventAttrs.result || '').toLowerCase();\n  if (result.includes('cut off')) label = '🛑 Paro de motor activado';\n  else if (result.includes('restore')) label = '✅ Motor restablecido';\n  else label = `⚙️ Comando: ${eventAttrs.result || 'sin detalle'}`;\n}\nif (!label) label = `Evento: ${eventType}`;\n\nlet timeStr = '';\ntry {\n  const date = new Date(eventTime);\n  timeStr = date.toLocaleString('es-MX', {\n    timeZone: 'America/Mexico_City',\n    day: '2-digit', month: '2-digit', year: 'numeric',\n    hour: '2-digit', minute: '2-digit'\n  });\n} catch { timeStr = eventTime; }\n\nconst message = `*VigilaTeh* 🚗\\n\\n${label}\\n\\n📱 ${deviceName}\\n🕐 ${timeStr}`;\n\nreturn [{ json: { eventType, deviceId, deviceName, eventTime, message } }];"
+        "jsCode": "function unwrap(input) {\n  let obj = input;\n  for (let i = 0; i < 10; i++) {\n    if (Array.isArray(obj) && obj.length > 0) { obj = obj[0]; continue; }\n    if (obj && typeof obj === 'object' && obj.body !== undefined) {\n      const inner = obj.body;\n      if (Array.isArray(inner) || (inner && typeof inner === 'object')) { obj = inner; continue; }\n    }\n    break;\n  }\n  return obj;\n}\n\nfunction normalizeEventType(rawType, rawAttrs) {\n  if (rawType === 'ignitionOn') return 'ignitionOn';\n  if (rawType === 'ignitionOff') return 'ignitionOff';\n  if (rawType === 'commandResult') {\n    const result = ((rawAttrs && rawAttrs.result) || '').toLowerCase();\n    if (result.includes('cut off')) return 'engineCutSent';\n    if (result.includes('restore')) return 'engineCutRestored';\n  }\n  return null;\n}\n\nconst payload = unwrap($input.first().json);\nconst event = payload.event || {};\nconst device = payload.device || {};\nconst rawType = event.type || 'unknown';\nconst eventAttrs = event.attributes || {};\nconst normalizedType = normalizeEventType(rawType, eventAttrs);\nconst labels = {\n  ignitionOn: '🟢 Ignición encendida',\n  ignitionOff: '🔴 Ignición apagada',\n  engineCutSent: '🛑 Paro de motor activado',\n  engineCutRestored: '✅ Motor restablecido'\n};\n\nreturn [{ json: {\n  rawType,\n  normalizedType,\n  deviceId: Number(device.id || 0),\n  deviceName: device.name || 'Vehículo desconocido',\n  eventTime: event.eventTime || new Date().toISOString(),\n  label: labels[normalizedType] || null\n} }];"
       },
       "id": "code-node",
       "name": "Parse Event",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "normalized-type-present",
+              "leftValue": "={{ $json.normalizedType }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "event-supported-node",
+      "name": "Supported Event?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, name, email, phone, attributes::jsonb AS attrs\nFROM tc_users\nWHERE COALESCE((attributes::jsonb->>'whatsappEnabled')::boolean, false) = true\n  AND NULLIF(attributes::jsonb->>'whatsappExpiresAt', '')::timestamptz > NOW()\n  AND COALESCE(attributes::jsonb->'whatsappDevices', '[]'::jsonb) @> to_jsonb(ARRAY[$1::integer])\n  AND phone IS NOT NULL\n  AND phone <> ''",
+        "options": {
+          "queryReplacement": "={{ $json.deviceId }}"
+        }
+      },
+      "id": "postgres-node",
+      "name": "Get Recipients",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const eventData = $('Parse Event').first().json;\n\nreturn $input.all().flatMap((item) => {\n  const user = item.json;\n  let attrs = user.attrs || {};\n  if (typeof attrs === 'string') {\n    try { attrs = JSON.parse(attrs); } catch { return []; }\n  }\n  let subscribedEvents = attrs.whatsappEvents || [];\n  if (typeof subscribedEvents === 'string') {\n    try { subscribedEvents = JSON.parse(subscribedEvents); } catch { return []; }\n  }\n  if (!Array.isArray(subscribedEvents) || !subscribedEvents.includes(eventData.normalizedType)) return [];\n\n  let timeStr = eventData.eventTime;\n  try {\n    timeStr = new Date(eventData.eventTime).toLocaleString('es-MX', {\n      timeZone: 'America/Mexico_City',\n      day: '2-digit', month: '2-digit', year: 'numeric',\n      hour: '2-digit', minute: '2-digit'\n    });\n  } catch {}\n\n  const message = `*VigilaTeh* 🚗\\n\\n${eventData.label}\\n\\n📱 ${eventData.deviceName}\\n🕐 ${timeStr}`;\n  return [{ json: { phone: user.phone, message, userId: user.id, normalizedType: eventData.normalizedType } }];\n});"
+      },
+      "id": "filter-messages-node",
+      "name": "Filter + Build Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "recipient-phone-present",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "recipients-present-node",
+      "name": "Has Recipients?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-batches-node",
+      "name": "Loop Over Recipients",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1560, 300]
     },
     {
       "parameters": {
@@ -38,19 +135,25 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ number: $env.WHATSAPP_DEFAULT_NUMBER, text: $json.message }) }}",
+        "jsonBody": "={{ JSON.stringify({ number: $json.phone, text: $json.message }) }}",
         "options": {}
       },
       "id": "http-node",
       "name": "Send WhatsApp",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 300]
+      "position": [1780, 300]
     }
   ],
   "connections": {
     "Webhook": { "main": [[{ "node": "Parse Event", "type": "main", "index": 0 }]] },
-    "Parse Event": { "main": [[{ "node": "Send WhatsApp", "type": "main", "index": 0 }]] }
+    "Parse Event": { "main": [[{ "node": "Supported Event?", "type": "main", "index": 0 }]] },
+    "Supported Event?": { "main": [[{ "node": "Get Recipients", "type": "main", "index": 0 }], []] },
+    "Get Recipients": { "main": [[{ "node": "Filter + Build Messages", "type": "main", "index": 0 }]] },
+    "Filter + Build Messages": { "main": [[{ "node": "Has Recipients?", "type": "main", "index": 0 }]] },
+    "Has Recipients?": { "main": [[{ "node": "Loop Over Recipients", "type": "main", "index": 0 }], []] },
+    "Loop Over Recipients": { "main": [[], [{ "node": "Send WhatsApp", "type": "main", "index": 0 }]] },
+    "Send WhatsApp": { "main": [[{ "node": "Loop Over Recipients", "type": "main", "index": 0 }]] }
   },
   "settings": { "executionOrder": "v1" },
   "active": false
