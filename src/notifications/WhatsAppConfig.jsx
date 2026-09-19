@@ -34,6 +34,9 @@ const eventTypes = [
   "ignitionOff",
   "engineCutSent",
   "engineCutRestored",
+  "deviceOnline",
+  "deviceOffline",
+  "deviceUnknown",
 ];
 
 const timerDuration = 4 * 60 * 60 * 1000;

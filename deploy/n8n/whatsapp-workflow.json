@@ -5,25 +5,30 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "traccar",
-        "responseMode": "onReceived",
         "options": {}
       },
-      "id": "webhook-node",
+      "id": "e756fbb3-e1ef-41a3-bd17-6c22f40a9f31",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        0,
+        0
+      ],
       "webhookId": "traccar"
     },
     {
       "parameters": {
-        "jsCode": "function unwrap(input) {\n  let obj = input;\n  for (let i = 0; i < 10; i++) {\n    if (Array.isArray(obj) && obj.length > 0) { obj = obj[0]; continue; }\n    if (obj && typeof obj === 'object' && obj.body !== undefined) {\n      const inner = obj.body;\n      if (Array.isArray(inner) || (inner && typeof inner === 'object')) { obj = inner; continue; }\n    }\n    break;\n  }\n  return obj;\n}\n\nfunction normalizeEventType(rawType, rawAttrs) {\n  if (rawType === 'ignitionOn') return 'ignitionOn';\n  if (rawType === 'ignitionOff') return 'ignitionOff';\n  if (rawType === 'commandResult') {\n    const result = ((rawAttrs && rawAttrs.result) || '').toLowerCase();\n    if (result.includes('cut off')) return 'engineCutSent';\n    if (result.includes('restore')) return 'engineCutRestored';\n  }\n  return null;\n}\n\nconst payload = unwrap($input.first().json);\nconst event = payload.event || {};\nconst device = payload.device || {};\nconst rawType = event.type || 'unknown';\nconst eventAttrs = event.attributes || {};\nconst normalizedType = normalizeEventType(rawType, eventAttrs);\nconst labels = {\n  ignitionOn: '🟢 Ignición encendida',\n  ignitionOff: '🔴 Ignición apagada',\n  engineCutSent: '🛑 Paro de motor activado',\n  engineCutRestored: '✅ Motor restablecido'\n};\n\nreturn [{ json: {\n  rawType,\n  normalizedType,\n  deviceId: Number(device.id || 0),\n  deviceName: device.name || 'Vehículo desconocido',\n  eventTime: event.eventTime || new Date().toISOString(),\n  label: labels[normalizedType] || null\n} }];"
+        "jsCode": "// Parse Event — VigilaTeh WhatsApp notifications\n// Input: webhook Traccar {event, device, position}\n// Output: {rawType, normalizedType, deviceId, deviceName, eventTime, label}\n\nconst raw = $input.first().json;\nconst data = raw.body ?? raw;   // webhook envuelve en .body; fallback por si viene directo\n\nconst event    = data.event    || {};\nconst device   = data.device   || {};\nconst position = data.position || {};\n\nconst rawType = event.type;\nconst eventTime = event.eventTime;\n\n// ---------- normalizeEventType ----------\nfunction normalizeEventType(rawType, event) {\n  // Ignición\n  if (rawType === 'ignitionOn')  return 'ignitionOn';\n  if (rawType === 'ignitionOff') return 'ignitionOff';\n\n  // commandResult → cut off / restore\n  if (rawType === 'commandResult') {\n    const result = String(event?.attributes?.result || '').toLowerCase();\n    if (result.includes('cut off')) return 'engineCutSent';\n    if (result.includes('restore')) return 'engineCutRestored';\n  }\n\n  // Estado de conexión\n  if (rawType === 'deviceOnline')  return 'deviceOnline';\n  if (rawType === 'deviceOffline') return 'deviceOffline';\n  if (rawType === 'deviceUnknown') return 'deviceUnknown';\n\n  // Todo lo demás se descarta\n  return null;\n}\n\nconst normalizedType = normalizeEventType(rawType, event);\n\n// ---------- Labels por evento ----------\nconst LABELS = {\n  ignitionOn:        '🟢 Ignición encendida',\n  ignitionOff:       '🔴 Ignición apagada',\n  engineCutSent:     '🛑 Paro de motor activado',\n  engineCutRestored: '✅ Motor restablecido',\n  deviceOnline:      '🟢 Equipo reconectado',\n  deviceOffline:     '🔴 Equipo desconectado',\n  deviceUnknown:     '⚠️ Equipo sin señal',\n};\n\nconst label = normalizedType ? (LABELS[normalizedType] || null) : null;\n\nreturn [{\n  json: {\n    rawType,\n    normalizedType,\n    deviceId:   device.id,\n    deviceName: device.name,\n    eventTime,\n    label,\n  }\n}];"
       },
-      "id": "code-node",
+      "id": "e4431ee3-4ffc-4f7f-a86c-e14d14a42d21",
       "name": "Parse Event",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [460, 300]
+      "position": [
+        224,
+        0
+      ]
     },
     {
       "parameters": {
@@ -50,11 +55,14 @@
         },
         "options": {}
       },
-      "id": "event-supported-node",
+      "id": "57b48e14-6275-4f3b-821d-79a3c021210c",
       "name": "Supported Event?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [680, 300]
+      "position": [
+        448,
+        0
+      ]
     },
     {
       "parameters": {
@@ -64,21 +72,33 @@
           "queryReplacement": "={{ $json.deviceId }}"
         }
       },
-      "id": "postgres-node",
+      "id": "b19fd87a-bb80-4a1b-a6f5-e782210994d7",
       "name": "Get Recipients",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
-      "position": [900, 300]
+      "position": [
+        672,
+        0
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "ohi5rP7QjP7wqddz",
+          "name": "Postgres account"
+        }
+      }
     },
     {
       "parameters": {
         "jsCode": "const eventData = $('Parse Event').first().json;\n\nreturn $input.all().flatMap((item) => {\n  const user = item.json;\n  let attrs = user.attrs || {};\n  if (typeof attrs === 'string') {\n    try { attrs = JSON.parse(attrs); } catch { return []; }\n  }\n  let subscribedEvents = attrs.whatsappEvents || [];\n  if (typeof subscribedEvents === 'string') {\n    try { subscribedEvents = JSON.parse(subscribedEvents); } catch { return []; }\n  }\n  if (!Array.isArray(subscribedEvents) || !subscribedEvents.includes(eventData.normalizedType)) return [];\n\n  let timeStr = eventData.eventTime;\n  try {\n    timeStr = new Date(eventData.eventTime).toLocaleString('es-MX', {\n      timeZone: 'America/Mexico_City',\n      day: '2-digit', month: '2-digit', year: 'numeric',\n      hour: '2-digit', minute: '2-digit'\n    });\n  } catch {}\n\n  const message = `*VigilaTeh* 🚗\\n\\n${eventData.label}\\n\\n📱 ${eventData.deviceName}\\n🕐 ${timeStr}`;\n  return [{ json: { phone: user.phone, message, userId: user.id, normalizedType: eventData.normalizedType } }];\n});"
       },
-      "id": "filter-messages-node",
+      "id": "f7b52fed-12e2-457a-9ae7-26c6e64ab893",
       "name": "Filter + Build Messages",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1120, 300]
+      "position": [
+        880,
+        0
+      ]
     },
     {
       "parameters": {
@@ -105,22 +125,27 @@
         },
         "options": {}
       },
-      "id": "recipients-present-node",
+      "id": "7ee258e2-cda9-4cca-9cbf-cabc65086de7",
       "name": "Has Recipients?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [1340, 300]
+      "position": [
+        1104,
+        0
+      ]
     },
     {
       "parameters": {
-        "batchSize": 1,
         "options": {}
       },
-      "id": "split-batches-node",
+      "id": "56a4e398-d51d-48b5-ac95-58a5cdc19597",
       "name": "Loop Over Recipients",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
-      "position": [1560, 300]
+      "position": [
+        1328,
+        0
+      ]
     },
     {
       "parameters": {
@@ -129,8 +154,14 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.EVOLUTION_API_KEY }}" },
-            { "name": "Content-Type", "value": "application/json" }
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
@@ -138,23 +169,118 @@
         "jsonBody": "={{ JSON.stringify({ number: $json.phone, text: $json.message }) }}",
         "options": {}
       },
-      "id": "http-node",
+      "id": "6d9f9202-189d-4f39-8e05-4295f8a77be1",
       "name": "Send WhatsApp",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1780, 300]
+      "position": [
+        1552,
+        0
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
-    "Webhook": { "main": [[{ "node": "Parse Event", "type": "main", "index": 0 }]] },
-    "Parse Event": { "main": [[{ "node": "Supported Event?", "type": "main", "index": 0 }]] },
-    "Supported Event?": { "main": [[{ "node": "Get Recipients", "type": "main", "index": 0 }], []] },
-    "Get Recipients": { "main": [[{ "node": "Filter + Build Messages", "type": "main", "index": 0 }]] },
-    "Filter + Build Messages": { "main": [[{ "node": "Has Recipients?", "type": "main", "index": 0 }]] },
-    "Has Recipients?": { "main": [[{ "node": "Loop Over Recipients", "type": "main", "index": 0 }], []] },
-    "Loop Over Recipients": { "main": [[], [{ "node": "Send WhatsApp", "type": "main", "index": 0 }]] },
-    "Send WhatsApp": { "main": [[{ "node": "Loop Over Recipients", "type": "main", "index": 0 }]] }
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Event": {
+      "main": [
+        [
+          {
+            "node": "Supported Event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supported Event?": {
+      "main": [
+        [
+          {
+            "node": "Get Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recipients": {
+      "main": [
+        [
+          {
+            "node": "Filter + Build Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter + Build Messages": {
+      "main": [
+        [
+          {
+            "node": "Has Recipients?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Recipients?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Recipients": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-  "settings": { "executionOrder": "v1" },
-  "active": false
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ab293a81-9e01-4809-8ebd-22204e79574e",
+  "meta": {
+    "instanceId": "b3a54ae2b119a8c6123ecbd2d8cf4aa7e7d92887030603df69305f504f2790df"
+  },
+  "nodeGroups": [],
+  "id": "ejplnFosQayoi0O3",
+  "tags": []
 }
