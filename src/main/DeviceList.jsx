@@ -54,9 +54,39 @@ const useStyles = makeStyles()((theme) => ({
     color: theme.palette.text.secondary,
     textAlign: "center",
   },
+  visibilityBar: {
+    position: "sticky",
+    top: 0,
+    zIndex: 2,
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(0.75),
+    padding: theme.spacing(0.75, 1.25),
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    backgroundColor: theme.palette.background.paper,
+  },
+  visibilityLabel: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: 600,
+    color: theme.palette.text.secondary,
+  },
+  visibilityBtn: {
+    fontSize: 10.5,
+    padding: theme.spacing(0.35, 0.75),
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: 6,
+    background: "transparent",
+    cursor: "pointer",
+    color: theme.palette.text.primary,
+  },
 }));
 
-const DeviceList = ({ devices }) => {
+const DeviceList = ({
+  devices,
+  hiddenDeviceIds = [],
+  setHiddenDeviceIds,
+}) => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -93,6 +123,31 @@ const DeviceList = ({ devices }) => {
   return (
     <div className={classes.root}>
       <div className={classes.scroll}>
+        {setHiddenDeviceIds && (
+          <div className={classes.visibilityBar}>
+            <span className={classes.visibilityLabel}>
+              {hiddenDeviceIds.length === 0
+                ? `Mostrando ${devices.length} unidades`
+                : `${hiddenDeviceIds.length} ocultas de ${devices.length}`}
+            </span>
+            <button
+              type="button"
+              className={classes.visibilityBtn}
+              onClick={() => setHiddenDeviceIds([])}
+            >
+              Mostrar todas
+            </button>
+            <button
+              type="button"
+              className={classes.visibilityBtn}
+              onClick={() =>
+                setHiddenDeviceIds(devices.map((device) => device.id))
+              }
+            >
+              Ocultar todas
+            </button>
+          </div>
+        )}
         {grouped.length ? (
           grouped.map(([groupId, groupDevices]) => {
             const isCollapsed = collapsed[groupId];
@@ -122,7 +177,21 @@ const DeviceList = ({ devices }) => {
                 </button>
                 {!isCollapsed &&
                   groupDevices.map((device) => (
-                    <DeviceRow key={device.id} device={device} />
+                    <DeviceRow
+                      key={device.id}
+                      device={device}
+                      hidden={hiddenDeviceIds.includes(device.id)}
+                      onToggleHidden={
+                        setHiddenDeviceIds
+                          ? () =>
+                              setHiddenDeviceIds((current) =>
+                                current.includes(device.id)
+                                  ? current.filter((id) => id !== device.id)
+                                  : [...current, device.id],
+                              )
+                          : undefined
+                      }
+                    />
                   ))}
               </section>
             );

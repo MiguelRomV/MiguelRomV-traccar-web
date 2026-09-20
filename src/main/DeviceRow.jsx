@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { makeStyles } from "tss-react/mui";
 import {
   Checkbox,
+  IconButton,
   ListItemButton,
   Menu,
   MenuItem,
@@ -12,6 +13,8 @@ import {
 import SatelliteAltOutlinedIcon from "@mui/icons-material/SatelliteAltOutlined";
 import SignalCellularAltIcon from "@mui/icons-material/SignalCellularAlt";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import dayjs from "dayjs";
 import { devicesActions } from "../store";
 import { formatAlarm, formatSpeed } from "../common/util/formatter";
@@ -71,7 +74,14 @@ const useStyles = makeStyles()((theme) => ({
   stopped: { color: "#8A8F98" },
 }));
 
-const DeviceRow = ({ devices, index, device, style }) => {
+const DeviceRow = ({
+  devices,
+  index,
+  device,
+  style,
+  hidden,
+  onToggleHidden,
+}) => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
   const t = useTranslation();
@@ -176,6 +186,27 @@ const DeviceRow = ({ devices, index, device, style }) => {
             {position ? formatSpeed(position.speed || 0, speedUnit, t) : "—"}
           </Typography>
         </div>
+        {onToggleHidden && (
+          <Tooltip title={hidden ? "Mostrar en mapa" : "Ocultar del mapa"}>
+            <IconButton
+              size="small"
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleHidden();
+              }}
+              sx={{
+                ml: 0.5,
+                color: hidden ? "#B8BDC5" : "#10B981",
+              }}
+            >
+              {hidden ? (
+                <VisibilityOffIcon fontSize="small" />
+              ) : (
+                <VisibilityIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
+        )}
       </ListItemButton>
       <Menu anchorEl={menu} open={Boolean(menu)} onClose={() => setMenu(null)}>
         {[

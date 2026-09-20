@@ -1,4 +1,11 @@
-import { lazy, Suspense, useState, useCallback, useEffect } from "react";
+import {
+  lazy,
+  Suspense,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
 import { Paper } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 import { useTheme } from "@mui/material/styles";
@@ -86,6 +93,10 @@ const MainPage = () => {
   });
   const [filterSort, setFilterSort] = usePersistedState("filterSort", "");
   const [filterMap, setFilterMap] = usePersistedState("filterMap", false);
+  const [hiddenDeviceIds, setHiddenDeviceIds] = usePersistedState(
+    "hiddenDeviceIds",
+    [],
+  );
 
   const [devicesOpen, setDevicesOpen] = useState(desktop);
   const [eventsOpen, setEventsOpen] = useState(false);
@@ -108,12 +119,22 @@ const MainPage = () => {
     setFilteredPositions,
   );
 
+  const mapPositions = useMemo(() => {
+    if (!hiddenDeviceIds.length) return filteredPositions;
+    const hidden = new Set(hiddenDeviceIds);
+    return filteredPositions.filter(
+      (position) =>
+        !hidden.has(position.deviceId) ||
+        position.deviceId === selectedDeviceId,
+    );
+  }, [filteredPositions, hiddenDeviceIds, selectedDeviceId]);
+
   return (
     <div className={classes.root}>
       {desktop && (
         <Suspense fallback={null}>
           <MainMap
-            filteredPositions={filteredPositions}
+            filteredPositions={mapPositions}
             selectedPosition={selectedPosition}
             onEventsClick={onEventsClick}
           />
@@ -140,7 +161,7 @@ const MainPage = () => {
             <div className={classes.contentMap}>
               <Suspense fallback={null}>
                 <MainMap
-                  filteredPositions={filteredPositions}
+                  filteredPositions={mapPositions}
                   selectedPosition={selectedPosition}
                   onEventsClick={onEventsClick}
                 />
@@ -152,7 +173,11 @@ const MainPage = () => {
             className={classes.contentList}
             style={devicesOpen ? {} : { visibility: "hidden" }}
           >
-            <DeviceList devices={filteredDevices} />
+            <DeviceList
+              devices={filteredDevices}
+              hiddenDeviceIds={hiddenDeviceIds}
+              setHiddenDeviceIds={setHiddenDeviceIds}
+            />
           </Paper>
         </div>
       </div>
