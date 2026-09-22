@@ -28,3 +28,9 @@ export const linkDevice = (id, deviceId) =>
   request(`/clients/${id}/devices`, json({ deviceId }));
 export const unlinkDevice = (id, deviceId) =>
   request(`/clients/${id}/devices/${deviceId}`, { method: "DELETE" });
+export const listMessages = (clientId, limit = 50, offset = 0) =>
+  request(
+    `/clients/${clientId}/messages?${new URLSearchParams({ limit, offset })}`,
+  );
+export const syncMessages = (clientId) =>
+  request(`/clients/${clientId}/messages/sync`, { method: "POST" });

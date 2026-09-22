@@ -17,6 +17,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import OverviewTab from "./tabs/OverviewTab";
+import MessagesTab from "./tabs/MessagesTab";
 import { useTranslation } from "../common/components/LocalizationProvider";
 
 const tabs = ["overview", "messages", "deals", "tickets", "invoices"];
@@ -77,6 +78,8 @@ const ClientDetail = ({
       <Box sx={{ pt: 2 }}>
         {tab === "overview" ? (
           <OverviewTab client={client} />
+        ) : tab === "messages" ? (
+          <MessagesTab client={client} />
         ) : (
           <Alert severity="info">{t("crmPhasePlaceholder")}</Alert>
         )}

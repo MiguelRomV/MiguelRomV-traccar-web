@@ -24,6 +24,14 @@ dispositivo con la misma sesión antes de guardar.
 - `DATABASE_URL`: conexión PostgreSQL de Traccar.
 - `TRACCAR_URL`: URL base de la API de Traccar.
 - `CORS_ORIGIN`: orígenes opcionales separados por comas; vacío desactiva CORS.
+- `EVOLUTION_URL`: URL base de Evolution API (por defecto `http://127.0.0.1:8080`).
+- `EVOLUTION_API_KEY`: API key de la instancia Evolution.
 
 No guardes secretos en Git. En despliegues, Miguel configura las variables y
 el proxy manualmente; esta fase no cambia servicios del servidor.
+
+## Fase 2 — Historial WhatsApp
+
+Configura `EVOLUTION_URL` y `EVOLUTION_API_KEY` en el `.env` local. El botón
+Sincronizar consulta `POST /chat/findMessages/{instance}` por `remoteJid`, e
+inserta mensajes de manera idempotente. No envía mensajes ni ejecuta cron.
