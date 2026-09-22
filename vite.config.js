@@ -8,6 +8,7 @@ export default defineConfig(() => ({
   server: {
     port: 3001,
     proxy: {
+      "/api/crm": "http://localhost:8090",
       "/api/socket": "ws://localhost:8082",
       "/api": "http://localhost:8082",
     },

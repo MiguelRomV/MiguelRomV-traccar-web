@@ -4,6 +4,7 @@ import { Badge, IconButton, Tooltip, Typography } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlined";
 import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
@@ -24,6 +25,12 @@ export const navigationItems = [
     href: "/dashboard",
     label: "Dashboard",
     icon: DashboardOutlinedIcon,
+  },
+  {
+    value: "crm",
+    href: "/crm",
+    label: "crmTitle",
+    icon: BusinessCenterOutlinedIcon,
   },
   {
     value: "settings",
