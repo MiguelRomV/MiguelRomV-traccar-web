@@ -25,3 +25,13 @@ yarn-error.log*
 .backup-original/
 .env.local~
 vigilateh-build.tar.gz
+
+# VigilaTeh — secretos y handoffs
+.env
+.env.*
+!.env.example
+!.env.local.example
+*.handoff.txt
+HANDOFF*.txt
+deploy/n8n/docker-compose.yml
+deploy/n8n/*.bak-*

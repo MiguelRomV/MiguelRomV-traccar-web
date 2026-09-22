@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=evolution
-      - POSTGRES_PASSWORD=EvoVigila2026Seguro!
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=evolution
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
@@ -25,13 +25,13 @@ services:
       - net.ipv6.conf.default.disable_ipv6=1
     environment:
       - SERVER_URL=http://localhost:8080
-      - AUTHENTICATION_API_KEY=VigilaApiKey2026XyZ9
+      - AUTHENTICATION_API_KEY=${AUTHENTICATION_API_KEY}
       - MANAGER_AUTHENTICATION=true
       - MANAGER_USER=admin
-      - MANAGER_PASS=VigilaManager2026!
+      - MANAGER_PASS=${MANAGER_PASS}
       - DATABASE_ENABLED=true
       - DATABASE_PROVIDER=postgresql
-      - DATABASE_CONNECTION_URI=postgresql://evolution:EvoVigila2026Seguro!@evolution-postgres:5432/evolution?schema=public
+      - DATABASE_CONNECTION_URI=postgresql://evolution:${POSTGRES_PASSWORD}@evolution-postgres:5432/evolution?schema=public
       - DATABASE_SAVE_DATA_INSTANCE=true
       - DATABASE_SAVE_DATA_NEW_MESSAGE=true
       - DATABASE_SAVE_MESSAGE_UPDATE=true
@@ -68,7 +68,7 @@ services:
       - N8N_PORT=5678
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
-      - EVOLUTION_API_KEY=VigilaApiKey2026XyZ9
+      - EVOLUTION_API_KEY=${AUTHENTICATION_API_KEY}
       - WHATSAPP_DEFAULT_NUMBER=525612033478
     volumes:
       - ./n8n-data:/home/node/.n8n
