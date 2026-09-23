@@ -8,13 +8,14 @@ El handoff de Sesión 15 solo especifica estos datos; no contiene nombres comple
 
 - `traccar.xml.bak-*`: conservar el más reciente y retirar los demás.
 - `/opt/vigilateh-whatsapp/docker-compose.yml.bak-20260922-215305`: conservar este backup y retirar otros `docker-compose.yml.bak-*` de esa carpeta.
-- `web.bak.*`: el handoff indica que hay cinco y pide conservar los tres más recientes.
+- `web.bak.*`: el handoff indica que hay cinco y pide conservar los tres más recientes. Pueden ser directorios completos del sitio web.
 - La ubicación exacta de `traccar.xml.bak-*` y `web.bak.*` no está especificada. Localizar e inspeccionar antes de usar cualquier comando de borrado.
 
 ## Inspección previa por SSH
 
 ```bash
-sudo find /opt -type f \( -name 'traccar.xml.bak-*' -o -name 'web.bak.*' -o -name 'docker-compose.yml.bak-*' \) -printf '%TY-%Tm-%Td %TH:%TM:%TS %p\n' | sort -r
+sudo find /opt -type f \( -name 'traccar.xml.bak-*' -o -name 'docker-compose.yml.bak-*' \) -printf '%TY-%Tm-%Td %TH:%TM:%TS %p\n' | sort -r
+sudo find /opt -name 'web.bak.*' -prune -printf '%TY-%Tm-%Td %TH:%TM:%TS %y %p\n' | sort -r
 sudo ls -l /opt/vigilateh-whatsapp/docker-compose.yml.bak-20260922-215305
 ```
 
@@ -45,10 +46,12 @@ En la carpeta real de `web.bak.*`, conservar los tres más nuevos y revisar ante
 
 ```bash
 cd /RUTA/CONFIRMADA
-mapfile -t files < <(find . -maxdepth 1 -type f -name 'web.bak.*' -printf '%T@ %p\n' | sort -rn | awk 'NR>3 {sub(/^[^ ]+ /, ""); print}')
+mapfile -t files < <(find . -maxdepth 1 -mindepth 1 -name 'web.bak.*' -printf '%T@ %p\n' | sort -rn | awk 'NR>3 {sub(/^[^ ]+ /, ""); print}')
 printf '%s\n' "${files[@]}"   # revisar antes de borrar
-# Solo tras confirmar esa lista:
-# printf '%s\0' "${files[@]}" | xargs -0 -r rm --
+# Solo tras confirmar esa lista; los backups web pueden ser directorios:
+# for backup in "${files[@]}"; do
+#   if [ -d "$backup" ]; then rm -r -- "$backup"; else rm -- "$backup"; fi
+# done
 ```
 
 Al terminar, volver a listar los tres grupos y confirmar que quedan: un backup `traccar.xml`, el `docker-compose.yml.bak-20260922-215305` y tres `web.bak.*`.
