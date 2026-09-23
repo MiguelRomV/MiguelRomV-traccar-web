@@ -207,7 +207,7 @@ app.put("/api/crm/clients/:id/traccar-user", async (req, res) => {
 app.get("/api/crm/clients", async (req, res) => {
   const result = await pool.query(
     `SELECT c.id, c.name, c.phone, c.email, c.notes, c.created_at, c.updated_at,
-      CASE WHEN u.id IS NULL THEN NULL ELSE json_build_object('id', u.id, 'name', u.name, 'email', u.email) END AS "traccarUser",
+      (jsonb_agg(DISTINCT jsonb_build_object('id', u.id, 'name', u.name, 'email', u.email)) FILTER (WHERE u.id IS NOT NULL))->0 AS "traccarUser",
       COALESCE(
         json_agg(json_build_object('id', d.id, 'name', d.name, 'uniqueId', d.uniqueid)
           ORDER BY d.name) FILTER (WHERE d.id IS NOT NULL),
@@ -249,7 +249,7 @@ app.get("/api/crm/clients/:id", async (req, res) => {
   if (!clientId) return sendError(res, 400, "Invalid client id");
   const result = await pool.query(
     `SELECT c.id, c.name, c.phone, c.email, c.notes, c.created_at, c.updated_at,
-      CASE WHEN u.id IS NULL THEN NULL ELSE json_build_object('id', u.id, 'name', u.name, 'email', u.email) END AS "traccarUser",
+      (jsonb_agg(DISTINCT jsonb_build_object('id', u.id, 'name', u.name, 'email', u.email)) FILTER (WHERE u.id IS NOT NULL))->0 AS "traccarUser",
       COALESCE(
         json_agg(json_build_object('id', d.id, 'name', d.name, 'uniqueId', d.uniqueid)
           ORDER BY d.name) FILTER (WHERE d.id IS NOT NULL),
