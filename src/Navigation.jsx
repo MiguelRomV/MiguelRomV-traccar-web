@@ -79,6 +79,7 @@ const BillingPage = lazy(() => import("./pages/BillingPage"));
 const LanguagePage = lazy(() => import("./pages/LanguagePage"));
 const DashboardPage = lazy(() => import("./dashboard/DashboardPage"));
 const CrmPage = lazy(() => import("./crm/CrmPage"));
+const CrmDealsBoard = lazy(() => import("./crm/DealsBoard"));
 const ServicesPage = lazy(() => import("./services/ServicesPage"));
 const DeliveriesPage = lazy(() => import("./deliveries/DeliveriesPage"));
 const ExpensesPage = lazy(() => import("./expenses/ExpensesPage"));
@@ -176,6 +177,14 @@ const Navigation = () => {
             element={
               <RoleRoute roles={[ADMIN, MANAGER]}>
                 <CrmPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="crm/deals"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <CrmDealsBoard />
               </RoleRoute>
             }
           />

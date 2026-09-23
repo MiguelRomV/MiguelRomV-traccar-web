@@ -16,6 +16,7 @@ const EVOLUTION_URL = (
 ).replace(/\/$/, "");
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY;
 const EVOLUTION_INSTANCE = "vigilateh";
+const dealStages = ["lead", "contactado", "cotización", "ganado", "perdido"];
 const TRACCAR_URL = (
   process.env.TRACCAR_URL || "http://127.0.0.1:8082"
 ).replace(/\/$/, "");
@@ -139,6 +140,30 @@ const messageDate = (message) => {
     ? new Date(numeric < 1e12 ? numeric * 1000 : numeric)
     : new Date(raw);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+};
+
+const validDate = (value) =>
+  typeof value === "string" &&
+  /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+  !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+
+const validateDealField = (field, value) => {
+  if (field === "title") return optionalText(value) || undefined;
+  if (field === "amount") {
+    if (value === null || value === "") return null;
+    const amount = Number(value);
+    return Number.isFinite(amount) && amount >= 0 ? amount : undefined;
+  }
+  if (field === "currency") {
+    const currency = optionalText(value)?.toUpperCase();
+    return currency && /^[A-Z]{3}$/.test(currency) ? currency : undefined;
+  }
+  if (field === "stage") return dealStages.includes(value) ? value : undefined;
+  if (field === "expected_close") {
+    if (value === null || value === "") return null;
+    return validDate(value) ? value : undefined;
+  }
+  return undefined;
 };
 
 app.get("/api/crm/health", (_req, res) => res.json({ status: "ok" }));
@@ -381,6 +406,192 @@ app.delete("/api/crm/clients/:id/devices/:deviceId", async (req, res) => {
   );
   if (!result.rowCount)
     return sendError(res, 404, "Client device link not found");
+  res.status(204).end();
+});
+
+app.post("/api/crm/clients/:id/messages", async (req, res) => {
+  const clientId = parseId(req.params.id);
+  const body = optionalText(req.body?.body);
+  if (!clientId) return sendError(res, 400, "Invalid client id");
+  if (!body || body.length > 4096) {
+    return sendError(res, 400, "Message must contain 1–4096 characters");
+  }
+  if (!EVOLUTION_API_KEY) {
+    return sendError(res, 503, "Evolution API is not configured");
+  }
+
+  const clientResult = await pool.query(
+    "SELECT id, phone FROM tc_crm_clients WHERE id = $1 AND owner_id = $2",
+    [clientId, req.traccarUser.id],
+  );
+  if (!clientResult.rowCount) return sendError(res, 404, "Client not found");
+  const digits = (clientResult.rows[0].phone || "").replace(/\D/g, "");
+  if (digits.length < 8 || digits.length > 15) {
+    return sendError(res, 400, "Client phone is not in WhatsApp format");
+  }
+
+  const evolutionResponse = await fetch(
+    `${EVOLUTION_URL}/message/sendText/${encodeURIComponent(EVOLUTION_INSTANCE)}`,
+    {
+      method: "POST",
+      headers: {
+        apikey: EVOLUTION_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ number: digits, text: body }),
+      signal: AbortSignal.timeout(15000),
+    },
+  );
+  if (!evolutionResponse.ok) {
+    return sendError(
+      res,
+      502,
+      `Evolution API returned ${evolutionResponse.status}`,
+    );
+  }
+  const sentMessage = await evolutionResponse.json();
+  const messageId = sentMessage.key?.id || sentMessage.data?.key?.id || null;
+  const createdAt = messageDate(sentMessage);
+  const saved = await pool.query(
+    `INSERT INTO tc_crm_messages
+      (client_id, direction, body, wa_message_id, created_at)
+     VALUES ($1, 'out', $2, $3, COALESCE($4::timestamptz, NOW()))
+     ON CONFLICT (wa_message_id) DO NOTHING
+     RETURNING id, direction, body, wa_message_id, created_at`,
+    [clientId, body, messageId, createdAt],
+  );
+  res.status(201).json({
+    sent: true,
+    message: saved.rows[0] || {
+      direction: "out",
+      body,
+      wa_message_id: messageId,
+    },
+  });
+});
+
+app.get("/api/crm/deals/board", async (req, res) => {
+  const result = await pool.query(
+    `SELECT d.id, d.client_id, c.name AS client_name, d.title, d.amount,
+      d.currency, d.stage, d.expected_close, d.created_at, d.updated_at
+     FROM tc_crm_deals d
+     JOIN tc_crm_clients c ON c.id = d.client_id
+     WHERE c.owner_id = $1
+     ORDER BY d.updated_at DESC, d.id DESC`,
+    [req.traccarUser.id],
+  );
+  const board = Object.fromEntries(dealStages.map((stage) => [stage, []]));
+  for (const deal of result.rows) {
+    (board[deal.stage] ||= []).push(deal);
+  }
+  res.json(board);
+});
+
+app.get("/api/crm/deals", async (req, res) => {
+  const clientId = req.query.clientId ? parseId(req.query.clientId) : null;
+  if (req.query.clientId && !clientId)
+    return sendError(res, 400, "Invalid client id");
+  const result = await pool.query(
+    `SELECT d.id, d.client_id, c.name AS client_name, d.title, d.amount,
+      d.currency, d.stage, d.expected_close, d.created_at, d.updated_at
+     FROM tc_crm_deals d
+     JOIN tc_crm_clients c ON c.id = d.client_id
+     WHERE c.owner_id = $1 AND ($2::int IS NULL OR d.client_id = $2)
+     ORDER BY d.updated_at DESC, d.id DESC`,
+    [req.traccarUser.id, clientId],
+  );
+  res.json(result.rows);
+});
+
+app.post("/api/crm/deals", async (req, res) => {
+  const clientId = parseId(req.body?.clientId);
+  const title = validateDealField("title", req.body?.title);
+  const amount = validateDealField("amount", req.body?.amount);
+  const currency = validateDealField("currency", req.body?.currency || "MXN");
+  const stage = validateDealField("stage", req.body?.stage || "lead");
+  const expectedClose = validateDealField(
+    "expected_close",
+    req.body?.expectedClose ?? null,
+  );
+  if (
+    !clientId ||
+    !title ||
+    !currency ||
+    !stage ||
+    amount === undefined ||
+    expectedClose === undefined
+  ) {
+    return sendError(res, 400, "Invalid deal fields");
+  }
+  if (!(await findOwnedClient(clientId, req.traccarUser.id))) {
+    return sendError(res, 404, "Client not found");
+  }
+  const result = await pool.query(
+    `INSERT INTO tc_crm_deals (client_id, title, amount, currency, stage, expected_close)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id, client_id, title, amount, currency, stage, expected_close, created_at, updated_at`,
+    [clientId, title, amount, currency, stage, expectedClose],
+  );
+  res.status(201).json(result.rows[0]);
+});
+
+app.put("/api/crm/deals/:id", async (req, res) => {
+  const dealId = parseId(req.params.id);
+  if (!dealId) return sendError(res, 400, "Invalid deal id");
+  const columns = {
+    clientId: "client_id",
+    title: "title",
+    amount: "amount",
+    currency: "currency",
+    stage: "stage",
+    expectedClose: "expected_close",
+  };
+  const assignments = [];
+  const values = [dealId, req.traccarUser.id];
+  for (const [input, column] of Object.entries(columns)) {
+    if (!Object.hasOwn(req.body || {}, input)) continue;
+    let value;
+    if (input === "clientId") {
+      value = parseId(req.body[input]);
+      if (!value || !(await findOwnedClient(value, req.traccarUser.id))) {
+        return sendError(res, 404, "Client not found");
+      }
+    } else {
+      value = validateDealField(
+        column,
+        input === "expectedClose" ? req.body[input] : req.body[input],
+      );
+    }
+    if (value === undefined || (input === "title" && !value)) {
+      return sendError(res, 400, "Invalid deal fields");
+    }
+    values.push(value);
+    assignments.push(`${column} = $${values.length}`);
+  }
+  if (!assignments.length) return sendError(res, 400, "No fields to update");
+  assignments.push("updated_at = NOW()");
+  const result = await pool.query(
+    `UPDATE tc_crm_deals d SET ${assignments.join(", ")}
+     FROM tc_crm_clients c
+     WHERE d.id = $1 AND d.client_id = c.id AND c.owner_id = $2
+     RETURNING d.id, d.client_id, d.title, d.amount, d.currency, d.stage,
+       d.expected_close, d.created_at, d.updated_at`,
+    values,
+  );
+  if (!result.rowCount) return sendError(res, 404, "Deal not found");
+  res.json(result.rows[0]);
+});
+
+app.delete("/api/crm/deals/:id", async (req, res) => {
+  const dealId = parseId(req.params.id);
+  if (!dealId) return sendError(res, 400, "Invalid deal id");
+  const result = await pool.query(
+    `DELETE FROM tc_crm_deals d USING tc_crm_clients c
+     WHERE d.id = $1 AND d.client_id = c.id AND c.owner_id = $2
+     RETURNING d.id`,
+    [dealId, req.traccarUser.id],
+  );
+  if (!result.rowCount) return sendError(res, 404, "Deal not found");
   res.status(204).end();
 });
 

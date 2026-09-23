@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
+import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
 import { useTranslation } from "../common/components/LocalizationProvider";
 import {
   createClient,
@@ -16,6 +25,7 @@ import ClientList from "./ClientList";
 
 const CrmPage = () => {
   const t = useTranslation();
+  const navigate = useNavigate();
   const devices = useSelector((state) => state.devices.items);
   const [clients, setClients] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -105,9 +115,17 @@ const CrmPage = () => {
         }}
       />
       <Box sx={{ flex: 1, minWidth: 0, p: { xs: 2, md: 3 }, overflow: "auto" }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>
-          {t("crmTitle")}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Typography variant="h5" sx={{ flex: 1 }}>
+            {t("crmTitle")}
+          </Typography>
+          <Button
+            startIcon={<ViewKanbanIcon />}
+            onClick={() => navigate("/crm/deals")}
+          >
+            {t("crmDealsBoard")}
+          </Button>
+        </Box>
         {error && (
           <Alert severity="error" onClose={() => setError("")} sx={{ mb: 2 }}>
             {error}

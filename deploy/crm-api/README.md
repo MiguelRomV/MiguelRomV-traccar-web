@@ -33,5 +33,6 @@ el proxy manualmente; esta fase no cambia servicios del servidor.
 ## Fase 2 — Historial WhatsApp
 
 Configura `EVOLUTION_URL` y `EVOLUTION_API_KEY` en el `.env` local. El botón
-Sincronizar consulta `POST /chat/findMessages/{instance}` por `remoteJid`, e
-inserta mensajes de manera idempotente. No envía mensajes ni ejecuta cron.
+Sincronizar consulta `POST /chat/findMessages/{instance}` por `remoteJid` e
+inserta mensajes de manera idempotente. Fase 3 habilita el envío por
+`POST /message/sendText/{instance}` y el CRUD del pipeline de oportunidades.

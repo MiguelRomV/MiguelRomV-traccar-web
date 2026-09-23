@@ -6,11 +6,12 @@ import {
   CircularProgress,
   Paper,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import SyncIcon from "@mui/icons-material/Sync";
 import { useTranslation } from "../../common/components/LocalizationProvider";
-import { listMessages, syncMessages } from "../api";
+import { listMessages, sendMessage, syncMessages } from "../api";
 
 const PAGE_SIZE = 50;
 
@@ -31,6 +32,8 @@ const MessagesTab = ({ client }) => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
   const [syncResult, setSyncResult] = useState(null);
   const validPhone = useMemo(
@@ -76,6 +79,20 @@ const MessagesTab = ({ client }) => {
     }
   };
 
+  const send = async () => {
+    setSending(true);
+    try {
+      await sendMessage(client.id, draft.trim());
+      setDraft("");
+      await load();
+      setError("");
+    } catch (sendError) {
+      setError(sendError.message || t("crmSendError"));
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <Stack spacing={2}>
       {!validPhone && (
@@ -110,6 +127,28 @@ const MessagesTab = ({ client }) => {
           {t("crmSyncComplete")}: {syncResult}
         </Alert>
       )}
+      <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
+        <TextField
+          fullWidth
+          multiline
+          maxRows={5}
+          label={t("crmWriteMessage")}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          disabled={!validPhone || sending}
+        />
+        <Button
+          variant="contained"
+          disabled={!validPhone || sending || !draft.trim()}
+          onClick={send}
+        >
+          {sending ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : (
+            t("crmSendMessage")
+          )}
+        </Button>
+      </Box>
       {loading && !items.length ? (
         <Box sx={{ display: "grid", minHeight: 120, placeItems: "center" }}>
           <CircularProgress />

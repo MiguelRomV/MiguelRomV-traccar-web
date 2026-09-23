@@ -34,3 +34,15 @@ export const listMessages = (clientId, limit = 50, offset = 0) =>
   );
 export const syncMessages = (clientId) =>
   request(`/clients/${clientId}/messages/sync`, { method: "POST" });
+export const sendMessage = (clientId, body) =>
+  request(`/clients/${clientId}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+export const listDeals = (clientId) =>
+  request(`/deals${clientId ? `?clientId=${clientId}` : ""}`);
+export const getDealsBoard = () => request("/deals/board");
+export const createDeal = (deal) => request("/deals", json(deal));
+export const updateDeal = (id, deal) =>
+  request(`/deals/${id}`, { method: "PUT", body: JSON.stringify(deal) });
+export const deleteDeal = (id) => request(`/deals/${id}`, { method: "DELETE" });
