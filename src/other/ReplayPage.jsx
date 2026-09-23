@@ -61,7 +61,6 @@ const ReplayPage = () => {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [tab, setTab] = useState("chart");
   const [loading, setLoading] = useState(false);
-  const [filterOpen, setFilterOpen] = useState(false);
   const [customFrom, setCustomFrom] = useState(() =>
     dayjs().startOf("day").format("YYYY-MM-DDTHH:mm"),
   );
@@ -136,9 +135,9 @@ const ReplayPage = () => {
       start = now.subtract(days, "day");
       end = now;
     }
-    const overLimit =
-      end.diff(start, "millisecond") > 120 * 24 * 60 * 60 * 1000;
-    if (overLimit) start = end.subtract(120, "day");
+    const maxRangeMs = 120 * 24 * 60 * 60 * 1000;
+    const overLimit = end.diff(start, "millisecond") > maxRangeMs;
+    if (overLimit) start = end.subtract(maxRangeMs, "millisecond");
     setRangeError(overLimit);
     newParams.set("deviceId", selectedDeviceId);
     newParams.set("from", start.toISOString());
@@ -231,8 +230,8 @@ const ReplayPage = () => {
           <Tabs value="history" sx={{ flex: 1 }}>
             <Tab value="history" label="Historial" />
           </Tabs>
-          <Button size="small" onClick={() => setFilterOpen((value) => !value)}>
-            {filterOpen ? t("replayCloseFilter") : t("replayExtendedFilter")}
+          <Button size="small" onClick={() => setPeriod("custom")}>
+            {t("replayExtendedFilter")}
           </Button>
         </Box>
         <Box sx={{ p: 1.5, display: "grid", gap: 1 }}>
@@ -257,8 +256,8 @@ const ReplayPage = () => {
               value={period}
               onChange={(event) => setPeriod(event.target.value)}
             >
-              <MenuItem value="today">Hoy</MenuItem>
-              <MenuItem value="yesterday">Ayer</MenuItem>
+              <MenuItem value="today">{t("reportToday")}</MenuItem>
+              <MenuItem value="yesterday">{t("reportYesterday")}</MenuItem>
               <MenuItem value="last24h">{t("replayLast24Hours")}</MenuItem>
               <MenuItem value="last7">{t("replayLast7Days")}</MenuItem>
               <MenuItem value="last30">{t("replayLast30Days")}</MenuItem>
@@ -267,7 +266,7 @@ const ReplayPage = () => {
               <MenuItem value="custom">{t("reportCustom")}</MenuItem>
             </Select>
           </FormControl>
-          {filterOpen && period === "custom" && (
+          {period === "custom" && (
             <>
               <TextField
                 size="small"
@@ -296,7 +295,7 @@ const ReplayPage = () => {
             disabled={!selectedDeviceId || loading}
             onClick={show}
           >
-            Mostrar
+            {period === "custom" ? t("replayApply") : t("reportShow")}
           </Button>
         </Box>
         <ReplayTimeline

@@ -121,6 +121,7 @@
   "replayLast90Days": "Últimos 90 días",
   "replayLast120Days": "Últimos 120 días",
   "replayMaxHistory": "Máximo 120 días de historial",
+  "replayApply": "Aplicar",
   "vehicleNotificationsTitle": "Notificaciones por Vehículo",
   "vehicleNotificationsSave": "Guardar cambios",
   "vehicleNotificationsEmpty": "No tienes dispositivos registrados",
