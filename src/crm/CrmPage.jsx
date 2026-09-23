@@ -167,6 +167,7 @@ const CrmPage = () => {
               setFormOpen(true);
             }}
             onDelete={() => removeClient(selectedClient)}
+            onRefresh={loadClients}
             onLink={(deviceId) =>
               changeDevices(linkDevice, selectedClient.id, deviceId)
             }

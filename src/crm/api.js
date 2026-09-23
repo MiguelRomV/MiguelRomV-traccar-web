@@ -19,6 +19,12 @@ const request = async (path, options = {}) => {
 const json = (body) => ({ method: "POST", body: JSON.stringify(body) });
 
 export const listClients = () => request("/clients");
+export const listTraccarUsers = () => request("/traccar-users");
+export const linkTraccarUser = (clientId, userId) =>
+  request(`/clients/${clientId}/traccar-user`, {
+    method: "PUT",
+    body: JSON.stringify({ userId }),
+  });
 export const createClient = (client) => request("/clients", json(client));
 export const updateClient = (id, client) =>
   request(`/clients/${id}`, { method: "PUT", body: JSON.stringify(client) });

@@ -33,6 +33,7 @@ const ClientDetail = ({
   onDelete,
   onLink,
   onUnlink,
+  onRefresh,
 }) => {
   const t = useTranslation();
   const [tab, setTab] = useState("overview");
@@ -80,7 +81,7 @@ const ClientDetail = ({
       </Tabs>
       <Box sx={{ pt: 2 }}>
         {tab === "overview" ? (
-          <OverviewTab client={client} />
+          <OverviewTab client={client} onRefresh={onRefresh} />
         ) : tab === "messages" ? (
           <MessagesTab client={client} />
         ) : tab === "deals" ? (

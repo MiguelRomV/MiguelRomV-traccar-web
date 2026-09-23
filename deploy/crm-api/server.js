@@ -176,9 +176,38 @@ app.get("/api/crm/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use("/api/crm", authenticate);
 
+app.get("/api/crm/traccar-users", async (_req, res) => {
+  const result = await pool.query(
+    "SELECT id, name, email FROM tc_users ORDER BY name, id",
+  );
+  res.json(result.rows);
+});
+
+app.put("/api/crm/clients/:id/traccar-user", async (req, res) => {
+  const clientId = parseId(req.params.id);
+  const userId = req.body?.userId === null ? null : parseId(req.body?.userId);
+  if (!clientId || (req.body?.userId !== null && !userId))
+    return sendError(res, 400, "Invalid client or user id");
+  if (userId) {
+    const user = await pool.query("SELECT 1 FROM tc_users WHERE id = $1", [
+      userId,
+    ]);
+    if (!user.rowCount) return sendError(res, 404, "Traccar user not found");
+  }
+  const result = await pool.query(
+    `UPDATE tc_crm_clients SET traccar_user_id = $3, updated_at = NOW()
+     WHERE id = $1 AND owner_id = $2
+     RETURNING id`,
+    [clientId, req.traccarUser.id, userId],
+  );
+  if (!result.rowCount) return sendError(res, 404, "Client not found");
+  res.json({ success: true });
+});
+
 app.get("/api/crm/clients", async (req, res) => {
   const result = await pool.query(
     `SELECT c.id, c.name, c.phone, c.email, c.notes, c.created_at, c.updated_at,
+      CASE WHEN u.id IS NULL THEN NULL ELSE json_build_object('id', u.id, 'name', u.name, 'email', u.email) END AS "traccarUser",
       COALESCE(
         json_agg(json_build_object('id', d.id, 'name', d.name, 'uniqueId', d.uniqueid)
           ORDER BY d.name) FILTER (WHERE d.id IS NOT NULL),
@@ -187,6 +216,7 @@ app.get("/api/crm/clients", async (req, res) => {
      FROM tc_crm_clients c
      LEFT JOIN tc_crm_client_devices cd ON cd.client_id = c.id
      LEFT JOIN tc_devices d ON d.id = cd.device_id
+     LEFT JOIN tc_users u ON u.id = c.traccar_user_id
      WHERE c.owner_id = $1
      GROUP BY c.id
      ORDER BY c.name`,
@@ -219,6 +249,7 @@ app.get("/api/crm/clients/:id", async (req, res) => {
   if (!clientId) return sendError(res, 400, "Invalid client id");
   const result = await pool.query(
     `SELECT c.id, c.name, c.phone, c.email, c.notes, c.created_at, c.updated_at,
+      CASE WHEN u.id IS NULL THEN NULL ELSE json_build_object('id', u.id, 'name', u.name, 'email', u.email) END AS "traccarUser",
       COALESCE(
         json_agg(json_build_object('id', d.id, 'name', d.name, 'uniqueId', d.uniqueid)
           ORDER BY d.name) FILTER (WHERE d.id IS NOT NULL),
@@ -227,6 +258,7 @@ app.get("/api/crm/clients/:id", async (req, res) => {
      FROM tc_crm_clients c
      LEFT JOIN tc_crm_client_devices cd ON cd.client_id = c.id
      LEFT JOIN tc_devices d ON d.id = cd.device_id
+     LEFT JOIN tc_users u ON u.id = c.traccar_user_id
      WHERE c.id = $1 AND c.owner_id = $2
      GROUP BY c.id`,
     [clientId, req.traccarUser.id],
@@ -1000,6 +1032,11 @@ const start = async () => {
     "utf8",
   );
   await pool.query(migration);
+  const userLinkMigration = await fs.readFile(
+    path.join(dirname, "migrations", "002_add_traccar_user.sql"),
+    "utf8",
+  );
+  await pool.query(userLinkMigration);
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`CRM API listening on ${PORT}`);
   });
