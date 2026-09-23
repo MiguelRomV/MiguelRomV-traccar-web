@@ -54,7 +54,7 @@ const TicketForm = ({
     () =>
       setValues(
         ticket
-          ? { ...emptyTicket, ...ticket }
+          ? { ...emptyTicket, ...ticket, clientId: ticket.client_id }
           : { ...emptyTicket, clientId: clientId || "" },
       ),
     [ticket, clientId, open],

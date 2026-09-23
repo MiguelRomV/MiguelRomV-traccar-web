@@ -58,6 +58,7 @@ const InvoiceForm = ({
           ? {
               ...emptyInvoice,
               ...invoice,
+              clientId: invoice.client_id,
               issuedAt: invoice.issued_at || "",
               paidAt: invoice.paid_at || "",
             }

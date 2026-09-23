@@ -746,6 +746,7 @@ app.get("/api/crm/reminders/upcoming", async (req, res) => {
   const result = await pool.query(
     `${ownedReminderQuery}
      WHERE c.owner_id = $1 AND r.done = FALSE AND r.due_at >= NOW()
+       AND r.due_at <= NOW() + INTERVAL '120 days'
      ORDER BY r.due_at ASC LIMIT 100`,
     [req.traccarUser.id],
   );
