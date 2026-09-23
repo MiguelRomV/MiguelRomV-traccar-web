@@ -59,8 +59,8 @@ const InvoiceForm = ({
               ...emptyInvoice,
               ...invoice,
               clientId: invoice.client_id,
-              issuedAt: invoice.issued_at || "",
-              paidAt: invoice.paid_at || "",
+              issuedAt: invoice.issued_at?.slice(0, 10) || "",
+              paidAt: invoice.paid_at?.slice(0, 10) || "",
             }
           : { ...emptyInvoice, clientId: clientId || "" },
       ),
@@ -260,7 +260,8 @@ const InvoicesTab = ({ clientId }) => {
               )}
               <Typography variant="body2" color="text.secondary">
                 {item.amount} {item.currency} ·{" "}
-                {t(`crmInvoiceStatus_${item.status}`)} · {item.issued_at}
+                {t(`crmInvoiceStatus_${item.status}`)} ·{" "}
+                {item.issued_at?.slice(0, 10)}
               </Typography>
             </Box>
             <Button
