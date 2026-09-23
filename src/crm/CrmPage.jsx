@@ -10,6 +10,9 @@ import {
   Typography,
 } from "@mui/material";
 import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import { useTranslation } from "../common/components/LocalizationProvider";
 import {
   createClient,
@@ -124,6 +127,24 @@ const CrmPage = () => {
             onClick={() => navigate("/crm/deals")}
           >
             {t("crmDealsBoard")}
+          </Button>
+          <Button
+            startIcon={<ConfirmationNumberIcon />}
+            onClick={() => navigate("/crm/tickets")}
+          >
+            {t("crmTickets")}
+          </Button>
+          <Button
+            startIcon={<NotificationsActiveIcon />}
+            onClick={() => navigate("/crm/reminders")}
+          >
+            {t("crmReminders")}
+          </Button>
+          <Button
+            startIcon={<ReceiptLongIcon />}
+            onClick={() => navigate("/crm/invoices")}
+          >
+            {t("crmInvoices")}
           </Button>
         </Box>
         {error && (

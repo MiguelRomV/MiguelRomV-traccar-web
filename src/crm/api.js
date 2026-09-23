@@ -46,3 +46,29 @@ export const createDeal = (deal) => request("/deals", json(deal));
 export const updateDeal = (id, deal) =>
   request(`/deals/${id}`, { method: "PUT", body: JSON.stringify(deal) });
 export const deleteDeal = (id) => request(`/deals/${id}`, { method: "DELETE" });
+export const listTickets = (clientId) =>
+  request(`/tickets${clientId ? `?clientId=${clientId}` : ""}`);
+export const createTicket = (ticket) => request("/tickets", json(ticket));
+export const updateTicket = (id, ticket) =>
+  request(`/tickets/${id}`, { method: "PUT", body: JSON.stringify(ticket) });
+export const deleteTicket = (id) =>
+  request(`/tickets/${id}`, { method: "DELETE" });
+export const listReminders = (done) =>
+  request(`/reminders${done === undefined ? "" : `?done=${done}`}`);
+export const listUpcomingReminders = () => request("/reminders/upcoming");
+export const createReminder = (reminder) =>
+  request("/reminders", json(reminder));
+export const updateReminder = (id, reminder) =>
+  request(`/reminders/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(reminder),
+  });
+export const deleteReminder = (id) =>
+  request(`/reminders/${id}`, { method: "DELETE" });
+export const listInvoices = (clientId) =>
+  request(`/invoices${clientId ? `?clientId=${clientId}` : ""}`);
+export const createInvoice = (invoice) => request("/invoices", json(invoice));
+export const updateInvoice = (id, invoice) =>
+  request(`/invoices/${id}`, { method: "PUT", body: JSON.stringify(invoice) });
+export const deleteInvoice = (id) =>
+  request(`/invoices/${id}`, { method: "DELETE" });

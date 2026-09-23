@@ -80,6 +80,9 @@ const LanguagePage = lazy(() => import("./pages/LanguagePage"));
 const DashboardPage = lazy(() => import("./dashboard/DashboardPage"));
 const CrmPage = lazy(() => import("./crm/CrmPage"));
 const CrmDealsBoard = lazy(() => import("./crm/DealsBoard"));
+const CrmTicketsPage = lazy(() => import("./crm/TicketsPage"));
+const CrmRemindersPage = lazy(() => import("./crm/RemindersPage"));
+const CrmInvoicesPage = lazy(() => import("./crm/InvoicesPage"));
 const ServicesPage = lazy(() => import("./services/ServicesPage"));
 const DeliveriesPage = lazy(() => import("./deliveries/DeliveriesPage"));
 const ExpensesPage = lazy(() => import("./expenses/ExpensesPage"));
@@ -185,6 +188,30 @@ const Navigation = () => {
             element={
               <RoleRoute roles={[ADMIN, MANAGER]}>
                 <CrmDealsBoard />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="crm/tickets"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <CrmTicketsPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="crm/reminders"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <CrmRemindersPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="crm/invoices"
+            element={
+              <RoleRoute roles={[ADMIN, MANAGER]}>
+                <CrmInvoicesPage />
               </RoleRoute>
             }
           />

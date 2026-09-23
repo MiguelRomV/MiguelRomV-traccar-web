@@ -17,6 +17,9 @@ const EVOLUTION_URL = (
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY;
 const EVOLUTION_INSTANCE = "vigilateh";
 const dealStages = ["lead", "contactado", "cotización", "ganado", "perdido"];
+const ticketStatuses = ["open", "in_progress", "closed"];
+const ticketPriorities = ["low", "normal", "high", "urgent"];
+const invoiceStatuses = ["pending", "paid", "overdue", "cancelled"];
 const TRACCAR_URL = (
   process.env.TRACCAR_URL || "http://127.0.0.1:8082"
 ).replace(/\/$/, "");
@@ -146,6 +149,9 @@ const validDate = (value) =>
   typeof value === "string" &&
   /^\d{4}-\d{2}-\d{2}$/.test(value) &&
   !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+
+const validDateTime = (value) =>
+  typeof value === "string" && !Number.isNaN(Date.parse(value));
 
 const validateDealField = (field, value) => {
   if (field === "title") return optionalText(value) || undefined;
@@ -592,6 +598,392 @@ app.delete("/api/crm/deals/:id", async (req, res) => {
     [dealId, req.traccarUser.id],
   );
   if (!result.rowCount) return sendError(res, 404, "Deal not found");
+  res.status(204).end();
+});
+
+app.get("/api/crm/tickets", async (req, res) => {
+  const clientId = req.query.clientId ? parseId(req.query.clientId) : null;
+  if (req.query.clientId && !clientId)
+    return sendError(res, 400, "Invalid client id");
+  const result = await pool.query(
+    `SELECT t.id, t.client_id, c.name AS client_name, t.subject, t.description,
+      t.status, t.priority, t.created_at, t.closed_at
+     FROM tc_crm_tickets t JOIN tc_crm_clients c ON c.id = t.client_id
+     WHERE c.owner_id = $1 AND ($2::int IS NULL OR t.client_id = $2)
+     ORDER BY t.created_at DESC, t.id DESC`,
+    [req.traccarUser.id, clientId],
+  );
+  res.json(result.rows);
+});
+
+app.post("/api/crm/tickets", async (req, res) => {
+  const clientId = parseId(req.body?.clientId);
+  const subject = optionalText(req.body?.subject);
+  const description = optionalText(req.body?.description);
+  const status = req.body?.status || "open";
+  const priority = req.body?.priority || "normal";
+  if (
+    !clientId ||
+    !subject ||
+    description === undefined ||
+    !ticketStatuses.includes(status) ||
+    !ticketPriorities.includes(priority)
+  ) {
+    return sendError(res, 400, "Invalid ticket fields");
+  }
+  if (!(await findOwnedClient(clientId, req.traccarUser.id))) {
+    return sendError(res, 404, "Client not found");
+  }
+  const result = await pool.query(
+    `INSERT INTO tc_crm_tickets (client_id, subject, description, status, priority, closed_at)
+     VALUES ($1, $2, $3, $4, $5, CASE WHEN $4 = 'closed' THEN NOW() END)
+     RETURNING id, client_id, subject, description, status, priority, created_at, closed_at`,
+    [clientId, subject, description, status, priority],
+  );
+  res.status(201).json(result.rows[0]);
+});
+
+app.put("/api/crm/tickets/:id", async (req, res) => {
+  const ticketId = parseId(req.params.id);
+  if (!ticketId) return sendError(res, 400, "Invalid ticket id");
+  const fields = {
+    clientId: { column: "client_id", parse: parseId },
+    subject: { column: "subject", parse: optionalText },
+    description: { column: "description", parse: optionalText },
+    status: {
+      column: "status",
+      parse: (v) => (ticketStatuses.includes(v) ? v : undefined),
+    },
+    priority: {
+      column: "priority",
+      parse: (v) => (ticketPriorities.includes(v) ? v : undefined),
+    },
+  };
+  const assignments = [];
+  const values = [ticketId, req.traccarUser.id];
+  let statusParam;
+  for (const [input, { column, parse }] of Object.entries(fields)) {
+    if (!Object.hasOwn(req.body || {}, input)) continue;
+    const value = parse(req.body[input]);
+    if (value === undefined || (input === "subject" && !value))
+      return sendError(res, 400, "Invalid ticket fields");
+    if (
+      input === "clientId" &&
+      !(await findOwnedClient(value, req.traccarUser.id))
+    ) {
+      return sendError(res, 404, "Client not found");
+    }
+    values.push(value);
+    if (input === "status") statusParam = `$${values.length}`;
+    assignments.push(`${column} = $${values.length}`);
+  }
+  if (!assignments.length) return sendError(res, 400, "No fields to update");
+  const statusValue = statusParam || "status";
+  assignments.push(
+    `closed_at = CASE WHEN ${statusValue} = 'closed' THEN COALESCE(closed_at, NOW()) ELSE NULL END`,
+  );
+  const result = await pool.query(
+    `UPDATE tc_crm_tickets t SET ${assignments.join(", ")}
+     FROM tc_crm_clients c
+     WHERE t.id = $1 AND t.client_id = c.id AND c.owner_id = $2
+     RETURNING t.id, t.client_id, t.subject, t.description, t.status, t.priority, t.created_at, t.closed_at`,
+    values,
+  );
+  if (!result.rowCount) return sendError(res, 404, "Ticket not found");
+  res.json(result.rows[0]);
+});
+
+app.delete("/api/crm/tickets/:id", async (req, res) => {
+  const ticketId = parseId(req.params.id);
+  if (!ticketId) return sendError(res, 400, "Invalid ticket id");
+  const result = await pool.query(
+    `DELETE FROM tc_crm_tickets t USING tc_crm_clients c
+     WHERE t.id = $1 AND t.client_id = c.id AND c.owner_id = $2 RETURNING t.id`,
+    [ticketId, req.traccarUser.id],
+  );
+  if (!result.rowCount) return sendError(res, 404, "Ticket not found");
+  res.status(204).end();
+});
+
+const ownedReminderQuery = `
+  SELECT r.id, r.client_id, c.name AS client_name, r.deal_id, r.ticket_id,
+    r.title, r.due_at, r.done, r.created_at
+  FROM tc_crm_reminders r JOIN tc_crm_clients c ON c.id = r.client_id`;
+
+app.get("/api/crm/reminders/upcoming", async (req, res) => {
+  const result = await pool.query(
+    `${ownedReminderQuery}
+     WHERE c.owner_id = $1 AND r.done = FALSE AND r.due_at >= NOW()
+     ORDER BY r.due_at ASC LIMIT 100`,
+    [req.traccarUser.id],
+  );
+  res.json(result.rows);
+});
+
+app.get("/api/crm/reminders", async (req, res) => {
+  const done = req.query.done === undefined ? null : req.query.done === "true";
+  if (
+    req.query.done !== undefined &&
+    !["true", "false"].includes(req.query.done)
+  ) {
+    return sendError(res, 400, "Invalid done filter");
+  }
+  const result = await pool.query(
+    `${ownedReminderQuery}
+     WHERE c.owner_id = $1 AND ($2::boolean IS NULL OR r.done = $2)
+     ORDER BY r.due_at ASC, r.id ASC LIMIT 250`,
+    [req.traccarUser.id, done],
+  );
+  res.json(result.rows);
+});
+
+const validateReminderLinks = async (clientId, dealId, ticketId, ownerId) => {
+  if (dealId) {
+    const result = await pool.query(
+      `SELECT 1 FROM tc_crm_deals d JOIN tc_crm_clients c ON c.id = d.client_id
+       WHERE d.id = $1 AND d.client_id = $2 AND c.owner_id = $3`,
+      [dealId, clientId, ownerId],
+    );
+    if (!result.rowCount) return false;
+  }
+  if (ticketId) {
+    const result = await pool.query(
+      `SELECT 1 FROM tc_crm_tickets t JOIN tc_crm_clients c ON c.id = t.client_id
+       WHERE t.id = $1 AND t.client_id = $2 AND c.owner_id = $3`,
+      [ticketId, clientId, ownerId],
+    );
+    if (!result.rowCount) return false;
+  }
+  return true;
+};
+
+app.post("/api/crm/reminders", async (req, res) => {
+  const clientId = parseId(req.body?.clientId);
+  const dealId = req.body?.dealId ? parseId(req.body.dealId) : null;
+  const ticketId = req.body?.ticketId ? parseId(req.body.ticketId) : null;
+  const title = optionalText(req.body?.title);
+  const dueAt = req.body?.dueAt;
+  if (
+    !clientId ||
+    !title ||
+    !validDateTime(dueAt) ||
+    (req.body?.dealId && !dealId) ||
+    (req.body?.ticketId && !ticketId)
+  ) {
+    return sendError(res, 400, "Invalid reminder fields");
+  }
+  if (!(await findOwnedClient(clientId, req.traccarUser.id)))
+    return sendError(res, 404, "Client not found");
+  if (
+    !(await validateReminderLinks(
+      clientId,
+      dealId,
+      ticketId,
+      req.traccarUser.id,
+    ))
+  ) {
+    return sendError(res, 400, "Reminder link does not belong to this client");
+  }
+  const result = await pool.query(
+    `INSERT INTO tc_crm_reminders (client_id, deal_id, ticket_id, title, due_at)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, client_id, deal_id, ticket_id, title, due_at, done, created_at`,
+    [clientId, dealId, ticketId, title, dueAt],
+  );
+  res.status(201).json(result.rows[0]);
+});
+
+app.put("/api/crm/reminders/:id", async (req, res) => {
+  const reminderId = parseId(req.params.id);
+  if (!reminderId) return sendError(res, 400, "Invalid reminder id");
+  const current = await pool.query(
+    `SELECT r.client_id, r.deal_id, r.ticket_id FROM tc_crm_reminders r
+     JOIN tc_crm_clients c ON c.id = r.client_id
+     WHERE r.id = $1 AND c.owner_id = $2`,
+    [reminderId, req.traccarUser.id],
+  );
+  if (!current.rowCount) return sendError(res, 404, "Reminder not found");
+  const next = { ...current.rows[0] };
+  const assignments = [];
+  const values = [reminderId, req.traccarUser.id];
+  const fields = ["title", "dueAt", "done", "clientId", "dealId", "ticketId"];
+  const columns = {
+    title: "title",
+    dueAt: "due_at",
+    done: "done",
+    clientId: "client_id",
+    dealId: "deal_id",
+    ticketId: "ticket_id",
+  };
+  for (const field of fields) {
+    if (!Object.hasOwn(req.body || {}, field)) continue;
+    let value = req.body[field];
+    if (field === "title") value = optionalText(value);
+    if (field === "dueAt" && !validDateTime(value)) value = undefined;
+    if (field === "done" && typeof value !== "boolean") value = undefined;
+    if (["clientId", "dealId", "ticketId"].includes(field)) {
+      value = value === null && field !== "clientId" ? null : parseId(value);
+      if (
+        field === "clientId" &&
+        value &&
+        !(await findOwnedClient(value, req.traccarUser.id))
+      ) {
+        return sendError(res, 404, "Client not found");
+      }
+    }
+    if (
+      value === undefined ||
+      (field === "title" && !value) ||
+      (field === "clientId" && !value)
+    ) {
+      return sendError(res, 400, "Invalid reminder fields");
+    }
+    values.push(value);
+    assignments.push(`${columns[field]} = $${values.length}`);
+    next[columns[field]] = value;
+  }
+  if (!assignments.length) return sendError(res, 400, "No fields to update");
+  if (
+    !(await validateReminderLinks(
+      next.client_id,
+      next.deal_id,
+      next.ticket_id,
+      req.traccarUser.id,
+    ))
+  ) {
+    return sendError(res, 400, "Reminder link does not belong to this client");
+  }
+  const result = await pool.query(
+    `UPDATE tc_crm_reminders r SET ${assignments.join(", ")}
+     FROM tc_crm_clients c WHERE r.id = $1 AND r.client_id = c.id AND c.owner_id = $2
+     RETURNING r.id, r.client_id, r.deal_id, r.ticket_id, r.title, r.due_at, r.done, r.created_at`,
+    values,
+  );
+  res.json(result.rows[0]);
+});
+
+app.delete("/api/crm/reminders/:id", async (req, res) => {
+  const reminderId = parseId(req.params.id);
+  if (!reminderId) return sendError(res, 400, "Invalid reminder id");
+  const result = await pool.query(
+    `DELETE FROM tc_crm_reminders r USING tc_crm_clients c
+     WHERE r.id = $1 AND r.client_id = c.id AND c.owner_id = $2 RETURNING r.id`,
+    [reminderId, req.traccarUser.id],
+  );
+  if (!result.rowCount) return sendError(res, 404, "Reminder not found");
+  res.status(204).end();
+});
+
+app.get("/api/crm/invoices", async (req, res) => {
+  const clientId = req.query.clientId ? parseId(req.query.clientId) : null;
+  if (req.query.clientId && !clientId)
+    return sendError(res, 400, "Invalid client id");
+  const result = await pool.query(
+    `SELECT i.id, i.client_id, c.name AS client_name, i.number, i.amount,
+      i.currency, i.status, i.issued_at, i.paid_at
+     FROM tc_crm_invoices i JOIN tc_crm_clients c ON c.id = i.client_id
+     WHERE c.owner_id = $1 AND ($2::int IS NULL OR i.client_id = $2)
+     ORDER BY i.issued_at DESC, i.id DESC`,
+    [req.traccarUser.id, clientId],
+  );
+  res.json(result.rows);
+});
+
+app.post("/api/crm/invoices", async (req, res) => {
+  const clientId = parseId(req.body?.clientId);
+  const number = optionalText(req.body?.number);
+  const amount = Number(req.body?.amount);
+  const currency = (optionalText(req.body?.currency) || "MXN").toUpperCase();
+  const status = req.body?.status || "pending";
+  const issuedAt = req.body?.issuedAt || new Date().toISOString().slice(0, 10);
+  const paidAt = req.body?.paidAt || null;
+  if (
+    !clientId ||
+    !Number.isFinite(amount) ||
+    amount < 0 ||
+    !/^[A-Z]{3}$/.test(currency) ||
+    !invoiceStatuses.includes(status) ||
+    !validDate(issuedAt) ||
+    (paidAt && !validDate(paidAt))
+  ) {
+    return sendError(res, 400, "Invalid invoice fields");
+  }
+  if (!(await findOwnedClient(clientId, req.traccarUser.id)))
+    return sendError(res, 404, "Client not found");
+  const result = await pool.query(
+    `INSERT INTO tc_crm_invoices (client_id, number, amount, currency, status, issued_at, paid_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING id, client_id, number, amount, currency, status, issued_at, paid_at`,
+    [clientId, number, amount, currency, status, issuedAt, paidAt],
+  );
+  res.status(201).json(result.rows[0]);
+});
+
+app.put("/api/crm/invoices/:id", async (req, res) => {
+  const invoiceId = parseId(req.params.id);
+  if (!invoiceId) return sendError(res, 400, "Invalid invoice id");
+  const fields = {
+    clientId: "client_id",
+    number: "number",
+    amount: "amount",
+    currency: "currency",
+    status: "status",
+    issuedAt: "issued_at",
+    paidAt: "paid_at",
+  };
+  const assignments = [];
+  const values = [invoiceId, req.traccarUser.id];
+  for (const [input, column] of Object.entries(fields)) {
+    if (!Object.hasOwn(req.body || {}, input)) continue;
+    let value = req.body[input];
+    if (input === "clientId") {
+      value = parseId(value);
+      if (!value || !(await findOwnedClient(value, req.traccarUser.id)))
+        return sendError(res, 404, "Client not found");
+    } else if (input === "number") {
+      value = optionalText(value);
+      if (value === undefined)
+        return sendError(res, 400, "Invalid invoice number");
+    } else if (input === "amount") {
+      value = Number(value);
+      if (!Number.isFinite(value) || value < 0)
+        return sendError(res, 400, "Invalid invoice amount");
+    } else if (input === "currency") {
+      value = optionalText(value)?.toUpperCase();
+      if (!value || !/^[A-Z]{3}$/.test(value))
+        return sendError(res, 400, "Invalid invoice currency");
+    } else if (input === "status") {
+      if (!invoiceStatuses.includes(value))
+        return sendError(res, 400, "Invalid invoice status");
+    } else if (["issuedAt", "paidAt"].includes(input)) {
+      if (value === "") value = null;
+      if (value !== null && !validDate(value))
+        return sendError(res, 400, "Invalid invoice date");
+    }
+    values.push(value);
+    assignments.push(`${column} = $${values.length}`);
+  }
+  if (!assignments.length) return sendError(res, 400, "No fields to update");
+  const result = await pool.query(
+    `UPDATE tc_crm_invoices i SET ${assignments.join(", ")}
+     FROM tc_crm_clients c
+     WHERE i.id = $1 AND i.client_id = c.id AND c.owner_id = $2
+     RETURNING i.id, i.client_id, i.number, i.amount, i.currency, i.status, i.issued_at, i.paid_at`,
+    values,
+  );
+  if (!result.rowCount) return sendError(res, 404, "Invoice not found");
+  res.json(result.rows[0]);
+});
+
+app.delete("/api/crm/invoices/:id", async (req, res) => {
+  const invoiceId = parseId(req.params.id);
+  if (!invoiceId) return sendError(res, 400, "Invalid invoice id");
+  const result = await pool.query(
+    `DELETE FROM tc_crm_invoices i USING tc_crm_clients c
+     WHERE i.id = $1 AND i.client_id = c.id AND c.owner_id = $2 RETURNING i.id`,
+    [invoiceId, req.traccarUser.id],
+  );
+  if (!result.rowCount) return sendError(res, 404, "Invoice not found");
   res.status(204).end();
 });
 
