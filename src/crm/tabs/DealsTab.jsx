@@ -44,7 +44,7 @@ const DealForm = ({ open, deal, clientId, busy, onClose, onSave }) => {
             amount: deal.amount ?? "",
             currency: deal.currency || "MXN",
             stage: deal.stage || "lead",
-            expectedClose: deal.expected_close || "",
+            expectedClose: deal.expected_close?.slice(0, 10) || "",
           }
         : emptyDeal,
     );
