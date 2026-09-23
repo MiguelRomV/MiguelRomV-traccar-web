@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
-  Dialog,
-  DialogContent,
   FormControl,
   IconButton,
   InputLabel,
@@ -13,10 +12,10 @@ import {
   Slider,
   Tab,
   Tabs,
+  TextField,
   Typography,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import TuneIcon from "@mui/icons-material/Tune";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import StopIcon from "@mui/icons-material/Stop";
@@ -32,15 +31,16 @@ import MapCamera from "../map/MapCamera";
 import MapGeofence from "../map/MapGeofence";
 import MapScale from "../map/MapScale";
 import MapOverlay from "../map/overlay/MapOverlay";
-import ReportFilter from "../reports/components/ReportFilter";
 import fetchOrThrow from "../common/util/fetchOrThrow";
 import { useCatchCallback } from "../reactHelper";
 import ReplayTimeline from "./replay/ReplayTimeline";
 import ReplayChart from "./replay/ReplayChart";
 import ReplayMarkers from "./replay/ReplayMarkers";
 import ReplayDrawToolbar from "./replay/ReplayDrawToolbar";
+import { useTranslation } from "../common/components/LocalizationProvider";
 
 const ReplayPage = () => {
+  const t = useTranslation();
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up("md"));
   const timerRef = useRef();
@@ -62,6 +62,13 @@ const ReplayPage = () => {
   const [tab, setTab] = useState("chart");
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [customFrom, setCustomFrom] = useState(() =>
+    dayjs().startOf("day").format("YYYY-MM-DDTHH:mm"),
+  );
+  const [customTo, setCustomTo] = useState(() =>
+    dayjs().format("YYYY-MM-DDTHH:mm"),
+  );
+  const [rangeError, setRangeError] = useState(false);
   const [sheetExpanded, setSheetExpanded] = useState(true);
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -108,14 +115,31 @@ const ReplayPage = () => {
 
   const show = () => {
     const newParams = new URLSearchParams(searchParams);
-    const start =
-      period === "today"
-        ? dayjs().startOf("day")
-        : dayjs().subtract(1, "day").startOf("day");
-    const end =
-      period === "today"
-        ? dayjs().endOf("day")
-        : dayjs().subtract(1, "day").endOf("day");
+    const now = dayjs();
+    let start;
+    let end;
+    if (period === "today") {
+      start = now.startOf("day");
+      end = now.endOf("day");
+    } else if (period === "yesterday") {
+      start = now.subtract(1, "day").startOf("day");
+      end = now.subtract(1, "day").endOf("day");
+    } else if (period === "last24h") {
+      start = now.subtract(24, "hour");
+      end = now;
+    } else if (period === "custom") {
+      start = dayjs(customFrom);
+      end = dayjs(customTo);
+      if (!start.isValid() || !end.isValid() || end.isBefore(start)) return;
+    } else {
+      const days = Number(period.replace("last", ""));
+      start = now.subtract(days, "day");
+      end = now;
+    }
+    const overLimit =
+      end.diff(start, "millisecond") > 120 * 24 * 60 * 60 * 1000;
+    if (overLimit) start = end.subtract(120, "day");
+    setRangeError(overLimit);
     newParams.set("deviceId", selectedDeviceId);
     newParams.set("from", start.toISOString());
     newParams.set("to", end.toISOString());
@@ -207,12 +231,8 @@ const ReplayPage = () => {
           <Tabs value="history" sx={{ flex: 1 }}>
             <Tab value="history" label="Historial" />
           </Tabs>
-          <Button
-            size="small"
-            startIcon={<TuneIcon />}
-            onClick={() => setFilterOpen(true)}
-          >
-            Filtro extendido
+          <Button size="small" onClick={() => setFilterOpen((value) => !value)}>
+            {filterOpen ? t("replayCloseFilter") : t("replayExtendedFilter")}
           </Button>
         </Box>
         <Box sx={{ p: 1.5, display: "grid", gap: 1 }}>
@@ -239,8 +259,37 @@ const ReplayPage = () => {
             >
               <MenuItem value="today">Hoy</MenuItem>
               <MenuItem value="yesterday">Ayer</MenuItem>
+              <MenuItem value="last24h">{t("replayLast24Hours")}</MenuItem>
+              <MenuItem value="last7">{t("replayLast7Days")}</MenuItem>
+              <MenuItem value="last30">{t("replayLast30Days")}</MenuItem>
+              <MenuItem value="last90">{t("replayLast90Days")}</MenuItem>
+              <MenuItem value="last120">{t("replayLast120Days")}</MenuItem>
+              <MenuItem value="custom">{t("reportCustom")}</MenuItem>
             </Select>
           </FormControl>
+          {filterOpen && period === "custom" && (
+            <>
+              <TextField
+                size="small"
+                type="datetime-local"
+                label={t("reportFrom")}
+                value={customFrom}
+                onChange={(event) => setCustomFrom(event.target.value)}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <TextField
+                size="small"
+                type="datetime-local"
+                label={t("reportTo")}
+                value={customTo}
+                onChange={(event) => setCustomTo(event.target.value)}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+            </>
+          )}
+          {rangeError && (
+            <Alert severity="warning">{t("replayMaxHistory")}</Alert>
+          )}
           <Button
             variant="contained"
             startIcon={<VisibilityIcon />}
@@ -366,24 +415,6 @@ const ReplayPage = () => {
           </Box>
         )}
       </Paper>
-
-      <Dialog
-        open={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogContent>
-          <ReportFilter
-            onShow={(values) => {
-              load(values);
-              setFilterOpen(false);
-            }}
-            deviceType="single"
-            loading={loading}
-          />
-        </DialogContent>
-      </Dialog>
     </Box>
   );
 };
